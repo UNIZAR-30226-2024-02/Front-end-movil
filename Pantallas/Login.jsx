@@ -1,13 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleSheet, Text } from 'react-native';
 
 export default function App({ navigation }) {
   const { width, height } = useWindowDimensions();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = () => {
-    // Handle login logic here
-    // Assuming login is successful, navigate to the "Inicial" screen
-    navigation.navigate('Inicial');
+    // Validate that both username and password are filled
+    if (username && password) {
+      // Handle login logic here
+      // Assuming login is successful, navigate to the "Inicial" screen
+      navigation.navigate('Inicial');
+    } else {
+      // Display error message or handle empty fields
+      alert('Please fill in both username and password fields.');
+    }
+  };
+
+  const handleRegister = () => {
+    navigation.navigate('Register');
   };
 
   return (
@@ -30,17 +43,31 @@ export default function App({ navigation }) {
           <TextInput
             style={styles.input}
             placeholder="Nombre de usuario"
+            value={username}
+            onChangeText={setUsername}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            secureTextEntry={true}
-          />
+          <View style={styles.passwordInputContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Contraseña"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+            />
+            <TouchableOpacity
+              style={styles.showPasswordButton}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <Text style={styles.showPasswordButtonText}>{showPassword ? 'Ocultar' : 'Mostrar'}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Iniciar Sesión</Text>
         </TouchableOpacity>
-        <Text>Si no tienes cuenta puedes registrarte aquí</Text>
+        <TouchableOpacity onPress={handleRegister}>
+          <Text style={styles.registerText}>Si no tienes cuenta puedes registrarte aquí</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -70,31 +97,60 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     color: 'black',
+    textAlign: 'center', // Align text to the center
   },
   inputContainer: {
-    flexDirection: 'row', // Set flexDirection to 'row' for horizontal layout
+    flexDirection: 'column', // Set flexDirection to 'column' for vertical layout
     marginBottom: 15,
   },
   input: {
-    flex: 1, // Take up all available space within the parent container
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    marginRight: 10, // Add margin between input fields
+    marginBottom: 10,
     backgroundColor: 'white',
   },
+  passwordInputContainer: {
+    flexDirection: 'row', // Set flexDirection to 'row' for horizontal layout
+    alignItems: 'center', // Align items vertically in the center
+  },
+  passwordInput: {
+    flex: 1,
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginRight: 10,
+    backgroundColor: 'white',
+  },
+  showPasswordButton: {
+    backgroundColor: '#4CAF50',
+    padding: 8,
+    borderRadius: 8,
+  },
+  showPasswordButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
   button: {
-    backgroundColor: 'green',
+    backgroundColor: '#4CAF50',
     padding: 10,
     borderRadius: 8,
-    width: '100%',
     alignItems: 'center',
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  registerText: {
+    marginTop: 10,
+    color: 'blue',
+    textDecorationLine: 'underline',
+    textAlign: 'center', // Align text to the center
   },
 });

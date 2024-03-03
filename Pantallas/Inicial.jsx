@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Button, StyleSheet, ImageBackground } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet, ImageBackground } from 'react-native';
 
 export default function Inicial({ navigation }) {
   const goToCrearPartida = () => {
@@ -25,10 +25,18 @@ export default function Inicial({ navigation }) {
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
       <View style={styles.container}>
-        <Button title="Crear Partida" onPress={goToCrearPartida} />
-        <Button title="Ranking" onPress={goToRanking} />
-        <Button title="Tienda" onPress={goToTienda} />
-        <Button title="Perfil" onPress={goToPerfil} />
+        <TouchableOpacity style={styles.button} onPress={goToCrearPartida}>
+          <Text style={styles.buttonText}>Crear Partida</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={goToRanking}>
+          <Text style={styles.buttonText}>Ranking</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, styles.tiendaButton]} onPress={goToTienda}>
+          <Text style={styles.buttonText}>Tienda</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={goToPerfil}>
+          <Text style={styles.buttonText}>Perfil</Text>
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );
@@ -44,5 +52,20 @@ const styles = StyleSheet.create({
     flex: 1,
     resizeMode: 'cover',
     justifyContent: 'center',
+  },
+  button: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 8, // Reduced padding
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    marginBottom: 10, // Reduced margin bottom
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  tiendaButton: {
+    marginTop: 1, // Increased margin top
   },
 });

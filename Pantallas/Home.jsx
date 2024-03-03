@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { View, Text, Button, StyleSheet, ImageBackground } from 'react-native'; // Import ImageBackground
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native'; // Import ImageBackground
 import { useNavigation } from '@react-navigation/native';
 
 export default function Home() {
@@ -16,15 +16,12 @@ export default function Home() {
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
       <View style={styles.container}>
-        <Text>Home Screen</Text>
-        <Button
-          title="Go to Login"
-          onPress={goToLogin}
-        />
-        <Button
-          title="Go to Register"
-          onPress={goToRegister}
-        />
+        <TouchableOpacity style={styles.button} onPress={goToLogin}>
+          <Text style={styles.buttonText}>Login</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={goToRegister}>
+          <Text style={styles.buttonText}>Register</Text>
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );
@@ -40,5 +37,17 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  button: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

@@ -1,59 +1,182 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text } from 'react-native';
+import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
 
 export default function Register({ navigation }) {
+  const { width, height } = useWindowDimensions();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleRegister = () => {
-    // Handle registration logic here
-    console.log('Username:', username);
-    console.log('Password:', password);
-    // Example: You can send the username and password to an API for registration
+    // Check if inputs are not empty
+    if (!username.trim() || !password.trim() || !confirmPassword.trim()) {
+      Alert.alert('Error', 'Por favor, completa todos los campos');
+      return;
+    }
 
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Las contraseñas no coinciden');
+      return;
+    }
+
+    // Handle registration logic here
     // Assuming registration is successful, navigate to the "Inicial" screen
     navigation.navigate('Inicial');
   };
 
+  const goToLogin = () => {
+    navigation.navigate('Login');
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        onChangeText={setUsername}
-        value={username}
+      <Image
+        source={require('../assets/guerra.jpg')}
+        style={{
+          flex: 1,
+          resizeMode: 'cover',
+          width: width,
+          height: height,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+        }}
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        onChangeText={setPassword}
-        value={password}
-        secureTextEntry // Hides the text entered
-      />
-      <Button title="Register" onPress={handleRegister} />
+      <View style={styles.overlayContainer}>
+        <Text style={styles.title}>Registrarse</Text>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Nombre de usuario"
+            onChangeText={setUsername}
+            value={username}
+          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Contraseña"
+              secureTextEntry={!showPassword}
+              onChangeText={setPassword}
+              value={password}
+            />
+            <TouchableOpacity onPress={togglePasswordVisibility} style={styles.showPasswordButton}>
+              <Text style={styles.showPasswordButtonText}>{showPassword ? 'Ocultar' : 'Mostrar'}</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Repetir contraseña"
+              secureTextEntry={!showConfirmPassword}
+              onChangeText={setConfirmPassword}
+              value={confirmPassword}
+            />
+            <TouchableOpacity onPress={toggleConfirmPasswordVisibility} style={styles.showPasswordButton}>
+              <Text style={styles.showPasswordButtonText}>{showConfirmPassword ? 'Ocultar' : 'Mostrar'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+          <Text style={styles.buttonText}>Registrarse</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={goToLogin}>
+          <Text style={styles.loginText}>¿Ya tienes una cuenta? Inicia sesión aquí</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: 'row', // Set flexDirection to 'row' for horizontal layout
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  overlayContainer: {
+    maxWidth: 300,
+    width: '100%',
+    margin: 40,
+    padding: 15,
+    shadowColor: 'rgba(0, 0, 0, 0.2)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: 'black',
+    textAlign: 'center', // Align text to the center
+  },
+  inputContainer: {
+    marginBottom: 10,
   },
   input: {
-    height: 40,
-    width: '80%',
+    height: 30, // Reduced height
     borderColor: 'gray',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    marginBottom: 20,
+    marginBottom: 5, // Reduced margin bottom
+    backgroundColor: 'white',
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5, // Reduced margin bottom
+  },
+  passwordInput: {
+    flex: 1,
+    height: 30, // Reduced height
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    backgroundColor: 'white',
+  },
+  showPasswordButton: {
+    paddingVertical: 5, // Reduced padding
+    paddingHorizontal: 10, // Reduced padding
+    borderRadius: 8,
+    backgroundColor: '#4CAF50',
+    marginLeft: 5, // Reduced margin left
+  },
+  showPasswordButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  button: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  loginText: {
+    marginTop: 10,
+    color: 'blue',
+    textDecorationLine: 'underline',
+    textAlign: 'center',
   },
 });
