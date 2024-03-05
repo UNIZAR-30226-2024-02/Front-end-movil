@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Alert } from 'react-native';
 
-export default function CrearPartida() {
+export default function CrearPartida({navigation}) {
   // State variables to store game settings
   const [gameName, setGameName] = useState('');
   const [numPlayers, setNumPlayers] = useState('');
@@ -19,6 +19,7 @@ export default function CrearPartida() {
     console.log('Game Name:', gameName);
     console.log('Number of Players:', numPlayers);
     console.log('Password:', password);
+    navigation.navigate('RiskMap');
     // Example: Send game data to backend API to create the game
   };
 
@@ -88,12 +89,14 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 40,
-    borderColor: 'black',
+    borderColor: 'white',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    marginBottom: 20,
+    marginBottom: 10,
     color: 'black',
+    backgroundColor: 'white',
+    fontWeight: '600', // Adjust font weight here
   },
   numPlayersInput: {
     width: '22.5%', // Set width to 50% of the container

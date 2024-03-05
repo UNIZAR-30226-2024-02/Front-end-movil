@@ -1,13 +1,13 @@
 import React from 'react';
-import { View, ScrollView, Image, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, ScrollView, Image,ImageBackground, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
-export default function Tienda() {
+export default function Tienda({navigation}) {
   // Sample data for skins
   const skins = [
     {
       id: 1,
       name: 'Skin 1',
-      description: 'Description of Skin 1',
+      description: 'Descrasfdasdfasdfasdfasdfasadfasdfasdfasdcasdfdafasdfasdfasdfdfiption of Skin 1',
       price: '$10',
       image: require('../assets/skin1.jpg'),
     },
@@ -28,7 +28,7 @@ export default function Tienda() {
       {
         id: 4,
         name: 'Skin 2',
-        description: 'Description of Skin 2',
+        description: 'Descriptasfion of Skin 2',
         price: '$15',
         image: require('../assets/skin2.jpg'),
       },
@@ -51,11 +51,13 @@ export default function Tienda() {
 
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {
-    // Handle the press event, for example, navigate to a detail screen
+    const selectedSkin = skins.find(skin => skin.id === skinId);
+    navigation.navigate('SkinDetailScreen', { skin: selectedSkin });
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
+      <ScrollView contentContainerStyle={styles.container}>
       {skins.map((skin) => (
         <TouchableOpacity
           key={skin.id}
@@ -71,6 +73,9 @@ export default function Tienda() {
         </TouchableOpacity>
       ))}
     </ScrollView>
+    </ImageBackground>
+
+    
   );
 }
 

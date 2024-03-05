@@ -14,7 +14,7 @@ export default function Home() {
   };
 
   return (
-    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
+    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage} >
       <View style={styles.container}>
         <TouchableOpacity style={styles.button} onPress={goToLogin}>
           <Text style={styles.buttonText}>Login</Text>
@@ -30,8 +30,10 @@ export default function Home() {
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
+    width: '100%',
     resizeMode: 'cover',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
   container: {
     flex: 1,
