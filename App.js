@@ -8,6 +8,14 @@ import Register from './Pantallas/Register'; // Assuming Login is in the "Pantal
 import Inicial from './Pantallas/Inicial'; // Assuming Login is in the "Pantallas" directory
 import Tienda from './Pantallas/Tienda'; // Assuming Login is in the "Pantallas" directory
 import CrearPartida from './Pantallas/CrearPartida'; // Assuming Login is in the "Pantallas" directory
+import Ranking from './Pantallas/Ranking'; // Assuming Login is in the "Pantallas" directory
+import SkinDetailScreen from './Pantallas/SkinDetailScreen'; // Assuming Login is in the "Pantallas" directory
+import Perfil from './Pantallas/Perfil'; // Assuming Login is in the "Pantallas" directory
+import MyData from './Pantallas/MyData'; // Assuming Login is in the "Pantallas" directory
+import MySkins from './Pantallas/MySkins'; // Assuming Login is in the "Pantallas" directory
+import MyHistory from './Pantallas/MyHistory'; // Assuming Login is in the "Pantallas" directory
+import MySkinDetailScreen from './Pantallas/MySkinDetailScreen'; // Assuming Login is in the "Pantallas" directory
+import RiskMap from './Pantallas/RiskMap'; // Assuming Login is in the "Pantallas" directory
 
 
 const Stack = createNativeStackNavigator();
@@ -17,12 +25,21 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="Register" component={Register} />
-        <Stack.Screen name="Inicial" component={Inicial} />
-        <Stack.Screen name="Tienda" component={Tienda} />
-        <Stack.Screen name="CrearPartida" component={CrearPartida} />
+        <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }}/>
+        <Stack.Screen name="Register" component={Register} options={{ headerShown: false }}/>
+        <Stack.Screen name="Inicial" component={Inicial} options={{ headerShown: false }}/>
+        <Stack.Screen name="Tienda" component={Tienda} options={{ headerShown: false }}/>
+        <Stack.Screen name="CrearPartida" component={CrearPartida} options={{ headerShown: false }}/>
+        <Stack.Screen name="Ranking" component={Ranking} options={{ headerShown: false }}/>
+        <Stack.Screen name="SkinDetailScreen" component={SkinDetailScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="Perfil" component={Perfil} options={{ headerShown: false }}/>
+        <Stack.Screen name="MyData" component={MyData} options={{ headerShown: false }}/>
+        <Stack.Screen name="MySkins" component={MySkins} options={{ headerShown: false }}/>
+        <Stack.Screen name="MyHistory" component={MyHistory} options={{ headerShown: false }}/>
+        <Stack.Screen name="MySkinDetailScreen" component={MySkinDetailScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="RiskMap" component={RiskMap} options={{ headerShown: false }}/>
+
         {/* Add more screens here as needed */}
       </Stack.Navigator>
     </NavigationContainer>
@@ -37,3 +54,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
