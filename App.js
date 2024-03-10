@@ -16,6 +16,8 @@ import MySkins from './Pantallas/MySkins'; // Assuming Login is in the "Pantalla
 import MyHistory from './Pantallas/MyHistory'; // Assuming Login is in the "Pantallas" directory
 import MySkinDetailScreen from './Pantallas/MySkinDetailScreen'; // Assuming Login is in the "Pantallas" directory
 import RiskMap from './Pantallas/RiskMap'; // Assuming Login is in the "Pantallas" directory
+import BuscarJugador from './Pantallas/BuscarJugador'; // Assuming Login is in the "Pantallas" directory
+import PlayerDetails from './Pantallas/PlayerDetails'; // Assuming Login is in the "Pantallas" directory
 
 
 const Stack = createNativeStackNavigator();
@@ -39,7 +41,8 @@ export default function App() {
         <Stack.Screen name="MyHistory" component={MyHistory} options={{ headerShown: false }}/>
         <Stack.Screen name="MySkinDetailScreen" component={MySkinDetailScreen} options={{ headerShown: false }}/>
         <Stack.Screen name="RiskMap" component={RiskMap} options={{ headerShown: false }}/>
-
+        <Stack.Screen name="BuscarJugador" component={BuscarJugador} options={{ headerShown: false }}/>
+        <Stack.Screen name="PlayerDetails" component={PlayerDetails} options={{ headerShown: false }}/>
         {/* Add more screens here as needed */}
       </Stack.Navigator>
     </NavigationContainer>
@@ -54,4 +57,3 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
-
