@@ -2,11 +2,15 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity,ImageBackground } from 'react-native';
 
 export default function PlayerDetails({ route }) {
-  const { playerName } = route.params;
-  const [isFriend, setIsFriend] = useState(false);
+  const { FriendName } = route.params;
 
-  const handleAddFriend = () => {
-    setIsFriend(true);
+  const handleEliminateFriend = () => {
+    //havcer para eliminar amigo
+    
+  };
+
+  const handleChat = () => {
+    //implementar chat
   };
 
   return (
@@ -14,17 +18,15 @@ export default function PlayerDetails({ route }) {
     <View style={styles.container}>
     <View style={styles.content}>
       <View style={styles.detailsContainer}>
-        <Text style={styles.playerName}>{playerName}</Text>
+        <Text style={styles.playerName}>{FriendName}</Text>
         <Text style={styles.playerDescription}>agdakjhdnichsnidmosxkjdalsfnzhcgfidskmzm</Text>
         <View style={styles.containerButton}>
-          <TouchableOpacity style={styles.addButton} onPress={handleAddFriend}>
-            <Text style={styles.buttonText}>Agregar como amigo</Text>
+          <TouchableOpacity style={styles.addButton} onPress={handleEliminateFriend}>
+            <Text style={styles.buttonText}>Eliminar Amigo</Text>
           </TouchableOpacity>
-          {isFriend && (
-              <Text style={styles.friendMessage}>
-                {`${playerName} ya es tu amigo.`}
-              </Text>
-            )}
+          <TouchableOpacity style={styles.addButton} onPress={handleChat}>
+            <Text style={styles.buttonText}>Empezar Chat</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -63,9 +65,10 @@ const styles = StyleSheet.create({
     paddingBottom: 150, // Add paddingTop to give space for the skin name
   },
   containerButton: {
-    justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20, // Espacio adicional entre el contenido y el botón
+    flexDirection: 'row',  // Alinea los elementos en fila
+    justifyContent: 'space-between',
   },
   addButton: {
     backgroundColor: '#27ae60',

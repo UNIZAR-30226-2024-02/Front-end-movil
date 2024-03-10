@@ -14,6 +14,10 @@ export default function Perfil({ navigation }) {
     navigation.navigate('MyHistory');
   };
 
+  const goToMyFriends = () => {
+    navigation.navigate('MisAmigos');
+  };
+
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -25,6 +29,9 @@ export default function Perfil({ navigation }) {
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={goToMyHistory}>
           <Text style={styles.buttonText}>Mi Historial</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={goToMyFriends}>
+          <Text style={styles.buttonText}>Mis Amigos</Text>
         </TouchableOpacity>
       </ScrollView>
     </ImageBackground>
