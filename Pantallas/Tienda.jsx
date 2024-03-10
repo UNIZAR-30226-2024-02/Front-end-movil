@@ -56,7 +56,7 @@ export default function Tienda({navigation}) {
   };
 
   return (
-    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
+    <ImageBackground source={require('../assets/tienda.jpg')} style={styles.background}>
       <ScrollView contentContainerStyle={styles.container}>
       {skins.map((skin) => (
         <TouchableOpacity
@@ -86,6 +86,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 20,
   },
+  background: {
+    flex: 1,
+    resizeMode: 'cover',
+    justifyContent: 'center',
+  },
   skinItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -94,6 +99,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     width: '90%',
     elevation: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
   skinImage: {
     width: 100,

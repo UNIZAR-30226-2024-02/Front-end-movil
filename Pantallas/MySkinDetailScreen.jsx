@@ -18,7 +18,6 @@ export default function SkinDetailScreen({ route }) {
           <Text style={styles.skinDescription}>{skin.description}</Text>
         </View>
       </View>
-
     </View>
   );
 }

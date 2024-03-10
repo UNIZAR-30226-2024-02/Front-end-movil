@@ -22,6 +22,11 @@ export default function Inicial({ navigation }) {
     navigation.navigate('Perfil');
   };
 
+  const goToFindPlayer = () => {
+    // Navigate to "Perfil" screen
+    navigation.navigate('BuscarJugador');
+  };
+
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
       <View style={styles.container}>
@@ -36,6 +41,9 @@ export default function Inicial({ navigation }) {
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={goToPerfil}>
           <Text style={styles.buttonText}>Perfil</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={goToFindPlayer}>
+          <Text style={styles.buttonText}>Buscar Jugador</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
