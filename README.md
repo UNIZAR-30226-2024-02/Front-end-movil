@@ -17,6 +17,7 @@ npm -v
 
 Instala Expo Go en tu dispositivo móvil desde Play Store o App Store
 
+Para el funcionamiento de Expo Go, la red del dispositivo móvil debe ser la misma de la del dispositivo donde se hace el yarn start.
 ## Configuración del Proyecto
 
 Instalar Dependencias:
