@@ -27,7 +27,7 @@ npm install
 
 ## Ejecución del proyecto
 
-Debes situarte en la carpeta FrontMovil/ (cd FrontMovil/)
+Debes situarte en la carpeta Front-end-movil/ (cd Front-end-movil/)
 
 ```
 yarn start
