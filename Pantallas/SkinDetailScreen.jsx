@@ -1,26 +1,40 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import axios from 'axios';
+export default function SkinDetailScreen({ route}) {
+  const { skin,token} = route.params;
+  console.log('Token:', token); // Access token
 
-export default function SkinDetailScreen({ route }) {
-  const { skin } = route.params;
-
-  const handleBuyButtonPress = () => {
+  const handleBuyButtonPress = async() => {
     // Handle buy button press event here
     console.log('Buy button pressed');
+    console.log('Skin:', skin.idSkin); // Access skin details
+    console.log('Token:', token); // Access token
+    try {
+      const response = await axios.post(
+        'http://192.168.1.44:4000/tienda/comprar', // Replace with your server's URL
+        { idSkin: skin.idSkin },
+        { headers: { Authorization: token } }
+        
+      );
+      
+    } catch (error) {
+      console.error('Error fetching skins:', error);
+    }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Image source={skin.image} style={styles.skinImage} />
+        <Image source={skin.path} style={styles.skinImage} />
         <View style={styles.detailsContainer}>
-          <Text style={styles.skinName}>{skin.name}</Text>
-          <Text style={styles.skinDescription}>{skin.description}</Text>
+          <Text style={styles.skinName}>{skin.idSkin}</Text>
+          <Text style={styles.skinDescription}>{skin.tipo}</Text>
         </View>
       </View>
       <TouchableOpacity style={styles.buyButton} onPress={handleBuyButtonPress}>
         <Text style={styles.buyButtonText}>Buy</Text>
-        <Text style={styles.priceText}>{skin.price}</Text>
+        <Text style={styles.priceText}>{skin.precio}</Text>
       </TouchableOpacity>
     </View>
   );

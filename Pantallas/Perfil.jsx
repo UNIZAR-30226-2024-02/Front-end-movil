@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity } from 'react-native';
 
-export default function Perfil({ navigation }) {
+export default function Perfil({ navigation,route }) {
+
+  const { token } = route.params;
   const goToMyData = () => {
     navigation.navigate('MyData');
   };
@@ -15,7 +17,7 @@ export default function Perfil({ navigation }) {
   };
 
   const goToMyFriends = () => {
-    navigation.navigate('MisAmigos');
+    navigation.navigate('MisAmigos', { token: token });
   };
 
   return (

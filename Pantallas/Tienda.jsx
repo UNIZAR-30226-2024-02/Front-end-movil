@@ -1,40 +1,53 @@
-import React from 'react';
-import { View, ScrollView, Image,ImageBackground, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, ScrollView, Image, ImageBackground, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import axios from 'axios';
 
-export default function Tienda({navigation,route }) {
-
+export default function Tienda({ navigation, route }) {
   const { token } = route.params;
-  console.log('Token:', token);
-  // Sample data for skins
-  
+  const [skins, setSkins] = useState([]);
+  console.log('Token:', token); // Access token
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.post(
+          'http://192.168.1.44:4000/tienda', // Replace with your server's URL
+          { sortBy: 'precio', precioMin: 0, precioMax: 100000000, tipo: undefined },
+          { headers: { Authorization: token } }
+        );
+        setSkins(response.data);
+      } catch (error) {
+        console.error('Error fetching skins:', error);
+      }
+    };
+
+    fetchData();
+  }, [token]);
 
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {
-    const selectedSkin = skins.find(skin => skin.id === skinId);
-    navigation.navigate('SkinDetailScreen', { skin: selectedSkin });
+    const selectedSkin = skins.find((skin) => skin.id === skinId);
+    navigation.navigate('SkinDetailScreen', { skin: selectedSkin, token: token });
   };
 
   return (
     <ImageBackground source={require('../assets/tienda.jpg')} style={styles.background}>
       <ScrollView contentContainerStyle={styles.container}>
-      {skins.map((skin) => (
-        <TouchableOpacity
-          key={skin.id}
-          style={styles.skinItem}
-          onPress={() => handleSkinPress(skin.id)}
-        >
-          <Image source={skin.image} style={styles.skinImage} />
-          <View style={styles.skinDetails}>
-            <Text style={styles.skinName}>{skin.name}</Text>
-            <Text style={styles.skinDescription}>{skin.description}</Text>
-            <Text style={styles.skinPrice}>{skin.price}</Text>
-          </View>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+        {skins.map((skin) => (
+          <TouchableOpacity
+            key={skin.id}
+            style={styles.skinItem}
+            onPress={() => handleSkinPress(skin.id)}
+          >
+            <Image source={{ uri: skin.path }} style={styles.skinImage} />
+            <View style={styles.skinDetails}>
+              <Text style={styles.skinName}>{skin.idSkin}</Text>
+              <Text style={styles.skinDescription}>{skin.tipo}</Text>
+              <Text style={styles.skinPrice}>{skin.precio}</Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </ImageBackground>
-
-    
   );
 }
 

@@ -1,68 +1,72 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, FlatList, Text, StyleSheet, TouchableOpacity, ImageBackground} from 'react-native';
 
-const PlayerSearch = ({navigation}) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [allPlayersData, setAllPlayersData] = useState([
-    { id: 1, username: 'player1', name: 'Player One' },
-    { id: 2, username: 'player2', name: 'Player Two' },
-    { id: 3, username: 'player3', name: 'Player Three' },
-    { id: 4, username: 'player4', name: 'Player Four' },
-    { id: 5, username: 'player5', name: 'Player Five' },
-    { id: 6, username: 'player6', name: 'Player Six' },
-    { id: 7, username: 'player7', name: 'Player Seven' },
-    { id: 8, username: 'player8', name: 'Player Eight' },
-    { id: 9, username: 'player9', name: 'Player Nine' },
-    // Agregar más datos según sea necesario
-  ]);
+export default function PlayerSearch({navigation,route}){
+  const { token } = route.params;
+  console.log('Token:', token);
+  
+  
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [allPlayersData, setAllPlayersData] = useState([
+      { id: 1, username: 'player1', name: 'Player One' },
+      { id: 2, username: 'player2', name: 'Player Two' },
+      { id: 3, username: 'player3', name: 'Player Three' },
+      { id: 4, username: 'player4', name: 'Player Four' },
+      { id: 5, username: 'player5', name: 'Player Five' },
+      { id: 6, username: 'player6', name: 'Player Six' },
+      { id: 7, username: 'player7', name: 'Player Seven' },
+      { id: 8, username: 'player8', name: 'Player Eight' },
+      { id: 9, username: 'player9', name: 'Player Nine' },
+      // Agregar más datos según sea necesario
+    ]);
 
-  useEffect(() => {
-    setSearchResults(allPlayersData); // Mostrar todos los amigos inicialmente
-  }, []);
+    useEffect(() => {
+      setSearchResults(allPlayersData); // Mostrar todos los amigos inicialmente
+    }, []);
 
-  const handleSearch = () => {
-    if (searchQuery.trim() === '') {
-      setSearchResults(allPlayersData);
-    } else {
-      const results = allPlayersData.filter(
-        (player) => player.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setSearchResults(results);
-    }
-  };
+    const handleSearch = () => {
+      if (searchQuery.trim() === '') {
+        setSearchResults(allPlayersData);
+      } else {
+        const results = allPlayersData.filter(
+          (player) => player.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        setSearchResults(results);
+      }
+    };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.playerItem}
-      onPress={() => navigation.navigate('FriendDetails', { FriendName: item.name })}
-    >
-      <Text>{item.name}</Text>
-    </TouchableOpacity>
-    //cambiar el item.name segun la BBDD
-  );
+    const renderItem = ({ item }) => (
+      <TouchableOpacity
+        style={styles.playerItem}
+        onPress={() => navigation.navigate('FriendDetails', { FriendName: item.name })}
+      >
+        <Text>{item.name}</Text>
+      </TouchableOpacity>
+      //cambiar el item.name segun la BBDD
+    );
 
-  return (
-    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
-        <View style={styles.container}>
-        <TextInput
-            style={styles.input}
-            placeholder="Buscar amigo por nombre de usuario"
-            value={searchQuery}
-            onChangeText={(text) => setSearchQuery(text)}
-        />
-        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-            <Text style={styles.buttonText}>Buscar</Text>
-        </TouchableOpacity>
-        <FlatList
-            data={searchResults}
-            renderItem={renderItem}
-        />
-        </View>
-    </ImageBackground>
-  );
-};
-
+    return (
+      <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
+          <View style={styles.container}>
+          <TextInput
+              style={styles.input}
+              placeholder="Buscar amigo por nombre de usuario"
+              value={searchQuery}
+              onChangeText={(text) => setSearchQuery(text)}
+          />
+          <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+              <Text style={styles.buttonText}>Buscar</Text>
+          </TouchableOpacity>
+          <FlatList
+              data={searchResults}
+              renderItem={renderItem}
+          />
+          </View>
+      </ImageBackground>
+    );
+  
+}
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -102,4 +106,3 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PlayerSearch;
