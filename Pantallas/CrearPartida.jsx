@@ -1,26 +1,50 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Alert } from 'react-native';
+import axios from 'axios';
 
-export default function CrearPartida({navigation}) {
+export default function CrearPartida({navigation,route}) {
   // State variables to store game settings
   const [gameName, setGameName] = useState('');
   const [numPlayers, setNumPlayers] = useState('');
   const [password, setPassword] = useState('');
 
+
+  const { token } = route.params;
+  console.log('Token:', token);
+
   // Function to handle creating the game
-  const handleCreateGame = () => {
+  const handleCreateGame = async() => {
     // Validate required fields
-    if (!gameName || !numPlayers) {
+    if (!gameName.trim() || !numPlayers.trim()) {
       Alert.alert('Error', 'Nombre de la partida y número de jugadores son obligatorios.');
       return;
     }
-    
-    // Handle game creation logic here
-    console.log('Game Name:', gameName);
-    console.log('Number of Players:', numPlayers);
-    console.log('Password:', password);
-    navigation.navigate('RiskMap');
-    // Example: Send game data to backend API to create the game
+    else{
+      try {
+
+        const privacidad = password ? false : true;
+
+        const response = await axios.post('http://192.168.0.29:4000/login', {
+          privacidad: privacidad,
+          num: numPlayers,
+          nombre: gameName,
+          password: password,
+        });
+        // Handle game creation logic here
+        console.log('Game Name:', gameName);
+        console.log('Number of Players:', numPlayers);
+        console.log('Password:', password);
+        console.log('Privacidad:', privacidad);
+        navigation.navigate('RiskMap');
+        // Example: Send game data to backend API to create the game
+  
+        Alert.alert('Success', 'Partida creada exitosamente');
+        navigation.navigate('RiskMap');
+      } catch (error) {
+        console.error('Error:', error);
+        Alert.alert('Error', 'Ha ocurrido un error al crear la partida');
+      }
+    }
   };
 
   // Function to handle changing the number of players
