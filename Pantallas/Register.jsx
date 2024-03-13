@@ -1,30 +1,45 @@
 import React, { useState } from 'react';
 import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
-
+import axios from 'axios';
 export default function Register({ navigation }) {
   const { width, height } = useWindowDimensions();
-  const [username, setUsername] = useState('');
+  const [idUsuario, setIdUsuario] = useState('');
+  const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleRegister = () => {
+  const handleRegister = async() => {
     // Check if inputs are not empty
-    if (!username.trim() || !password.trim() || !confirmPassword.trim()) {
+    if (!idUsuario.trim() || !password.trim() || !confirmPassword.trim() || !correo.trim()) {
       Alert.alert('Error', 'Por favor, completa todos los campos');
       return;
+    } else{
+              // Check if passwords match
+            if (password !== confirmPassword) {
+              Alert.alert('Error', 'Las contraseñas no coinciden');
+              return;
+            } else{
+              try {
+                const response = await axios.post('http://192.168.1.35:4000/register', {
+                  idUsuario: idUsuario,
+                  password: password,
+                  correo: correo, // Add email here if needed
+                });
+          
+                if (response.status !== 201) {
+                  throw new Error('Error al registrar usuario');
+                }
+          
+                Alert.alert('Success', 'Usuario registrado exitosamente');
+                navigation.navigate('Inicial');
+              } catch (error) {
+                console.error('Error:', error);
+                Alert.alert('Error', 'Ha ocurrido un error al registrar usuario');
+              }
+            }
     }
-
-    // Check if passwords match
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Las contraseñas no coinciden');
-      return;
-    }
-
-    // Handle registration logic here
-    // Assuming registration is successful, navigate to the "Inicial" screen
-    navigation.navigate('Inicial');
   };
 
   const goToLogin = () => {
@@ -56,11 +71,18 @@ export default function Register({ navigation }) {
       <View style={styles.overlayContainer}>
         <Text style={styles.title}>Registrarse</Text>
         <View style={styles.inputContainer}>
+
           <TextInput
             style={styles.input}
-            placeholder="Nombre de usuario"
-            onChangeText={setUsername}
-            value={username}
+            placeholder="Id del usuario"
+            onChangeText={setIdUsuario}
+            value={idUsuario}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Correo"
+            onChangeText={setCorreo}
+            value={correo}
           />
           <View style={styles.passwordContainer}>
             <TextInput
