@@ -1,18 +1,31 @@
 import React, { useState } from 'react';
-import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleSheet, Text } from 'react-native';
-
+import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
+import axios from 'axios';
 export default function App({ navigation }) {
   const { width, height } = useWindowDimensions();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async() => {
     // Validate that both username and password are filled
     if (username && password) {
       // Handle login logic here
       // Assuming login is successful, navigate to the "Inicial" screen
-      navigation.navigate('Inicial');
+      try {
+        const response = await axios.post('http://192.168.1.44:4000/login', {
+          id: username,
+          password: password,
+        });
+  
+        
+  
+        Alert.alert('Success', 'Usuario logeado exitosamente');
+        navigation.navigate('Inicial');
+      } catch (error) {
+        console.error('Error:', error);
+        Alert.alert('Error', 'Ha ocurrido un error al logear usuario');
+      }
     } else {
       // Display error message or handle empty fields
       alert('Please fill in both username and password fields.');
