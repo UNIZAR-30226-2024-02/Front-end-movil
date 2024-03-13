@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 export default function App({ navigation }) {
   const { width, height } = useWindowDimensions();
   const [username, setUsername] = useState('');
@@ -18,10 +20,14 @@ export default function App({ navigation }) {
           password: password,
         });
   
-        
-  
+        const token = response.data.token;
+
+        // Store token in AsyncStorage
+        await AsyncStorage.setItem('token', token);
+        console.log('Token:', token);
         Alert.alert('Success', 'Usuario logeado exitosamente');
-        navigation.navigate('Inicial');
+        navigation.navigate('Inicial', { token: token });
+
       } catch (error) {
         console.error('Error:', error);
         Alert.alert('Error', 'Ha ocurrido un error al logear usuario');

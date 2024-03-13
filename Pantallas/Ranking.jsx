@@ -1,21 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, Text, StyleSheet, ImageBackground, View } from 'react-native';
+import axios from 'axios';
 
-export default function Ranking() {
-  // Sample ranking data
-  const rankingData = [
-    { rank: 1, name: 'Player 1', score: 100 },
-    { rank: 2, name: 'Player 2', score: 90 },
-    { rank: 3, name: 'Player 3', score: 80 },
-    { rank: 4, name: 'Player 4', score: 70 },
-    { rank: 5, name: 'Player 5', score: 60 },
-    { rank: 6, name: 'Player 6', score: 50 },
-    { rank: 7, name: 'Player 7', score: 40 },
-    { rank: 8, name: 'Player 8', score: 30 },
-    { rank: 9, name: 'Player 9', score: 20 },
-    { rank: 10, name: 'Player 10', score: 10 },
-    // Add more ranking data as needed
-  ];
+export default function Ranking({ route }) {
+
+  const { token } = route.params;
+  console.log('Token:', token);
+  const [rankingData, setRankingData] = useState([]);
+
+  useEffect(() => {
+    fetchRankingData();
+  }, []);
+
+  const fetchRankingData = async () => {
+    try {
+      const response = await axios.get('http://192.168.1.44:4000/ranking',{headers: {
+        'Authorization': `${token}`
+      }});
+      setRankingData(response.data);
+    } catch (error) {
+      console.error('Error fetching ranking data:', error);
+    }
+  };
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
@@ -28,9 +34,9 @@ export default function Ranking() {
           </View>
           {rankingData.map((player, index) => (
             <View key={index} style={styles.tableRow}>
-              <Text style={[styles.rank, { flex: 1 }]}>{player.rank}</Text>
-              <Text style={[styles.playerName, { flex: 3 }]}>{player.name}</Text>
-              <Text style={[styles.score, { flex: 1 }]}>{player.score}</Text>
+              <Text style={[styles.rank, { flex: 1 }]}>{index+1}</Text>
+              <Text style={[styles.playerName, { flex: 3 }]}>{player.idUsuario}</Text>
+              <Text style={[styles.score, { flex: 1 }]}>{player.elo}</Text>
             </View>
           ))}
         </View>

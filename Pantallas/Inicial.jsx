@@ -1,30 +1,33 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, ImageBackground } from 'react-native';
 
-export default function Inicial({ navigation }) {
+export default function Inicial({ navigation,route }) {
+
+  const { token } = route.params;
+  console.log('Token:', token);
   const goToCrearPartida = () => {
     // Navigate to "Crear Partida" screen
-    navigation.navigate('CrearPartida');
+    navigation.navigate('CrearPartida', { token: token });
   };
 
   const goToRanking = () => {
     // Navigate to "Ranking" screen
-    navigation.navigate('Ranking');
+    navigation.navigate('Ranking', { token: token });
   };
 
   const goToTienda = () => {
     // Navigate to "Tienda" screen
-    navigation.navigate('Tienda');
+    navigation.navigate('Tienda', { token: token });
   };
 
   const goToPerfil = () => {
     // Navigate to "Perfil" screen
-    navigation.navigate('Perfil');
+    navigation.navigate('Perfil', { token: token });
   };
 
   const goToFindPlayer = () => {
     // Navigate to "Perfil" screen
-    navigation.navigate('BuscarJugador');
+    navigation.navigate('BuscarJugador', { token: token });
   };
 
   return (

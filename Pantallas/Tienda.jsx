@@ -1,53 +1,12 @@
 import React from 'react';
 import { View, ScrollView, Image,ImageBackground, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
-export default function Tienda({navigation}) {
+export default function Tienda({navigation,route }) {
+
+  const { token } = route.params;
+  console.log('Token:', token);
   // Sample data for skins
-  const skins = [
-    {
-      id: 1,
-      name: 'Skin 1',
-      description: 'Descrasfdasdfasdfasdfasdfasadfasdfasdfasdcasdfdafasdfasdfasdfdfiption of Skin 1',
-      price: '$10',
-      image: require('../assets/skin1.jpg'),
-    },
-    {
-      id: 2,
-      name: 'Skin 2',
-      description: 'Description of Skin 2',
-      price: '$15',
-      image: require('../assets/skin2.jpg'),
-    },
-    {
-        id: 3,
-        name: 'Skin 2',
-        description: 'Description of Skin 2',
-        price: '$15',
-        image: require('../assets/skin2.jpg'),
-      },
-      {
-        id: 4,
-        name: 'Skin 2',
-        description: 'Descriptasfion of Skin 2',
-        price: '$15',
-        image: require('../assets/skin2.jpg'),
-      },
-      {
-        id: 5,
-        name: 'Skin 2',
-        description: 'Description of Skin 2',
-        price: '$15',
-        image: require('../assets/skin2.jpg'),
-      },
-      {
-        id: 6,
-        name: 'Skin 2',
-        description: 'Description of Skin 2',
-        price: '$15',
-        image: require('../assets/skin2.jpg'),
-      },
-    // Add more skins as needed
-  ];
+  
 
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {

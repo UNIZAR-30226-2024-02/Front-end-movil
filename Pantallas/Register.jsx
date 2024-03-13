@@ -22,15 +22,13 @@ export default function Register({ navigation }) {
               return;
             } else{
               try {
-                const response = await axios.post('http://192.168.1.35:4000/register', {
+                const response = await axios.post('http://192.168.1.44:4000/register', {
                   idUsuario: idUsuario,
                   password: password,
                   correo: correo, // Add email here if needed
                 });
           
-                if (response.status !== 201) {
-                  throw new Error('Error al registrar usuario');
-                }
+                
           
                 Alert.alert('Success', 'Usuario registrado exitosamente');
                 navigation.navigate('Inicial');
