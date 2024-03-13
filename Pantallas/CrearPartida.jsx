@@ -22,14 +22,14 @@ export default function CrearPartida({navigation,route}) {
     else{
       try {
 
-        const privacidad = password ? false : true;
+        const privacidad = !!password; // !!password will convert password to a boolean value
 
-        const response = await axios.post('http://192.168.43.182:4000/creaPartida',{headers : {'authorization': `${token}`}},{
+        const response = await axios.post('http://192.168.1.44:4000/nuevaPartida',{
           privacidad: privacidad,
           num: numPlayers,
           nombre: gameName,
           password: password,
-        });
+        },{headers : {'authorization': `${token}`}});
         
         // Handle game creation logic here
         console.log('Game Name:', gameName);
