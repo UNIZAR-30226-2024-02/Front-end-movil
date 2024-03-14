@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
 import axios from 'axios';
+import CryptoJS from 'crypto-js';
+
 export default function Register({ navigation }) {
   const { width, height } = useWindowDimensions();
   const [idUsuario, setIdUsuario] = useState('');
@@ -9,6 +11,10 @@ export default function Register({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const hashPassword = (password) => {
+    return CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
+  };
 
   const handleRegister = async() => {
     // Check if inputs are not empty
@@ -21,17 +27,18 @@ export default function Register({ navigation }) {
               Alert.alert('Error', 'Las contraseñas no coinciden');
               return;
             } else{
+              const hashedPassword = hashPassword(password);
               try {
-                const response = await axios.post('http://192.168.1.44:4000/register', {
+                const response = await axios.post('http://192.168.0.29:4000/register', {
                   idUsuario: idUsuario,
-                  password: password,
+                  password: hashedPassword,
                   correo: correo, // Add email here if needed
                 });
           
                 
           
                 Alert.alert('Success', 'Usuario registrado exitosamente');
-                navigation.navigate('Inicial');
+                navigation.navigate('Login');
               } catch (error) {
                 console.error('Error:', error);
                 Alert.alert('Error', 'Ha ocurrido un error al registrar usuario');
