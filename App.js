@@ -20,6 +20,7 @@ import BuscarJugador from './Pantallas/BuscarJugador'; // Assuming Login is in t
 import PlayerDetails from './Pantallas/PlayerDetails'; // Assuming Login is in the "Pantallas" directory
 import MisAmigos from './Pantallas/MisAmigos'; // Assuming Login is in the "Pantallas" directory
 import FriendDetails from './Pantallas/FriendDetails'; // Assuming Login is in the "Pantallas" directory
+import MisSolicitudes from './Pantallas/MisSolicitudes'; // Assuming Login is in the "Pantallas" directory
 
 
 const Stack = createNativeStackNavigator();
@@ -46,6 +47,7 @@ export default function App() {
         <Stack.Screen name="BuscarJugador" component={BuscarJugador} options={{ headerShown: false }}/>
         <Stack.Screen name="PlayerDetails" component={PlayerDetails} options={{ headerShown: false }}/>
         <Stack.Screen name="MisAmigos" component={MisAmigos} options={{ headerShown: false }}/>
+        <Stack.Screen name="MisSolicitudes" component={MisSolicitudes} options={{ headerShown: false }}/>
         <Stack.Screen name="FriendDetails" component={FriendDetails} options={{ headerShown: false }}/>
         {/* Add more screens here as needed */}
       </Stack.Navigator>
