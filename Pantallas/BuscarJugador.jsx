@@ -1,98 +1,146 @@
 import React, { useState } from 'react';
-import { View, TextInput, FlatList, Text, StyleSheet, TouchableOpacity, ImageBackground} from 'react-native';
+import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const PlayerSearch = ({navigation}) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+export default function App({ navigation ,route }) {
 
-  const playersData = [
-    { id: 1, username: 'player1', name: 'Player One' },
-    { id: 2, username: 'player2', name: 'Player Two' },
-    { id: 3, username: 'player3', name: 'Player Three' },
-    //Modificar esto segun la BBDD
-  ];
+  const { token } = route.params;
+  console.log('Token:', token);
+  const { width, height } = useWindowDimensions();
+  const [username, setUsername] = useState('');
 
-  const handleSearch = () => {
-    if (searchQuery.trim() === '') {
-      return;
+  const handleFriendShip = async() => {
+    // Validate that both username and password are filled
+    if (username) {
+      // Handle login logic here
+      // Assuming login is successful, navigate to the "Inicial" screen
+      try {
+        const response = await axios.post('http://192.168.1.44:4000/amistad', 
+        {idDestino: username},
+        { headers: { Authorization: token } }
+      );
+
+      } catch (error) {
+        console.error('Error:', error);
+        Alert.alert('Error', 'Ha ocurrido un error al realizar la peticon de amistad');
+      }
+    } else {
+      // Display error message or handle empty fields
+      alert('Porfavor, rellene el id del usuario para pedirle la amistad.');
     }
-  
-    const results = playersData.filter(
-      //cambiar el player.name segun la BBDD
-      (player) => player.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setSearchResults(results);
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.playerItem}
-      onPress={() => navigation.navigate('PlayerDetails', { playerName: item.name })}
-    >
-      <Text>{item.name}</Text>
-    </TouchableOpacity>
-    //cambiar el item.name segun la BBDD
-  );
-
   return (
-    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
-        <View style={styles.container}>
-        <TextInput
+    <View style={styles.container}>
+      <Image
+        source={require('../assets/guerra.jpg')}
+        style={{
+          flex: 1,
+          resizeMode: 'cover',
+          width: width,
+          height: height,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+        }}
+      />
+      <View style={styles.overlayContainer}>
+        <Text style={styles.title}>Enviar solicitud de amistad</Text>
+        <View style={styles.inputContainer}>
+          <TextInput
             style={styles.input}
-            placeholder="Buscar jugador por nombre de usuario"
-            value={searchQuery}
-            onChangeText={(text) => setSearchQuery(text)}
-        />
-        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-            <Text style={styles.buttonText}>Buscar</Text>
-        </TouchableOpacity>
-        <FlatList
-            data={searchResults}
-            renderItem={renderItem}
-            ListEmptyComponent={<Text>No se encontraron resultados</Text>}
-        />
+            placeholder="ID del usuario a solicitar la amistad"
+            value={username}
+            onChangeText={setUsername}
+          />
         </View>
-    </ImageBackground>
+        <TouchableOpacity style={styles.button} onPress={handleFriendShip}>
+          <Text style={styles.buttonText}>Buscar amigo</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-  },
-  background: {
-    flex: 1,
-    resizeMode: 'cover',
+    flexDirection: 'row', // Set flexDirection to 'row' for horizontal layout
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlayContainer: {
+    maxWidth: 300,
+    width: '100%',
+    margin: 40,
+    padding: 15,
+    shadowColor: 'rgba(0, 0, 0, 0.2)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: 'black',
+    textAlign: 'center', // Align text to the center
+  },
+  inputContainer: {
+    flexDirection: 'column', // Set flexDirection to 'column' for vertical layout
+    marginBottom: 15,
   },
   input: {
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
-    marginBottom: 10,
+    borderRadius: 8,
     paddingHorizontal: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-  },
-  searchButton: {
-    backgroundColor: '#3498db',
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 5,
     marginBottom: 10,
+    backgroundColor: 'white',
   },
-  buttonText: {
-    color: '#fff',
+  passwordInputContainer: {
+    flexDirection: 'row', // Set flexDirection to 'row' for horizontal layout
+    alignItems: 'center', // Align items vertically in the center
+  },
+  passwordInput: {
+    flex: 1,
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginRight: 10,
+    backgroundColor: 'white',
+  },
+  showPasswordButton: {
+    backgroundColor: '#4CAF50',
+    padding: 8,
+    borderRadius: 8,
+  },
+  showPasswordButtonText: {
+    color: 'white',
+    fontSize: 12,
     fontWeight: 'bold',
   },
-  playerItem: {
+  button: {
+    backgroundColor: '#4CAF50',
     padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    marginBottom: 10,
-    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  registerText: {
+    marginTop: 10,
+    color: 'blue',
+    textDecorationLine: 'underline',
+    textAlign: 'center', // Align text to the center
   },
 });
-
-export default PlayerSearch;

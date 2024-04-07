@@ -17,6 +17,7 @@ export default function SkinDetailScreen({ route}) {
         { headers: { Authorization: token } }
         
       );
+      console.log('Response:', response.data);
       
     } catch (error) {
       console.error('Error fetching skins:', error);

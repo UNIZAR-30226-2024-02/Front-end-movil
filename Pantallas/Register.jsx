@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
 import axios from 'axios';
-import CryptoJS from 'crypto-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Register({ navigation }) {
   const { width, height } = useWindowDimensions();
@@ -11,10 +11,6 @@ export default function Register({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const hashPassword = (password) => {
-    return CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
-  };
 
   const handleRegister = async() => {
     // Check if inputs are not empty
@@ -27,18 +23,18 @@ export default function Register({ navigation }) {
               Alert.alert('Error', 'Las contraseñas no coinciden');
               return;
             } else{
-              const hashedPassword = hashPassword(password);
               try {
-                const response = await axios.post('http://192.168.0.29:4000/register', {
+                const response = await axios.post('http://192.168.1.44:4000/register', {
                   idUsuario: idUsuario,
-                  password: hashedPassword,
+                  password: password,
                   correo: correo, // Add email here if needed
                 });
           
-                
-          
+                const token = response.data.token;
+                await AsyncStorage.setItem('token', token);
+                console.log('TokenRegister:', token);
                 Alert.alert('Success', 'Usuario registrado exitosamente');
-                navigation.navigate('Login');
+                navigation.navigate('Inicial', { token: token });
               } catch (error) {
                 console.error('Error:', error);
                 Alert.alert('Error', 'Ha ocurrido un error al registrar usuario');

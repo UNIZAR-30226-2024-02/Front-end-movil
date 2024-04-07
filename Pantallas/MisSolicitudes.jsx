@@ -1,48 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Image, ImageBackground, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import axios from 'axios';
 
-export default function MisSkins({ navigation, route }) {
+export default function FriendshipRequests({ route }){
   const { token } = route.params;
-  const [skins, setSkins] = useState([]);
+  const [requests, setRequests] = useState([]);
   console.log('Token:', token); // Access token
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          'http://192.168.1.44:4000/misSkins/enPropiedad', // Replace with your server's URL
-          { headers: { Authorization: token } }
-        );
-        setSkins(response.data);
+        const response = await axios.get('http://192.168.1.44:4000/amistad/listarSolicitudes', {
+        headers: {
+          Authorization: token,
+        },
+      });
+      const responseData = response.data;
+        if (Array.isArray(responseData)) {
+          setRequests(responseData); // Set requests if it's an array
+        } else {
+            console.warn('Response data is not an array:', responseData.solicitudes);
+            setRequests([]); // Set requests to an empty array if response data is not an array
+        }
       } catch (error) {
-        console.error('Error fetching skins:', error);
+        console.error('Error fetching friendship:', error);
       }
     };
 
     fetchData();
   }, [token]);
 
-  // Function to handle when a skin is pressed
-  const handleSkinPress = (skinId) => {
-    const selectedSkin = skins.find((skin) => skin.id === skinId);
-    navigation.navigate('MySkinDetailScreen', { skin: selectedSkin, token: token });
-  };
-
   return (
     <ImageBackground source={require('../assets/tienda.jpg')} style={styles.background}>
       <ScrollView contentContainerStyle={styles.container}>
-        {skins.map((skin) => (
+        {requests.map((request) => (
           <TouchableOpacity
-            key={skin.id}
+            key={request}
             style={styles.skinItem}
-            onPress={() => handleSkinPress(skin.id)}
           >
-            <Image source={{ uri: skin.path }} style={styles.skinImage} />
-            <View style={styles.skinDetails}>
-              <Text style={styles.skinName}>{skin.idSkin}</Text>
-              <Text style={styles.skinDescription}>{skin.tipo}</Text>
-              <Text style={styles.skinPrice}>{skin.precio}</Text>
-            </View>
+            <Text>{request}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -98,3 +94,4 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
   },
 });
+

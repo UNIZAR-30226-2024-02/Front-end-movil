@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import CryptoJS from 'crypto-js';
 
 export default function App({ navigation }) {
   const { width, height } = useWindowDimensions();
@@ -10,20 +9,15 @@ export default function App({ navigation }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const hashPassword = (password) => {
-    return CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
-  };
-
   const handleLogin = async() => {
     // Validate that both username and password are filled
     if (username && password) {
       // Handle login logic here
       // Assuming login is successful, navigate to the "Inicial" screen
-      const hashedPassword = hashPassword(password);
       try {
-        const response = await axios.post('http://192.168.0.29:4000/login', {
+        const response = await axios.post('http://192.168.1.44:4000/login', {
           id: username,
-          password: hashedPassword,
+          password: password,
         });
   
         const token = response.data.token;

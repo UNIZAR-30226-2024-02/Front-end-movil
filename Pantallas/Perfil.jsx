@@ -9,7 +9,7 @@ export default function Perfil({ navigation,route }) {
   };
 
   const goToMySkins = () => {
-    navigation.navigate('MySkins');
+    navigation.navigate('MySkins', { token: token });
   };
 
   const goToMyHistory = () => {
