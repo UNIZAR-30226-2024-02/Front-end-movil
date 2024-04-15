@@ -16,7 +16,7 @@ export default function App({ navigation ,route }) {
       // Handle login logic here
       // Assuming login is successful, navigate to the "Inicial" screen
       try {
-        const response = await axios.post('http://192.168.1.44:4000/amistad', 
+        const response = await axios.post('http://192.168.79.96:4000/amistad', 
         {idDestino: username},
         { headers: { Authorization: token } }
       );

@@ -12,7 +12,7 @@ export default function SkinDetailScreen({ route}) {
     console.log('Token:', token); // Access token
     try {
       const response = await axios.post(
-        'http://192.168.1.44:4000/tienda/comprar', // Replace with your server's URL
+        'http://192.168.79.96:4000/tienda/comprar', // Replace with your server's URL
         { idSkin: skin.idSkin },
         { headers: { Authorization: token } }
         

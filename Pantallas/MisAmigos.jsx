@@ -1,109 +1,98 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, FlatList, Text, StyleSheet, TouchableOpacity, ImageBackground} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, ScrollView, Image, ImageBackground, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import axios from 'axios';
 
-export default function PlayerSearch({navigation,route}){
+export default function FriendshipRequests({ navigation,route }){
   const { token } = route.params;
-  console.log('Token:', token);
-  
-  
-    const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState([]);
-    useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const response = await axios.get(
-            'http://192.168.1.44:4000/amistad/listarAmigos', // Replace with your server's URL
-            { headers: { Authorization: token } }
-          );
-          setSearchResults(response.data);
-        } catch (error) {
-          console.error('Error fetching friends:', error);
-        }
-      };
-  
-      fetchData();
-    }, [token]);
-   
+  const [requests, setRequests] = useState([]);
+  console.log('Token:', token); // Access token
 
-    const handleSearch = () => {
-      if (searchQuery.trim() === '') {
-        setSearchResults(searchResults);
-      } else {
-        const results = allPlayersData.filter(
-          (player) => player.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-        setSearchResults(results);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://192.168.79.96:4000/amistad/listarAmigos', {
+        headers: {
+          Authorization: token,
+        },
+      });
+      const responseData = response.data;
+      setRequests(responseData.friends);
+      console.log(responseData.friends)
+      } catch (error) {
+        console.error('Error fetching friendship:', error);
       }
     };
 
-    const renderItem = ({ item }) => (
-      <TouchableOpacity
-        style={styles.playerItem}
-        onPress={() => navigation.navigate('FriendDetails', { FriendName: item.name })}
-      >
-        <Text>{item.name}</Text>
-      </TouchableOpacity>
-      //cambiar el item.name segun la BBDD
-    );
+    fetchData();
+  }, [token]);
 
-    return (
-      <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
-          <View style={styles.container}>
-          <TextInput
-              style={styles.input}
-              placeholder="Buscar amigo por nombre de usuario"
-              value={searchQuery}
-              onChangeText={(text) => setSearchQuery(text)}
-          />
-          <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-              <Text style={styles.buttonText}>Buscar</Text>
-          </TouchableOpacity>
-          <FlatList
-              data={searchResults}
-              renderItem={renderItem}
-          />
+
+  const handleFriendPress = (user) => {
+    const selectedFriend = requests.find((friend) => friend === user);
+    navigation.navigate('FriendDetails', { friend: selectedFriend, token: token });
+  };
+
+  return (
+    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={[styles.table, { minWidth: '60%' }]}>
+          <View style={styles.tableHeader}>
+            <Text style={[styles.headerText]}>UserID</Text>
           </View>
-      </ImageBackground>
-    );
-  
+          {requests.map((userId) => (
+            <TouchableOpacity
+            key={userId}
+            onPress={() => handleFriendPress(userId)}>
+            <View key={userId} style={styles.tableRow}>
+              <Text style={styles.playerName}>{userId}</Text>
+            </View>
+          </TouchableOpacity>
+            
+            
+          ))}
+        </View>
+      </ScrollView>
+    </ImageBackground>
+  );
 }
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
   background: {
     flex: 1,
     resizeMode: 'cover',
     justifyContent: 'center',
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-  },
-  searchButton: {
-    backgroundColor: '#3498db',
-    paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 5,
-    marginBottom: 10,
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  container: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
   },
-  playerItem: {
-    padding: 10,
+  table: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    marginBottom: 10,
+    borderColor: 'white',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  tableHeader: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
+  },
+  headerText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+  },
+  tableRow: {
     backgroundColor: '#ffffff',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#4CAF50',
+  },
+  playerName: {
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
-

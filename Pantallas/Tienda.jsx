@@ -10,7 +10,7 @@ export default function Tienda({ navigation, route }) {
     const fetchData = async () => {
       try {
         const response = await axios.post(
-          'http://192.168.1.44:4000/tienda', // Replace with your server's URL
+          'http://192.168.79.96:4000/tienda', // Replace with your server's URL
           { sortBy: 'precio', precioMin: 0, precioMax: 100000000, tipo: undefined },
           { headers: { Authorization: token } }
         );

@@ -5,7 +5,7 @@ export default function Perfil({ navigation,route }) {
 
   const { token } = route.params;
   const goToMyData = () => {
-    navigation.navigate('MyData');
+    navigation.navigate('MyChats', { token: token });
   };
 
   const goToMySkins = () => {
@@ -24,7 +24,7 @@ export default function Perfil({ navigation,route }) {
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
       <ScrollView contentContainerStyle={styles.container}>
         <TouchableOpacity style={styles.button} onPress={goToMyData}>
-          <Text style={styles.buttonText}>Mis Datos</Text>
+          <Text style={styles.buttonText}>Mis Chats</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={goToMySkins}>
           <Text style={styles.buttonText}>Mis Skins</Text>

@@ -2,59 +2,39 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity,ImageBackground } from 'react-native';
 import axios from 'axios';
 
-export default function PlayerDetails({ route }) {
-  const {friend,token} = route.params;
+export default function SolicitudDetails({ route }) {
+  const {solicitante,token} = route.params;
   console.log('Token:', token); // Access token
-  console.log('amigo:', friend)
-  const handleEliminateFriend = async() => {
-    //havcer para eliminar amigo
-    try {
-      const response = await axios.delete(
-        'http://192.168.79.96:4000/amistad/'+friend, // Replace with your server's URL
-        { headers: { Authorization: token } }
-        
-      );
-      console.log('Response:', response.data);
-      
-    } catch (error) {
-      console.error('Error friend:', error);
-    }
-    
-  };
-
-  const handleChat = async () => {
+  console.log('amigo:', solicitante)
+  
+  const handleConfirmaFriend = async () => {
+    // Implementación para confirmar amistad
     try {
       const response = await axios.post(
-        'http://192.168.79.96:4000/chats/crearChat', // Replace with your server's URL
-        { nombreChat: `Chat con ${friend}`, usuarios: [friend] },
+        'http://192.168.79.96:4000/amistad',
+        { idDestino: solicitante },
         { headers: { Authorization: token } }
       );
-      console.log('Chat created:', response.data);
-      // Handle success message or navigate to chat screen if needed
+      console.log('Response:', response.data);
     } catch (error) {
-      console.error('Error creating chat:', error);
-      // Handle error message or UI update if needed
+      console.error('Error friend:', error);
     }
   };
 
   return (
-    //poner el isFriend a true si ya es mi amigo, mirando en la BBDD
     <View style={styles.container}>
-    <View style={styles.content}>
-      <View style={styles.detailsContainer}>
-        <Text style={styles.playerName}>{friend}</Text>
-        <Text style={styles.playerDescription}>agdakjhdnichsnidmosxkjdalsfnzhcgfidskmzm</Text>
-        <View style={styles.containerButton}>
-          <TouchableOpacity style={styles.addButton} onPress={handleEliminateFriend}>
-            <Text style={styles.buttonText}>Eliminar Amigo</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.addButton} onPress={handleChat}>
-            <Text style={styles.buttonText}>Empezar Chat</Text>
-          </TouchableOpacity>
+      <View style={styles.content}>
+        <View style={styles.detailsContainer}>
+          <Text style={styles.playerName}>{solicitante}</Text>
+          <Text style={styles.playerDescription}>a</Text>
+          <View style={styles.containerButton}>
+            <TouchableOpacity style={styles.addButton} onPress={handleConfirmaFriend}>
+              <Text style={styles.buttonText}>Confirmar Amistad</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </View>
-  </View>
   );
 }
 

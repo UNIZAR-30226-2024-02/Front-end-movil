@@ -1,33 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Image, ImageBackground, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, ScrollView, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
 import axios from 'axios';
 
-export default function FriendshipRequests({ navigation,route }){
+export default function FriendshipRequests({ navigation, route }) {
   const { token } = route.params;
-  const [requests, setRequests] = useState([]);
-  console.log('Token:', token); // Access token
-
+  const [chats, setChats] = useState([]);
+  
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchChats = async () => {
       try {
-        const response = await axios.get('http://192.168.79.96:4000/amistad/listarSolicitudes', {
-        headers: {
-          Authorization: token,
-        },
-      });
-      const responseData = response.data;
-      setRequests(responseData.solicitudes);
-      console.log(responseData.solicitudes)
+        const response = await axios.get('http://192.168.79.96:4000/chats/listar', {
+          headers: {
+            Authorization: token,
+          },
+        });
+        setChats(response.data.chats);
+        console.log(response.data.chats)
       } catch (error) {
-        console.error('Error fetching friendship:', error);
+        console.error('Error fetching chats:', error);
       }
     };
 
-    fetchData();
+    fetchChats();
   }, [token]);
 
-  const handleSolicitudPress = (user) => {
-    navigation.navigate('SolicitudDetails', { solicitante: user, token: token });
+  const handleChatPress = (chatId) => {
+    // Navigate to chat details screen or implement your logic here
   };
 
   return (
@@ -35,16 +33,16 @@ export default function FriendshipRequests({ navigation,route }){
       <ScrollView contentContainerStyle={styles.container}>
         <View style={[styles.table, { minWidth: '60%' }]}>
           <View style={styles.tableHeader}>
-            <Text style={[styles.headerText]}>UserID</Text>
+            <Text style={styles.headerText}>Chat ID</Text>
           </View>
-          {requests.map((userId) => (
+          {chats.map((chat) => (
             <TouchableOpacity
-            key={userId}
-            onPress={() => handleSolicitudPress(userId)}>
-            <View key={userId} style={styles.tableRow}>
-              <Text style={styles.playerName}>{userId}</Text>
-            </View>
-          </TouchableOpacity>
+              key={chat.nombre}
+              onPress={() => handleChatPress(chat.nombre)}>
+              <View style={styles.tableRow}>
+                <Text style={styles.chatId}>{chat.nombre}</Text>
+              </View>
+            </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
@@ -87,7 +85,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#4CAF50',
   },
-  playerName: {
+  chatId: {
     fontSize: 16,
     textAlign: 'center',
   },

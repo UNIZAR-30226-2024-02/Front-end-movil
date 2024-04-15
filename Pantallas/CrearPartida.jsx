@@ -24,7 +24,7 @@ export default function CrearPartida({navigation,route}) {
 
         const privacidad = !!password; // !!password will convert password to a boolean value
 
-        const response = await axios.post('http://192.168.1.44:4000/nuevaPartida',{
+        const response = await axios.post('http://192.168.79.96:4000/nuevaPartida',{
           privacidad: privacidad,
           num: numPlayers,
           nombre: gameName,

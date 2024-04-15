@@ -1,15 +1,33 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import axios from 'axios';
 
 export default function MySkinDetailScreen({ route }) {
   const { skin,token} = route.params;
   console.log('Token:', token); // Access token
+  console.log(skin)
 
-
+  const handleEquipadasPress = async() => {
+    // Handle buy button press event here
+    console.log('Buy button pressed');
+    console.log('Skin:', skin.idSkin); // Access skin details
+    console.log('Token:', token); // Access token
+    try {
+      const response = await axios.post(
+        'http://192.168.79.96:4000/tienda/comprar', // Replace with your server's URL
+        { idSkin: skin.idSkin },
+        { headers: { Authorization: token } }
+        
+      );
+      console.log('Response:', response.data);
+      
+    } catch (error) {
+      console.error('Error fetching skins:', error);
+    }
+  };
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Image source={skin.path} style={styles.skinImage} />
         <View style={styles.detailsContainer}>
           <Text style={styles.skinName}>{skin.idSkin}</Text>
           <Text style={styles.skinDescription}>{skin.tipo}</Text>

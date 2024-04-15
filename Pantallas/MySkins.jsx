@@ -10,10 +10,11 @@ export default function MisSkins({ navigation, route }) {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          'http://192.168.1.44:4000/misSkins/enPropiedad', // Replace with your server's URL
+          'http://192.168.79.96:4000/misSkins/enPropiedad', // Replace with your server's URL
           { headers: { Authorization: token } }
         );
         setSkins(response.data);
+        console.log(response.data)
       } catch (error) {
         console.error('Error fetching skins:', error);
       }
