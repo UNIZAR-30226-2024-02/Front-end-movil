@@ -11,16 +11,16 @@ import CrearPartida from './Pantallas/CrearPartida'; // Assuming Login is in the
 import Ranking from './Pantallas/Ranking'; // Assuming Login is in the "Pantallas" directory
 import SkinDetailScreen from './Pantallas/SkinDetailScreen'; // Assuming Login is in the "Pantallas" directory
 import Perfil from './Pantallas/Perfil'; // Assuming Login is in the "Pantallas" directory
-import MyData from './Pantallas/MyData'; // Assuming Login is in the "Pantallas" directory
+import MyChats from './Pantallas/MyChats'; // Assuming Login is in the "Pantallas" directory
 import MySkins from './Pantallas/MySkins'; // Assuming Login is in the "Pantallas" directory
 import MyHistory from './Pantallas/MyHistory'; // Assuming Login is in the "Pantallas" directory
 import MySkinDetailScreen from './Pantallas/MySkinDetailScreen'; // Assuming Login is in the "Pantallas" directory
 import RiskMap from './Pantallas/RiskMap'; // Assuming Login is in the "Pantallas" directory
 import BuscarJugador from './Pantallas/BuscarJugador'; // Assuming Login is in the "Pantallas" directory
-import PlayerDetails from './Pantallas/PlayerDetails'; // Assuming Login is in the "Pantallas" directory
 import MisAmigos from './Pantallas/MisAmigos'; // Assuming Login is in the "Pantallas" directory
 import FriendDetails from './Pantallas/FriendDetails'; // Assuming Login is in the "Pantallas" directory
 import MisSolicitudes from './Pantallas/MisSolicitudes'; // Assuming Login is in the "Pantallas" directory
+import SolicitudDetails from './Pantallas/SolicitudDetails'; // Assuming Login is in the "Pantallas" directory
 
 
 const Stack = createNativeStackNavigator();
@@ -39,16 +39,16 @@ export default function App() {
         <Stack.Screen name="Ranking" component={Ranking} options={{ headerShown: false }}/>
         <Stack.Screen name="SkinDetailScreen" component={SkinDetailScreen} options={{ headerShown: false }}/>
         <Stack.Screen name="Perfil" component={Perfil} options={{ headerShown: false }}/>
-        <Stack.Screen name="MyData" component={MyData} options={{ headerShown: false }}/>
+        <Stack.Screen name="MyChats" component={MyChats} options={{ headerShown: false }}/>
         <Stack.Screen name="MySkins" component={MySkins} options={{ headerShown: false }}/>
         <Stack.Screen name="MyHistory" component={MyHistory} options={{ headerShown: false }}/>
         <Stack.Screen name="MySkinDetailScreen" component={MySkinDetailScreen} options={{ headerShown: false }}/>
         <Stack.Screen name="RiskMap" component={RiskMap} options={{ headerShown: false }}/>
         <Stack.Screen name="BuscarJugador" component={BuscarJugador} options={{ headerShown: false }}/>
-        <Stack.Screen name="PlayerDetails" component={PlayerDetails} options={{ headerShown: false }}/>
         <Stack.Screen name="MisAmigos" component={MisAmigos} options={{ headerShown: false }}/>
         <Stack.Screen name="MisSolicitudes" component={MisSolicitudes} options={{ headerShown: false }}/>
         <Stack.Screen name="FriendDetails" component={FriendDetails} options={{ headerShown: false }}/>
+        <Stack.Screen name="SolicitudDetails" component={SolicitudDetails} options={{ headerShown: false }}/>
         {/* Add more screens here as needed */}
       </Stack.Navigator>
     </NavigationContainer>
