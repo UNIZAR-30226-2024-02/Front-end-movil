@@ -11,7 +11,7 @@ export default function SolicitudDetails({ route }) {
     // Implementación para confirmar amistad
     try {
       const response = await axios.post(
-        'http://192.168.79.96:4000/amistad',
+        'http://192.168.32.96:4000/amistad',
         { idDestino: solicitante },
         { headers: { Authorization: token } }
       );

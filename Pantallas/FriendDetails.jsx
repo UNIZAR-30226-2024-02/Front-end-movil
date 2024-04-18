@@ -10,7 +10,7 @@ export default function PlayerDetails({ route }) {
     //havcer para eliminar amigo
     try {
       const response = await axios.delete(
-        'http://192.168.79.96:4000/amistad/'+friend, // Replace with your server's URL
+        'http://192.168.32.96:4000/amistad/'+friend, // Replace with your server's URL
         { headers: { Authorization: token } }
         
       );
@@ -25,7 +25,7 @@ export default function PlayerDetails({ route }) {
   const handleChat = async () => {
     try {
       const response = await axios.post(
-        'http://192.168.79.96:4000/chats/crearChat', // Replace with your server's URL
+        'http://192.168.32.96:4000/chats/crearChat', // Replace with your server's URL
         { nombreChat: `Chat con ${friend}`, usuarios: [friend] },
         { headers: { Authorization: token } }
       );

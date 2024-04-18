@@ -15,7 +15,7 @@ export default function App({ navigation }) {
       // Handle login logic here
       // Assuming login is successful, navigate to the "Inicial" screen
       try {
-        const response = await axios.post('http://192.168.79.96:4000/login', {
+        const response = await axios.post('http://192.168.32.96:4000/login', {
           id: username,
           password: password,
         });

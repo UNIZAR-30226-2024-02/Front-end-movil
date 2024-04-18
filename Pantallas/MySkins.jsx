@@ -10,7 +10,7 @@ export default function MisSkins({ navigation, route }) {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          'http://192.168.79.96:4000/misSkins/enPropiedad', // Replace with your server's URL
+          'http://192.168.32.96:4000/misSkins/enPropiedad', // Replace with your server's URL
           { headers: { Authorization: token } }
         );
         setSkins(response.data);
@@ -25,7 +25,7 @@ export default function MisSkins({ navigation, route }) {
 
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {
-    const selectedSkin = skins.find((skin) => skin.id === skinId);
+    const selectedSkin = skins.find((skin) => skin._id === skinId);
     navigation.navigate('MySkinDetailScreen', { skin: selectedSkin, token: token });
   };
 
@@ -34,9 +34,9 @@ export default function MisSkins({ navigation, route }) {
       <ScrollView contentContainerStyle={styles.container}>
         {skins.map((skin) => (
           <TouchableOpacity
-            key={skin.id}
+            key={skin._id}
             style={styles.skinItem}
-            onPress={() => handleSkinPress(skin.id)}
+            onPress={() => handleSkinPress(skin._id)}
           >
             <Image source={{ uri: skin.path }} style={styles.skinImage} />
             <View style={styles.skinDetails}>
