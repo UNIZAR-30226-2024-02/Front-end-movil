@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity,ImageBackground } from 'react-native';
 import axios from 'axios';
+import { IP } from '../config';
 
 export default function PlayerDetails({ route }) {
   const {friend,token} = route.params;
@@ -10,7 +11,7 @@ export default function PlayerDetails({ route }) {
     //havcer para eliminar amigo
     try {
       const response = await axios.delete(
-        'http://192.168.32.96:4000/amistad/'+friend, // Replace with your server's URL
+        IP+'/amistad/'+friend, // Replace with your server's URL
         { headers: { Authorization: token } }
         
       );
@@ -25,7 +26,7 @@ export default function PlayerDetails({ route }) {
   const handleChat = async () => {
     try {
       const response = await axios.post(
-        'http://192.168.32.96:4000/chats/crearChat', // Replace with your server's URL
+        IP+'/chats/crearChat', // Replace with your server's URL
         { nombreChat: `Chat con ${friend}`, usuarios: [friend] },
         { headers: { Authorization: token } }
       );

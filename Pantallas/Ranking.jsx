@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, Text, StyleSheet, ImageBackground, View } from 'react-native';
 import axios from 'axios';
+import { IP } from '../config';
 
 export default function Ranking({ route }) {
 
@@ -14,7 +15,7 @@ export default function Ranking({ route }) {
 
   const fetchRankingData = async () => {
     try {
-      const response = await axios.get('http://192.168.32.96:4000/ranking',{headers: {
+        const response = await axios.get(IP+'/ranking',{headers: {
         'Authorization': `${token}`
       }});
       setRankingData(response.data);

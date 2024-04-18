@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native'; // Import ImageBackground
 import { useNavigation } from '@react-navigation/native';
+import { IP } from '../config';
 
 export default function Home() {
   const navigation = useNavigation();

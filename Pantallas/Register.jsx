@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { IP } from '../config';
 
 export default function Register({ navigation }) {
   const { width, height } = useWindowDimensions();
@@ -24,7 +25,7 @@ export default function Register({ navigation }) {
               return;
             } else{
               try {
-                const response = await axios.post('http://192.168.32.96:4000/register', {
+                  const response = await axios.post(IP+'/register', {
                   idUsuario: idUsuario,
                   password: password,
                   correo: correo, // Add email here if needed

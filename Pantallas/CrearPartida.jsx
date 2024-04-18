@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Alert } from 'react-native';
 import axios from 'axios';
+import { IP } from '../config';
 
 export default function CrearPartida({navigation,route}) {
   // State variables to store game settings
@@ -24,7 +25,7 @@ export default function CrearPartida({navigation,route}) {
 
         const privacidad = !!password; // !!password will convert password to a boolean value
 
-        const response = await axios.post('http://192.168.32.96:4000/nuevaPartida',{
+        const response = await axios.post(IP+'/nuevaPartida',{
           privacidad: privacidad,
           num: numPlayers,
           nombre: gameName,

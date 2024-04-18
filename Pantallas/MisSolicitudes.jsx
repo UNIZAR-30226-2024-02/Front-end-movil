@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Image, ImageBackground, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import axios from 'axios';
+import { IP } from '../config';
 
 export default function FriendshipRequests({ navigation,route }){
   const { token } = route.params;
@@ -10,7 +11,7 @@ export default function FriendshipRequests({ navigation,route }){
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://192.168.32.96:4000/amistad/listarSolicitudes', {
+        const response = await axios.get(IP+'/amistad/listarSolicitudes', {
         headers: {
           Authorization: token,
         },

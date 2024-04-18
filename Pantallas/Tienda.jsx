@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, Image, ImageBackground, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import axios from 'axios';
+import { IP } from '../config';
 
 export default function Tienda({ navigation, route }) {
   const { token } = route.params;
@@ -10,12 +11,11 @@ export default function Tienda({ navigation, route }) {
     const fetchData = async () => {
       try {
         const response = await axios.post(
-          'http://192.168.32.96:4000/tienda', // Replace with your server's URL
+          IP+'/tienda', // Replace with your server's URL
           { sortBy: 'precio', precioMin: 0, precioMax: 100000000, tipo: undefined },
           { headers: { Authorization: token } }
         );
         setSkins(response.data);
-        console.log(response.data)
       } catch (error) {
         console.error('Error fetching skins:', error);
       }
@@ -26,7 +26,7 @@ export default function Tienda({ navigation, route }) {
 
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {
-    const selectedSkin = skins.find((skin) => skin._id === skinId);
+    const selectedSkin = skins.find((skin) => skin.id === skinId);
     navigation.navigate('SkinDetailScreen', { skin: selectedSkin, token: token });
   };
 
@@ -35,11 +35,11 @@ export default function Tienda({ navigation, route }) {
       <ScrollView contentContainerStyle={styles.container}>
         {skins.map((skin) => (
           <TouchableOpacity
-            key={skin._id}
+            key={skin.id}
             style={styles.skinItem}
-            onPress={() => handleSkinPress(skin._id)}
+            onPress={() => handleSkinPress(skin.id)}
           >
-            <Image source={{uri: skin.path} } style={styles.skinImage} />
+            <Image source={{ uri: skin.path }} style={styles.skinImage} />
             <View style={styles.skinDetails}>
               <Text style={styles.skinName}>{skin.idSkin}</Text>
               <Text style={styles.skinDescription}>{skin.tipo}</Text>

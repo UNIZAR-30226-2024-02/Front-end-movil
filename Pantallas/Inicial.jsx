@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, ImageBackground } from 'react-native';
+import { IP } from '../config';
 
 export default function Inicial({ navigation,route }) {
 

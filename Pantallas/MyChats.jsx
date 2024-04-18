@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
 import axios from 'axios';
+import { IP } from '../config';
 
 export default function FriendshipRequests({ navigation, route }) {
   const { token } = route.params;
@@ -9,7 +10,7 @@ export default function FriendshipRequests({ navigation, route }) {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const response = await axios.get('http://192.168.32.96:4000/chats/listar', {
+        const response = await axios.get(IP+'/chats/listar', {
           headers: {
             Authorization: token,
           },
@@ -24,8 +25,8 @@ export default function FriendshipRequests({ navigation, route }) {
     fetchChats();
   }, [token]);
 
-  const handleChatPress = (c) => {
-    navigation.navigate('Chat',{ chat:c, token: token });
+  const handleChatPress = (chatId) => {
+    // Navigate to chat details screen or implement your logic here
   };
 
   return (
@@ -38,7 +39,7 @@ export default function FriendshipRequests({ navigation, route }) {
           {chats.map((chat) => (
             <TouchableOpacity
               key={chat.nombre}
-              onPress={() => handleChatPress(chat)}>
+              onPress={() => handleChatPress(chat.nombre)}>
               <View style={styles.tableRow}>
                 <Text style={styles.chatId}>{chat.nombre}</Text>
               </View>

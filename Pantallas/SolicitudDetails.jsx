@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity,ImageBackground } from 'react-native';
 import axios from 'axios';
+import { IP } from '../config';
 
 export default function SolicitudDetails({ route }) {
   const {solicitante,token} = route.params;
@@ -11,7 +12,7 @@ export default function SolicitudDetails({ route }) {
     // Implementación para confirmar amistad
     try {
       const response = await axios.post(
-        'http://192.168.32.96:4000/amistad',
+        IP+'/amistad',
         { idDestino: solicitante },
         { headers: { Authorization: token } }
       );

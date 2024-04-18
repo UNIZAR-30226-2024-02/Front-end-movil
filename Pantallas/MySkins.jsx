@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, Image, ImageBackground, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import axios from 'axios';
+import { IP } from '../config';
 
 export default function MisSkins({ navigation, route }) {
   const { token } = route.params;
@@ -10,7 +11,7 @@ export default function MisSkins({ navigation, route }) {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          'http://192.168.32.96:4000/misSkins/enPropiedad', // Replace with your server's URL
+          IP+'/misSkins/enPropiedad', // Replace with your server's URL
           { headers: { Authorization: token } }
         );
         setSkins(response.data);
@@ -25,7 +26,7 @@ export default function MisSkins({ navigation, route }) {
 
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {
-    const selectedSkin = skins.find((skin) => skin._id === skinId);
+    const selectedSkin = skins.find((skin) => skin.id === skinId);
     navigation.navigate('MySkinDetailScreen', { skin: selectedSkin, token: token });
   };
 
@@ -34,9 +35,9 @@ export default function MisSkins({ navigation, route }) {
       <ScrollView contentContainerStyle={styles.container}>
         {skins.map((skin) => (
           <TouchableOpacity
-            key={skin._id}
+            key={skin.id}
             style={styles.skinItem}
-            onPress={() => handleSkinPress(skin._id)}
+            onPress={() => handleSkinPress(skin.id)}
           >
             <Image source={{ uri: skin.path }} style={styles.skinImage} />
             <View style={styles.skinDetails}>

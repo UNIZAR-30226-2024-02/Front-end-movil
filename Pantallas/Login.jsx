@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { IP } from '../config';
 
 export default function App({ navigation }) {
   const { width, height } = useWindowDimensions();
@@ -15,7 +16,7 @@ export default function App({ navigation }) {
       // Handle login logic here
       // Assuming login is successful, navigate to the "Inicial" screen
       try {
-        const response = await axios.post('http://192.168.32.96:4000/login', {
+          const response = await axios.post(IP+'/login', {
           id: username,
           password: password,
         });

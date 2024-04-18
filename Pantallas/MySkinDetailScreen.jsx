@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
+import { IP } from '../config';
 
 export default function MySkinDetailScreen({ route }) {
   const { skin,token} = route.params;
@@ -14,7 +15,7 @@ export default function MySkinDetailScreen({ route }) {
     console.log('Token:', token); // Access token
     try {
       const response = await axios.post(
-        'http://192.168.32.96:4000/tienda/comprar', // Replace with your server's URL
+        IP+'/tienda/comprar', // Replace with your server's URL
         { idSkin: skin.idSkin },
         { headers: { Authorization: token } }
         

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Image, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { IP } from '../config';
 
 export default function RiskMap() {
   // Define event handlers for touch events
