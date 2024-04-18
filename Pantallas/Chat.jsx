@@ -14,7 +14,7 @@ export default function Chat({ navigation, route }) {
   const fetchMessages = async () => {
     try {
       const response = await axios.post(
-        'http://192.168.32.96:4000/chats/obtenerMensajes',
+        IP+'/chats/obtenerMensajes',
         { OIDChat: chat.oid },
         { headers: { Authorization: token } }
       );

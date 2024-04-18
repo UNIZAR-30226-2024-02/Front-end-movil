@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
+import { images } from '../assets/Skins_image'
 
 export default function SkinDetailScreen({ route}) {
   const { skin,token} = route.params;
@@ -29,7 +30,7 @@ export default function SkinDetailScreen({ route}) {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Image source={skin.path} style={styles.skinImage} />
+        <Image source={images.find(item => item.index === skin.idSkin).img} style={styles.skinImage} />
         <View style={styles.detailsContainer}>
           <Text style={styles.skinName}>{skin.idSkin}</Text>
           <Text style={styles.skinDescription}>{skin.tipo}</Text>
