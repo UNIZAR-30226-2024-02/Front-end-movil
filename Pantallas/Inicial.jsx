@@ -4,7 +4,7 @@ import { IP } from '../config';
 
 export default function Inicial({ navigation,route }) {
 
-  const { token } = route.params;
+  const { id,token } = route.params;
   console.log('Token:', token);
   const goToCrearPartida = () => {
     // Navigate to "Crear Partida" screen
@@ -23,7 +23,7 @@ export default function Inicial({ navigation,route }) {
 
   const goToPerfil = () => {
     // Navigate to "Perfil" screen
-    navigation.navigate('Perfil', { token: token });
+    navigation.navigate('Perfil', { id:id,token: token });
   };
 
   const goToFindPlayer = () => {

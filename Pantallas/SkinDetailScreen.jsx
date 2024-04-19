@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
 import { images } from '../assets/Skins_image'
@@ -28,19 +28,21 @@ export default function SkinDetailScreen({ route}) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Image source={images.find(item => item.index === skin.idSkin).img} style={styles.skinImage} />
-        <View style={styles.detailsContainer}>
-          <Text style={styles.skinName}>{skin.idSkin}</Text>
-          <Text style={styles.skinDescription}>{skin.tipo}</Text>
+    <ImageBackground source={require('../assets/tienda.jpg')} style={styles.background}>
+      <View style={styles.container}>
+        <View style={styles.content}>
+          <Image source={images.find(item => item.index === skin.idSkin).img} style={styles.skinImage} />
+          <View style={styles.detailsContainer}>
+            <Text style={styles.skinName}>{skin.idSkin}</Text>
+            <Text style={styles.skinDescription}>{skin.tipo}</Text>
+          </View>
         </View>
+        <TouchableOpacity style={styles.buyButton} onPress={handleBuyButtonPress}>
+          <Text style={styles.buyButtonText}>Buy</Text>
+          <Text style={styles.priceText}>{skin.precio}</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.buyButton} onPress={handleBuyButtonPress}>
-        <Text style={styles.buyButtonText}>Buy</Text>
-        <Text style={styles.priceText}>{skin.precio}</Text>
-      </TouchableOpacity>
-    </View>
+    </ImageBackground>
   );
 }
 
@@ -52,6 +54,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 50,
     
+  },
+  background: {
+    flex: 1,
+    resizeMode: 'cover',
+    justifyContent: 'center',
   },
   content: {
     flexDirection: 'row',

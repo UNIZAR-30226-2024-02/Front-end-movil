@@ -4,7 +4,7 @@ import axios from 'axios';
 import { IP } from '../config';
 
 export default function FriendshipRequests({ navigation, route }) {
-  const { token } = route.params;
+  const { id,token } = route.params;
   const [chats, setChats] = useState([]);
   
   useEffect(() => {
@@ -25,8 +25,9 @@ export default function FriendshipRequests({ navigation, route }) {
     fetchChats();
   }, [token]);
 
-  const handleChatPress = (chatId) => {
+  const handleChatPress = (c) => {
     // Navigate to chat details screen or implement your logic here
+    navigation.navigate('Chat',{ chat:c, id:id, token: token });
   };
 
   return (
@@ -39,7 +40,7 @@ export default function FriendshipRequests({ navigation, route }) {
           {chats.map((chat) => (
             <TouchableOpacity
               key={chat.nombre}
-              onPress={() => handleChatPress(chat.nombre)}>
+              onPress={() => handleChatPress(chat)}>
               <View style={styles.tableRow}>
                 <Text style={styles.chatId}>{chat.nombre}</Text>
               </View>

@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal,ImageBackground } from 'react-native';
 import axios from 'axios';
+import { IP } from '../config';
 
 export default function Chat({ navigation, route }) {
-  const { chat, token } = route.params;
+  const [isOptionsMenuVisible, setOptionsMenuVisible] = useState(false);
+  const { chat, id ,token } = route.params;
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -33,7 +35,7 @@ export default function Chat({ navigation, route }) {
     if (message.trim() !== '') {
       try {
         await axios.post(
-          'http://192.168.32.96:4000/chats/enviarMensaje',
+          IP+'/chats/enviarMensaje',
           {
             OID: chat.oid,
             textoMensaje: message
@@ -52,7 +54,7 @@ export default function Chat({ navigation, route }) {
     try {
       // Send a request to the server to list participants
       const response = await axios.post(
-        'http://192.168.32.96:4000/chats/obtenerParticipantes',
+        IP+'/chats/obtenerParticipantes',
         { OIDChat: chat.oid },
         { headers: { Authorization: token } }
       );
@@ -84,7 +86,7 @@ export default function Chat({ navigation, route }) {
   
     try {
       const response = await axios.post(
-        'http://192.168.32.96:4000/chats/salirDeChat',
+        IP+'/chats/salirDeChat',
         { OID: chat.oid },
         { headers: { Authorization: token } }
       );
@@ -102,95 +104,117 @@ export default function Chat({ navigation, route }) {
     scrollViewRef.current.scrollToEnd({ animated: true });
   };
 
+  const handleOptionsMenuPress = () => {
+    setOptionsMenuVisible(!isOptionsMenuVisible); // Cambia la visibilidad del menú
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{chat.nombre}</Text>
-        <View style={styles.options}>
-          <TouchableOpacity style={styles.optionButton} onPress={handleSalirChat}>
-            <Text style={styles.optionButtonText}>Salir del chat</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.optionButton} onPress={handleListarParticipantes}>
-            <Text style={styles.optionButtonText}>Listar Participantes</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.messageContainer}
-        contentContainerStyle={styles.messageContent}
-        onContentSizeChange={scrollToBottom}>
-        {messages.map((msg, index) => (
-          <View key={index} style={msg.idUsuario === 'user' ? styles.userMessage : styles.otherMessage}>
-            <Text>{msg.texto}</Text>
+    <ImageBackground source={require('../assets/img-0vyoZ2EwbuNtpdymzDNJY.jpeg')} style={styles.background}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>{chat.nombre}</Text>
+          <View style={styles.options}>
+            <TouchableOpacity style={styles.optionsButton} onPress={handleOptionsMenuPress}>
+              <Text style={styles.optionsText}>...</Text>
+            </TouchableOpacity>
           </View>
-        ))}
-      </ScrollView>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Type a message..."
-          value={message}
-          onChangeText={setMessage}
-        />
-        <TouchableOpacity style={styles.sendButton} onPress={handleMessageSend}>
-          <Text style={styles.sendButtonText}>Send</Text>
-        </TouchableOpacity>
-      </View>
-      <Modal
-        visible={showModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={handleCancelarSalir}>
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalText}>Seguro que quereis salir del chat?</Text>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.cancelButton} onPress={handleCancelarSalir}>
-                <Text style={styles.buttonText}>No</Text>
+        </View>
+        <Modal
+          visible={isOptionsMenuVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={handleOptionsMenuPress}>
+          <View style={styles.modalContainer}>
+            <View style={styles.optionsMenu}>
+              <TouchableOpacity style={styles.optionItem} onPress={(handleSalirChat)}>
+                <Text style={styles.optionText}>Salir del chat</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmarSalir}>
-                <Text style={styles.buttonText}>Si</Text>
+              <TouchableOpacity style={styles.optionItem} onPress={(handleListarParticipantes)}>
+                <Text style={styles.optionText}>Listar Participantes del Chat</Text>
               </TouchableOpacity>
             </View>
           </View>
-        </View>
-      </Modal>
-
-      <Modal
-        visible={showParticipantListModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={handleSalirListarP}>
-        <View style={styles.modalBackground}>
-            <View style={styles.modalContent}>
-            <Text style={styles.modalText}>Lista de Participantes</Text>
-            <ScrollView>
-                {participantList.map((participant, index) => (
-                <Text key={index}>{participant}</Text>
-                // Replace 'name' with the key you want to display for each participant
-                ))}
-            </ScrollView>
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.cancelButton} onPress={handleSalirListarP}>
-                <Text style={styles.buttonText}>Salir</Text>
-                </TouchableOpacity>
-            </View>
-            </View>
-        </View>
         </Modal>
-    </View>
+        <Modal
+          visible={showModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={handleCancelarSalir}>
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalText}>Seguro que quereis salir del chat?</Text>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.cancelButton} onPress={handleCancelarSalir}>
+                  <Text style={styles.buttonText}>No</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmarSalir}>
+                  <Text style={styles.buttonText}>Si</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+        <Modal
+          visible={showParticipantListModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={handleSalirListarP}>
+          <View style={styles.modalBackground}>
+              <View style={styles.modalContent}>
+              <Text style={styles.modalText}>Lista de Participantes</Text>
+              <ScrollView>
+                  {participantList.map((participant, index) => (
+                  <Text key={index}>{participant}</Text>
+                  // Replace 'name' with the key you want to display for each participant
+                  ))}
+              </ScrollView>
+              <View style={styles.buttonContainer}>
+                  <TouchableOpacity style={styles.cancelButton} onPress={handleSalirListarP}>
+                  <Text style={styles.buttonText}>Salir</Text>
+                  </TouchableOpacity>
+              </View>
+              </View>
+          </View>
+          </Modal>
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.messageContainer}
+          contentContainerStyle={styles.messageContent}
+          onContentSizeChange={scrollToBottom}>
+          {messages.map((msg, index) => (
+            <View key={index} style={msg.idUsuario === id ? styles.userMessage : styles.otherMessage}>
+              <Text>{msg.texto}</Text>
+            </View>
+          ))}
+        </ScrollView>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Type a message..."
+            value={message}
+            onChangeText={setMessage}
+          />
+          <TouchableOpacity style={styles.sendButton} onPress={handleMessageSend}>
+            <Text style={styles.sendButtonText}>Send</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    resizeMode: 'cover',
+    justifyContent: 'center',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 20,
   },
   header: {
@@ -198,6 +222,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
+    backgroundColor: '#4CAF50',
   },
   title: {
     fontSize: 24,
@@ -224,7 +249,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   userMessage: {
-    backgroundColor: '#DCF8C6',
+    backgroundColor: '#4CAF50',
     padding: 10,
     alignSelf: 'flex-end',
     borderRadius: 10,
@@ -240,7 +265,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   otherMessage: {
-    backgroundColor: '#E5E5EA',
+    backgroundColor: '#fff',
     padding: 10,
     alignSelf: 'flex-start',
     borderRadius: 10,
@@ -266,6 +291,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     marginRight: 10,
+    backgroundColor: '#fff',
   },
   sendButton: {
     backgroundColor: '#4CAF50',
@@ -313,4 +339,40 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
+  optionsButton: {
+    paddingHorizontal: 30,
+  },
+  optionsText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff', // Color de texto verde
+  },
+  optionsMenu: {
+    position: 'absolute',
+    top:25,
+    right:20,
+    backgroundColor: '#4CAF50',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  optionItem: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  optionText: {
+    fontSize: 16,
+  },
 });
+
+
+

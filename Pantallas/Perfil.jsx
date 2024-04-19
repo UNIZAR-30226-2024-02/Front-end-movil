@@ -3,9 +3,9 @@ import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity }
 
 export default function Perfil({ navigation,route }) {
 
-  const { token } = route.params;
+  const { id,token } = route.params;
   const goToMyData = () => {
-    navigation.navigate('MyChats', { token: token });
+    navigation.navigate('MyChats', { id:id, token: token });
   };
 
   const goToMySkins = () => {
