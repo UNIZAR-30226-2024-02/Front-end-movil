@@ -11,6 +11,7 @@ export default function Chat({ navigation, route }) {
   const [showModal, setShowModal] = useState(false);
   const [participantList, setParticipantList] = useState([]);
   const [showParticipantListModal, setShowParticipantListModal] = useState(false);
+  const [count, setCount] = useState(0);
   const scrollViewRef = useRef();
   console.log('Chat',chat.oid)
   const fetchMessages = async () => {
@@ -29,7 +30,13 @@ export default function Chat({ navigation, route }) {
 
   useEffect(() => {
     fetchMessages();
+
+    const intervalId = setInterval(fetchMessages, 1000);
+
+    return () => clearInterval(intervalId);
   }, []);
+
+
 
   const handleMessageSend = async () => {
     if (message.trim() !== '') {

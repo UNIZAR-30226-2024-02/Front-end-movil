@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, ScrollView, Image, ImageBackground, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
+import { images } from '../assets/Skins_image'
 
 export default function MisSkins({ navigation, route }) {
   const { token } = route.params;
@@ -15,7 +16,6 @@ export default function MisSkins({ navigation, route }) {
           { headers: { Authorization: token } }
         );
         setSkins(response.data);
-        console.log(response.data)
       } catch (error) {
         console.error('Error fetching skins:', error);
       }
@@ -26,24 +26,23 @@ export default function MisSkins({ navigation, route }) {
 
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {
-    const selectedSkin = skins.find((skin) => skin.id === skinId);
+    const selectedSkin = skins.find((skin) => skin._id === skinId);
     navigation.navigate('MySkinDetailScreen', { skin: selectedSkin, token: token });
   };
 
   return (
-    <ImageBackground source={require('../assets/tienda.jpg')} style={styles.background}>
+    <ImageBackground source={require('../assets/img-2d3IDaHACsstyAx6hCGZP.jpeg')} style={styles.background}>
       <ScrollView contentContainerStyle={styles.container}>
         {skins.map((skin) => (
           <TouchableOpacity
-            key={skin.id}
+            key={skin._id}
             style={styles.skinItem}
-            onPress={() => handleSkinPress(skin.id)}
+            onPress={() => handleSkinPress(skin._id)}
           >
-            <Image source={{ uri: skin.path }} style={styles.skinImage} />
+            <Image source={images.find(item => item.index === skin.idSkin).img} style={styles.skinImage}/>
             <View style={styles.skinDetails}>
               <Text style={styles.skinName}>{skin.idSkin}</Text>
               <Text style={styles.skinDescription}>{skin.tipo}</Text>
-              <Text style={styles.skinPrice}>{skin.precio}</Text>
             </View>
           </TouchableOpacity>
         ))}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity,ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity,ImageBackground, Alert } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
 
@@ -15,6 +15,7 @@ export default function PlayerDetails({ route }) {
         { headers: { Authorization: token } }
         
       );
+      Alert.alert("Sucess.Eliminado de la lista de amigos");
       console.log('Response:', response.data);
       
     } catch (error) {
@@ -31,6 +32,7 @@ export default function PlayerDetails({ route }) {
         { headers: { Authorization: token } }
       );
       console.log('Chat created:', response.data);
+      Alert.alert("Sucess.Chat creado correctamente.");
       // Handle success message or navigate to chat screen if needed
     } catch (error) {
       console.error('Error creating chat:', error);
@@ -39,7 +41,6 @@ export default function PlayerDetails({ route }) {
   };
 
   return (
-    //poner el isFriend a true si ya es mi amigo, mirando en la BBDD
     <View style={styles.container}>
     <View style={styles.content}>
       <View style={styles.detailsContainer}>

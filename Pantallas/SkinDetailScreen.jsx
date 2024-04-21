@@ -1,12 +1,30 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ImageBackground,Alert } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
 import { images } from '../assets/Skins_image'
 
 export default function SkinDetailScreen({ route}) {
   const { skin,token} = route.params;
+  const [misSkin,setSkinsMySkins]=useState([]);
   console.log('Token:', token); // Access token
+  const fetchData = async () => {
+    try {
+      const responseMy = await axios.get(
+        IP+'/misSkins/enPropiedad', // Replace with your server's URL
+        { headers: { Authorization: token } }
+      );
+      setSkinsMySkins(responseMy.data);
+    } catch (error) {
+      console.error('Error fetching skins:', error);
+    }
+  };
+
+
+  useEffect(() => {
+   
+    fetchData();
+  }, [token]);
 
   const handleBuyButtonPress = async() => {
     // Handle buy button press event here
@@ -21,8 +39,10 @@ export default function SkinDetailScreen({ route}) {
         
       );
       console.log('Response:', response.data);
-      
+      Alert.alert('Éxito', 'La skin se ha comprado correctamente.');
+      fetchData();
     } catch (error) {
+      Alert.alert('Error', 'La compra de la skin no se ha podido realizar.');
       console.error('Error fetching skins:', error);
     }
   };
@@ -37,10 +57,20 @@ export default function SkinDetailScreen({ route}) {
             <Text style={styles.skinDescription}>{skin.tipo}</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.buyButton} onPress={handleBuyButtonPress}>
-          <Text style={styles.buyButtonText}>Buy</Text>
+        { misSkin.length > 0 ?
+        ( <TouchableOpacity 
+          style={styles.buyButton} 
+          onPress={misSkin.some(s => s._id === skin._id) ? null : handleBuyButtonPress}
+          disabled={misSkin.some(s => s._id === skin._id)}
+        >
+          <Text style={styles.priceText}>
+            {misSkin.length > 0 ? 
+              (misSkin.some(s => s._id === skin._id) ? 'Adquirido' : skin.precio) 
+              : skin.precio}
+          </Text>
+        </TouchableOpacity>) : (<TouchableOpacity style={styles.buyButton} onPress={handleBuyButtonPress}>
           <Text style={styles.priceText}>{skin.precio}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity>)}
       </View>
     </ImageBackground>
   );

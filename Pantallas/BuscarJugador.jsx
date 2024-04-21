@@ -21,7 +21,7 @@ export default function App({ navigation ,route }) {
         {idDestino: username},
         { headers: { Authorization: token } }
       );
-
+        Alert.alert('Éxito', 'La petición de amistad se ha realizado correctamente');
       } catch (error) {
         console.error('Error:', error);
         Alert.alert('Error', 'Ha ocurrido un error al realizar la peticon de amistad');

@@ -7,22 +7,35 @@ import { images } from '../assets/Skins_image'
 export default function Tienda({ navigation, route }) {
   const { token } = route.params;
   const [skins, setSkins] = useState([]);
+  const [misSkin,setSkinsMySkins]=useState([]);
+  const [money, setMoney]=useState({});
   console.log('Token:', token); // Access token
+  const fetchData = async () => {
+    try {
+      const response = await axios.post(
+        IP+'/tienda', // Replace with your server's URL
+        { sortBy: 'precio', precioMin: 0, precioMax: 100000000, tipo: undefined },
+        { headers: { Authorization: token } }
+      );
+      setSkins(response.data);
+      const responseMy = await axios.get(
+        IP+'/misSkins/enPropiedad', // Replace with your server's URL
+        { headers: { Authorization: token } }
+      );
+      setSkinsMySkins(responseMy.data);
+      console.log(misSkin);
+      const responseMoney=await axios.get(
+        IP+'/tienda/dineroUser', // Replace with your server's URL
+        { headers: { Authorization: token } }
+      );
+      setMoney(responseMoney.data);
+      console.log("Money: ",responseMoney.data);
+    } catch (error) {
+      console.error('Error fetching skins:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.post(
-          IP+'/tienda', // Replace with your server's URL
-          { sortBy: 'precio', precioMin: 0, precioMax: 100000000, tipo: undefined },
-          { headers: { Authorization: token } }
-        );
-        setSkins(response.data);
-      } catch (error) {
-        console.error('Error fetching skins:', error);
-      }
-    };
-
     fetchData();
   }, [token]);
 
@@ -34,6 +47,9 @@ export default function Tienda({ navigation, route }) {
 
   return (
     <ImageBackground source={require('../assets/tienda.jpg')} style={styles.background}>
+      <View style={styles.moneyContainer}>
+        <Text style={styles.moneyText}>Dinero: {money.dinero}</Text>
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
         {skins.map((skin) => (
           <TouchableOpacity
@@ -45,7 +61,7 @@ export default function Tienda({ navigation, route }) {
             <View style={styles.skinDetails}>
               <Text style={styles.skinName}>{skin.idSkin}</Text>
               <Text style={styles.skinDescription}>{skin.tipo}</Text>
-              <Text style={styles.skinPrice}>{skin.precio}</Text>
+              <Text style={styles.skinPrice}>{misSkin.some(s => s._id === skin._id) ? 'Adquirido' : skin.precio}</Text>
             </View>
           </TouchableOpacity>
         ))}
@@ -59,7 +75,16 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 10, 
+  },
+  moneyContainer: {
+    marginTop: 30, 
+    marginLeft: 15, 
+  },
+  moneyText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#ffffff',
   },
   background: {
     flex: 1,

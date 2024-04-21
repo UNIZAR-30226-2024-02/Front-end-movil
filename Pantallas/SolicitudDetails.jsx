@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity,ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity,ImageBackground, Alert } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
 
@@ -16,6 +16,7 @@ export default function SolicitudDetails({ route }) {
         { idDestino: solicitante },
         { headers: { Authorization: token } }
       );
+      Alert.alert('Sucess.La petición se ha aceptado,ahora sois amigos.');
       console.log('Response:', response.data);
     } catch (error) {
       console.error('Error friend:', error);
