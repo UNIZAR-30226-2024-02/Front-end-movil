@@ -60,12 +60,12 @@ export default function SkinDetailScreen({ route}) {
         { misSkin.length > 0 ?
         ( <TouchableOpacity 
           style={styles.buyButton} 
-          onPress={misSkin.some(s => s._id === skin._id) ? null : handleBuyButtonPress}
-          disabled={misSkin.some(s => s._id === skin._id)}
+          onPress={(misSkin.filter(item => item !== null)).some(s => s._id === skin._id) ? null : handleBuyButtonPress}
+          disabled={(misSkin.filter(item => item !== null)).some(s => s._id === skin._id)}
         >
           <Text style={styles.priceText}>
-            {misSkin.length > 0 ? 
-              (misSkin.some(s => s._id === skin._id) ? 'Adquirido' : skin.precio) 
+            {(misSkin.filter(item => item !== null)).length > 0 ? 
+              ((misSkin.filter(item => item !== null)).some(s => s._id === skin._id) ? 'Adquirido' : skin.precio) 
               : skin.precio}
           </Text>
         </TouchableOpacity>) : (<TouchableOpacity style={styles.buyButton} onPress={handleBuyButtonPress}>

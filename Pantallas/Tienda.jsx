@@ -18,12 +18,12 @@ export default function Tienda({ navigation, route }) {
         { headers: { Authorization: token } }
       );
       setSkins(response.data);
+      console.log("Skins: ",response.data);
       const responseMy = await axios.get(
         IP+'/misSkins/enPropiedad', // Replace with your server's URL
         { headers: { Authorization: token } }
       );
       setSkinsMySkins(responseMy.data);
-      console.log(misSkin);
       const responseMoney=await axios.get(
         IP+'/tienda/dineroUser', // Replace with your server's URL
         { headers: { Authorization: token } }
@@ -61,7 +61,7 @@ export default function Tienda({ navigation, route }) {
             <View style={styles.skinDetails}>
               <Text style={styles.skinName}>{skin.idSkin}</Text>
               <Text style={styles.skinDescription}>{skin.tipo}</Text>
-              <Text style={styles.skinPrice}>{misSkin.some(s => s._id === skin._id) ? 'Adquirido' : skin.precio}</Text>
+              <Text style={styles.skinPrice}>{(misSkin.filter(item => item !== null)).some(s => s._id === skin._id) ? 'Adquirido' : skin.precio}</Text>
             </View>
           </TouchableOpacity>
         ))}

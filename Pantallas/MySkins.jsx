@@ -16,6 +16,7 @@ export default function MisSkins({ navigation, route }) {
           { headers: { Authorization: token } }
         );
         setSkins(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error('Error fetching skins:', error);
       }
@@ -26,14 +27,14 @@ export default function MisSkins({ navigation, route }) {
 
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {
-    const selectedSkin = skins.find((skin) => skin._id === skinId);
+    const selectedSkin = (skins.filter(item => item !== null)).find((skin) => skin._id === skinId);
     navigation.navigate('MySkinDetailScreen', { skin: selectedSkin, token: token });
   };
 
   return (
     <ImageBackground source={require('../assets/img-2d3IDaHACsstyAx6hCGZP.jpeg')} style={styles.background}>
       <ScrollView contentContainerStyle={styles.container}>
-        {skins.map((skin) => (
+        {(skins.filter(item => item !== null)).map((skin) => (
           <TouchableOpacity
             key={skin._id}
             style={styles.skinItem}

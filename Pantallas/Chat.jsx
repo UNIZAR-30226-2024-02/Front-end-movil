@@ -30,10 +30,6 @@ export default function Chat({ navigation, route }) {
 
   useEffect(() => {
     fetchMessages();
-
-    const intervalId = setInterval(fetchMessages, 1000);
-
-    return () => clearInterval(intervalId);
   }, []);
 
 

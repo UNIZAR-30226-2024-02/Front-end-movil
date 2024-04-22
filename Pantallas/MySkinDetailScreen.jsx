@@ -55,18 +55,19 @@ export default function MySkinDetailScreen({ route }) {
             <Text style={styles.skinDescription}>{skin.tipo}</Text>
           </View>
         </View>
-        {skins._id === skin._id ? (
+        {skins && skins._id === skin._id ? (
           <View style={styles.buyButton}>
             <Text style={styles.buyButtonText}>Equipado</Text>
           </View>
         ) : (
-          <TouchableOpacity 
-            style={styles.buyButton} 
-            onPress={handleEquipadasPress}
-          >
-            <Text style={styles.buyButtonText}>Equipar</Text>
-          </TouchableOpacity>
-        )}
+            <TouchableOpacity 
+              style={styles.buyButton} 
+              onPress={handleEquipadasPress}
+            >
+              <Text style={styles.buyButtonText}>Equipar</Text>
+            </TouchableOpacity>
+          )
+        }
       </View>
     </ImageBackground>
   );
