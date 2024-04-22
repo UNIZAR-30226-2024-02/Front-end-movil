@@ -23,7 +23,7 @@ Para el funcionamiento de Expo Go, la red del dispositivo móvil debe ser la mis
 Instalar Dependencias:
 
 ```
-npm install
+yarn install
 ```
 
 ## Ejecución del proyecto
