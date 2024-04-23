@@ -36,6 +36,10 @@ export default function Inicial({ navigation,route }) {
     navigation.navigate('MisSolicitudes', { token: token });
   };
 
+  const goToMap = () => {
+    // Navigate to "Perfil" screen
+    navigation.navigate('RiskMap', { token: token });
+  }
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
@@ -57,6 +61,9 @@ export default function Inicial({ navigation,route }) {
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={goToFindSol}>
           <Text style={styles.buttonText}>Buscar Solicitudes</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={goToMap}>
+          <Text style={styles.buttonText}>MapaXD</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
