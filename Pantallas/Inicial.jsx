@@ -8,7 +8,7 @@ export default function Inicial({ navigation,route }) {
   console.log('Token:', token);
   const goToCrearPartida = () => {
     // Navigate to "Crear Partida" screen
-    navigation.navigate('CrearPartida', { token: token });
+    navigation.navigate('Lobby', { id:id,token: token });
   };
 
   const goToRanking = () => {
@@ -45,7 +45,7 @@ export default function Inicial({ navigation,route }) {
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
       <View style={styles.container}>
         <TouchableOpacity style={styles.button} onPress={goToCrearPartida}>
-          <Text style={styles.buttonText}>Crear Partida</Text>
+          <Text style={styles.buttonText}>Lobby</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={goToRanking}>
           <Text style={styles.buttonText}>Ranking</Text>
