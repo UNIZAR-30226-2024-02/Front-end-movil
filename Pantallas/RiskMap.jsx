@@ -17,6 +17,7 @@ export default function RiskMap() {
   *  Esto el svg, en react native no puedes meter directamente un svg, por lo que se tiene que hacer un componente que lo renderize
   *  Lo meto aqui para que el acceso a los datos sea mas facil.
   * 
+  *  Los territorios no he logrado identificarlos de ninguna otra manera mas que por el nombre y a pelo como esta aqui
   *  Es un coñazo, pero es lo que hay
   * 
   */
