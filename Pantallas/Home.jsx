@@ -14,6 +14,10 @@ export default function Home() {
     navigation.navigate('Register');
   };
 
+  const goToSockets = () => {
+    navigation.navigate('SocketsTest');
+  };
+
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage} >
       <View style={styles.container}>
@@ -22,6 +26,10 @@ export default function Home() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={goToRegister}>
           <Text style={styles.buttonText}>Register</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={goToSockets}>
+          <Text style={styles.buttonText}>Sockets</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
