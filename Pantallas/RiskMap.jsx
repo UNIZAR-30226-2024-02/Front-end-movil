@@ -11,11 +11,24 @@ export default function RiskMap() {
     onLoad();
   }, []);
 
+
+  /*
+  *
+  *  Esto el svg, en react native no puedes meter directamente un svg, por lo que se tiene que hacer un componente que lo renderize
+  *  Lo meto aqui para que el acceso a los datos sea mas facil.
+  * 
+  *  Es un coñazo, pero es lo que hay
+  * 
+  */
+
+  //Listener de los eventos del svg, De momento o hace nada
+  //TODO: Hacer que al hacer click en un territorio se ejecute la funcion swichState
   const eventListener = (key, event) => {
     console.log(key);
 
   }
 
+  //Esta fundion sirce para buscar el numero de tropas en un territorio y represetarlo en el svg
   const findTropas = (key) => {
     let tropa = tropasTest.find(tropa => tropa.terrainId === key);
     if (tropa) {
@@ -613,7 +626,7 @@ export default function RiskMap() {
     //console.log(jugadores);
   }
 
-  distribuirPiezas = () => {
+  const distribuirPiezas = () => {
     //console.log("Continentes", mapa)
     //console.log("Jugadores", jugadores)
     for(let continente of mapa){
@@ -631,6 +644,10 @@ export default function RiskMap() {
           //console.log(jugador.usuario)
           colocarTropas(territorio.nombre, svgDoc, 50, 50, jugador.usuario, true, false, territorio.tropas);
          }
+
+         //TODO: COMPRENDER ESTO Y MIRAR COMO HACERLO EN REACT NATIVE
+
+
          //let svgElement = this.svgDoc?.getElementById(territorio.nombre);
          /*let event;
          //console.log(territorio.nombre, svgElement);
@@ -685,7 +702,6 @@ export default function RiskMap() {
 
   const inicializarPartida = (partida) => {
     // Inicializa los atributos de la partida
-    console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
     
     jugadores = partida.jugadores;
     console.log(jugadores);
@@ -696,12 +712,17 @@ export default function RiskMap() {
     nombrePartida = partida.nombre;
     numJugadores = partida.jugadores.length;
     mapa = partida.mapa;
+
+    //TODO fetch mapa del back
     mapaStub();
 
     descartes = partida.descartes;
 
     ganador = partida.ganador;
     fase = partida.fase;
+
+
+    //TODO fetch cartas del back
     cartasStub();
 
     //turnoJugador = partida.jugadores[partida.turno % this.numJugadores];
@@ -713,11 +734,9 @@ export default function RiskMap() {
     partida = { _id: '1', maxJugadores: 3, nombre: 'Partida 1', fechaInicio: '2021-06-01T00:00:00.000Z', fechaFin: '2021-06-01T00:00:00.000Z'
     , password: '1234', ganador: null, turno: 0, jugadores: [{usuario: "a", color: null}, {usuario: "b", color: null}], cartas: [], descartes: [], mapa: [], chat: [], fase: 0, __v: 0};
  
-    
       inicializarPartida(partida);
 
       distribuirPiezas();
-
 
   }
 
@@ -726,8 +745,7 @@ export default function RiskMap() {
 
     let troops;
     let duenno = jugadores.find(jugador => jugador.usuario == user);
-    //console.log("terreno: " + territoriname)
-    //console.log("duenno: " + duenno?.territorios)
+
     if(!(territoriname && duenno && duenno.territorios.includes(territoriname))){
       alert('No puedes poner tropas en territorios que no te pertenecen');
       //this.cdr.detectChanges();
@@ -748,15 +766,13 @@ export default function RiskMap() {
 
     if (!init && (numTroops > numTropas)) {
       //this.toastr.error('¡No tienes suficientes tropas!');
-      //this.cdr.detectChanges();
       return;
     }
     setNumTropas(numTropas - numTroops);
 
     tropasPuestas += numTroops;
-    //tropasTest.push({terrainId: "ALASKA", numTropas: 3, user: "a"});
+   
     const terrainInfo = tropasTest.find(terrain => terrain.terrainId === territoriname);
-    //const terrainAlaska = tropasTest.find(terrain => terrain.terrainId === 'ALASKA');
     console.log(terrainInfo)
     if (terrainInfo) {
       terrainInfo.numTropas += numTroops;
@@ -801,66 +817,7 @@ export default function RiskMap() {
       return;
     }
 
-    const svgP = pt.matrixTransform(screenCTM.inverse());
-
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('x', svgP.x.toString());
-    text.setAttribute('y', (svgP.y + imgHeight / 2).toString());
-    text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('font-size', '20');
-    text.setAttribute('fill', 'black'); 
-    text.setAttribute('stroke', 'white'); 
-    text.setAttribute('stroke-width', '1');
-    text.setAttribute('data-terrain-id', terrainId);
-    text.textContent = numTroops.toString();
-
-    // Calculate the number of each type of image to add
-    const numTanks = Math.floor(numTroops / 10);
-    let remainingTroops = numTroops % 10;
-    const numHorses = Math.floor(remainingTroops / 5);
-    remainingTroops %= 5;
-
-    // Function to create and append an image
-    const addImage = (href, index) => {
-      const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-      img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', href);
-      img.setAttribute('width', imgWidth.toString());
-      img.setAttribute('height', imgHeight.toString());
-      img.setAttribute('x', (svgP.x - imgWidth / 2 + index * imgWidth * 0.15).toString());
-      img.setAttribute('y', (svgP.y - imgHeight / 2).toString());
-      img.setAttribute('data-terrain-id', terrainId);
-      img.style.pointerEvents = 'none'; // Make the image click-through
-      svgDoc.documentElement.appendChild(img);
-    };
-
-    // Delete every image in the region clicked
-    // Delete every image and text in the region clicked
-    const elements = svgDoc.querySelectorAll(`image[data-terrain-id="${terrainId}"], text[data-terrain-id="${terrainId}"]`);
-    elements.forEach(element => {
-      if (element.parentNode) {
-        element.parentNode.removeChild(element);
-      }
-    });
-
-    // Add the images
-    let index = 0;
-    let jugador = this.jugadores.find(jugador => jugador.usuario === user);
-    if (!jugador) {
-      this.toastr.error('Ha ocurrido un error interno.', 'Atención');
-      return;
-    }
-    let color = jugador.color;
-    //console.log(color)
-    for (let i = 0; i < numTanks; i++, index++) {
-      addImage(`/assets/tanque_${color}.png`, index);
-    }
-    for (let i = 0; i < numHorses; i++, index++) {
-      addImage(`/assets/caballo_${color}.png`, index);
-    }
-    for (let i = 0; i < remainingTroops; i++, index++) {
-      addImage(`/assets/infanteria_${color}.png`, index);
-    }
-    svgDoc.documentElement.appendChild(text);*/
+    */
   }
 
 
