@@ -1,12 +1,26 @@
 import React, { useRef, useState } from 'react';
-import { View, Image, StyleSheet, TouchableOpacity, Text as Text1 } from 'react-native';
+import { View, Image, StyleSheet, TouchableOpacity, Text as Text1, Alert } from 'react-native';
 import { IP } from '../config';
 import Svg, { Defs, G, Path, Circle, Use, Text as Text2 , TSpan } from "react-native-svg"
 import { useEffect } from 'react';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
 
+import Dialog from "react-native-dialog";
 
 export default function RiskMap() {
+
+  //Pruebas para cambiar el color
+  const [colorTest, setColorTest] = useState(["#ff0", "#cc6"]);
+
+  const [state, setState] = useState({
+    message: '',
+  });
+
+  const [numtropasTest, setnumTropasTest] = useState(0);
+  const [visible, setVisible] = useState(false);
+
+  const [isOk, setOkState] = useState("No");
+
   useEffect(() => {
     onLoad();
   }, []);
@@ -23,10 +37,20 @@ export default function RiskMap() {
   */
 
   //Listener de los eventos del svg, De momento o hace nada
-  //TODO: Hacer que al hacer click en un territorio se ejecute la funcion swichState
-  const eventListener = (key, event) => {
+  //Esta funcion habra que quitarla
+  const eventListener = (key,color, event) => {
     console.log(key);
+    const nextCounters = colorTest.map((c, i) => {
+      if (i === key) {
+        // This one changed
+        return color;
 
+      } else {
+        // The rest haven't changed
+        return c;
+      }
+    });
+    setColorTest(nextCounters);
   }
 
   //Esta fundion sirce para buscar el numero de tropas en un territorio y represetarlo en el svg
@@ -39,6 +63,13 @@ export default function RiskMap() {
       return "";
       
   }
+
+  //Pruebas para cambiar el color
+  const findColor = (key) => {
+    let color = colorTest[key];
+    return color;
+  }
+
   const MapSVGComponent = (props) => (
   <Svg
     xmlns="http://www.w3.org/2000/svg"
@@ -51,17 +82,18 @@ export default function RiskMap() {
         <Path
         id="b"
         //ALASKA
-          fill="#ff0"
+          fill={colorTest[0]} 
           d="M254 242c-1-1 0 0-1-2 0-2-1-2-2-3 0 0-1 0-1-2 1-1 1-1 1-2l-3-3v-2c0-1 0-2-1-2-2-1-3 1-4-1 0-2 0-1-2-1-1 0-2 0-2-1-1-1-1-2-2-2s-2 0-3-1c0-1-1-2-2-2s-1 0-2 1c-2 0 2 1-1 2s-4 1-5 0c0 0-3 1-2 0 0-2 0-2 1-3 1 0 2 0 2-1-1 0-1-1-3 0-3 0-4 0-5 1s-1 2-1 3c0 0 1 0-2 1-3 2-1 0-4 2-3 3-2 3-4 4-3 0-1 0-3 2-2 1-1 2-3 2s-1 3-3 1-3-1-1-2c1-1 1-1 2-1s1 0 2-1c1-2 1-2 2-3 2 0 2 2 3 0 0-3 0-3 1-4s3-2 1-3c-2 0-2 0-3 1-2 0-2 1-4 1-1-1-2-1-2-1v-3s1-1-1-1c-2-1-2 1-2-1 0-1 1-1 0-2s-1-1-2-1c-1 1-3 2-2 0s2-2 3-3c0-1 1-3 1-4 1-1-1-1 1-2 1-1 1-1 3-1s1 0 2 1c2 0 2 1 3 0l2-2 1-1c0-1 1-2-1-1-1 0-1 0-2 1-2 0-2 1-3 0-1-2-1-3-1-3v-1c0-2-1-5 2-6s5 0 6 0c0 1-1 1 0 2 2 0 2 0 3-1 0-1 1-1 0-2-1 0-1 0-2-1v-3l-2-2c0-1-2-3 0-4 3 0 5-1 5-1s2-3 4-2c2 0 4 0 6-2 2-1 4 0 4 0l3 1s2 3 4 2 2 2 5 2c3 1 5 1 8 2 0 0 1 0 1 1-1 1-2 31-2 31l8 1v2c1 1 1 2 2 4 2 2 1 8 1 8l2 3s1 1 2 1v4c0 2-2 1-2 1-1 1-2 3-2 4s-2 1-2 1Z"
-          onPress={eventListener.bind(this, "Alaska")}/>
+          onPress={eventListener.bind(this, 0)}/>
           <Text2
             x="223" y="210" text-anchor="middle" fill="black">{findTropas("ALASKA")}
           </Text2>
         <Path
         //ALBERTA
-          fill="#cc6"
+          //fill="#cc6"
+          fill={findColor(1)}
           d="M253 214v2c1 1 1 2 2 4 2 2 1 8 1 8l2 3s1 1 2 1v4c0 2-2 1-2 1-1 1-2 3-2 4s-2 1-2 1c1 1 2 1 2 3 1 3 1 2 1 3 1 1 2 1 2 3 1 2 1 1 2 3 1 3 0 4 0 6 1 3 2 2 3 3v1h48l4-48-63-2Z"
-            onPress={eventListener.bind(this, "Alberta")}
+            onPress={stateMachine.bind(this, 1, "ALBERTA")}
         />
         <Text2
             x="278" y="255" text-anchor="middle" fill="black">{findTropas("ALBERTA")}
@@ -365,8 +397,6 @@ export default function RiskMap() {
   </Svg>
   )
 
-    const svgRef = useRef();
-
     // Atributos generales
     let nombrePartida = '';
     let ganador = null;
@@ -376,7 +406,7 @@ export default function RiskMap() {
     let descartes= [];
     let mapa = [];
     let colores = ['verde', 'rojo', 'azul', 'amarillo', 'rosa', 'morado'];
-    let turnoJugador = '';
+    let turnoJugador = 'ab';
     let numJugadores = 3; // stub
     let partida= {}; // para inicializarlo
     let fase = 0; // Colocar- -> 0; Atacar -> 1; Maniobrar -> 2; Robar -> 3; Fin -> 4;
@@ -385,10 +415,15 @@ export default function RiskMap() {
     //let numTropas = 1000;
     const [tropasTest, setTropasTest] = useState([{terrainId: '', numTropas: 0, user: ''}]);
     let tropas = [{terrainId: '', numTropas: 0, user: ''}];
-    let whoami= '';
+    let ocupado = false;
+
+    //TODO: Guardar el nombre de jugador en el localStorage para meterlo aqui
+    let whoami= 'ab';
     let colorMap =  {}; // no parece necesario
     let text= '';
     let tropasPuestas = 0;
+
+    let recolocacion = false;
     /*
     // FASES PARTIDA
     const Colocar = 0;
@@ -404,32 +439,198 @@ export default function RiskMap() {
     let ataqueDestino = '';
     let ataqueTropas = 0; 
     let avatarAMostrar = '';
-    
-  // Define event handlers for touch events
-  const handleLowRiskPress = () => {
-    // Handle touch event for low-risk zone
-    console.log('Low risk zone pressed');
-  };
 
-  const handleMediumRiskPress = () => {
-    // Handle touch event for medium-risk zone
-    console.log('Medium risk zone pressed');
-  };
 
-  const handleHighRiskPress = () => {
-    // Handle touch event for high-risk zone
-    console.log('High risk zone pressed');
-  };
-
-  const stateMachine = (path, svgDoc, e) => {
-    let regionId = path.id;
-    console.log(`Se ha hecho clic en la región con ID: ${regionId}`)
-
+  const waitForTropasPuestas = async () => {
+    return new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+        if (numtropasTest !== 0  || isOk === 'Cancelled') {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 1);
+    });
   }
+  const stateMachine = async (path , territoriname , e) =>   {
+    const targetId = path;
+    console.log(`Clic en la región con ID: ${targetId}`);
+    console.log(`Clic en la región : ${territoriname}`);
+    if(recolocacion) return;
+    if (turnoJugador !== whoami) {
+      //TODO Crear sta funcion
+      clickWrongTerrain(e, 'No es tu turno');
+      console.log('No es tu turno');
+      return;
+    } 
+    if(ocupado){ console.log("espere"); return};
+    switch(fase){
+      case 0: // colocación
+        if (turnoJugador === whoami && !ocupado) {
+          tropasPuestas=0;
+          eventoCancelado = false;
+          colocarTropas(territoriname, whoami, false, false);
 
-  const clickMapListen = (e) => {
-    doc= e.nativeEvent.target;
-    console.log('Click en el mapa:', doc);
+          //TODO: COnectar con el back, mirar los sockets
+          //await this.waitForTropasPuestas()
+          /*if(!this.eventoCancelado){
+            console.log(this.numTropas);
+            this.ocupado = true;
+            this.partidaService.ColocarTropas(this.partida._id, targetId, this.tropasPuestas).subscribe(
+              response => {
+                console.log(response);
+                this.tropasPuestas = 0;
+                this.cdr.detectChanges();
+                this.ocupado = false;
+                // notify to back with a socket, the back will notify every client in the game
+                this.socket.emit('actualizarEstado', this.partida._id);
+              },
+              error => {
+                this.toastr.error('¡ERROR FATAL!');
+                this.colocarTropas(e, svgDoc, whoami, false, tropasPuestas);
+                this.ocupado = false
+                this.numTropas += this.tropasPuestas;
+                this.tropasPuestas = 0;
+              }
+            );  
+            setTimeout(() => { // si no recibo respuesta del back, está caído
+              console.log("entro")
+              if(this.ocupado){ 
+                console.log("fatal error")
+                this.toastr.error('¡ERROR FATAL!');
+                this.ocupado = false;
+                this.numTropas += this.tropasPuestas;
+              }
+            }, 2000);
+
+          } else{
+            console.log('Evento cancelado')
+          } */     
+        } else {
+          if(!this.ocupado) this.clickWrongTerrain(e, 'No es tu turno')
+        }
+        break;
+      /*case 1: // ataque
+        // antes de atacar, selecciono las tropas q quiero utilizar para atacar
+        if (this.ataqueTropas === 0) {
+          console.log('Seleccionar tropas para atacar')
+          this.ataqueTropas = 0;
+          this.ataqueDestino = '';
+          this.ataqueOrigen = '';
+          const numTroops = await this.seleccionarTropas(e, svgDoc, this.whoami, true);
+          console.log(this.ataqueTropas, this.ataqueOrigen, this.ataqueDestino, numTroops)
+          console.log(`Player has selected ${numTroops} troops`);
+          console.log(this.recolocacion)
+          this.tropasPuestas = 0;
+          this.colocarTropas(e, svgDoc, 50, 50, this.whoami, false, true, -numTroops); // las quito del mapa
+          this.numTropas -= numTroops; // tampoco las tengo colocables, las tengo seleccionadas así que las quito de ahí
+          this.cdr.detectChanges()
+          
+        } else {
+          
+          // una vez seleccionadas las tropas me tocará elegir un territorio enemigo
+          const enemyTerritoryId = await this.seleccionarTerritorioEnemigo(e, svgDoc, this.whoami)
+          console.log(`Player has selected enemy territory ${enemyTerritoryId}`)
+          this.ataqueDestino = enemyTerritoryId
+          console.log("Info:", this.partida._id, this.ataqueOrigen, this.ataqueDestino, this.tropasPuestas)
+          let usuarioObjetivo = this.jugadores.find(jugador => jugador.territorios.includes(enemyTerritoryId));
+          this.partidaService.ResolverAtaque(this.partida._id, this.ataqueOrigen, this.ataqueDestino, -this.tropasPuestas).subscribe(
+            async response => {
+              console.log(response);
+              this.toastr.success('¡Ataque realizado con éxito!');
+              await new Promise(resolve => setTimeout(resolve, 1000)) 
+              this.toastr.info('Tus dados: ' + response.dadosAtacante + ' Dados defensor: ' + response.dadosDefensor);
+              await new Promise(resolve => setTimeout(resolve, 1000)) 
+              this.toastr.info('Tus bajas: ' + response.resultadoBatalla.tropasPerdidasAtacante + ' Bajas defensor: ' + response.resultadoBatalla.tropasPerdidasDefensor);
+              await new Promise(resolve => setTimeout(resolve, 1000))
+              if(response.conquistado){
+                this.toastr.success('¡Territorio conquistado!');
+
+              } else {
+                this.toastr.error('¡No has conquistado el territorio!');
+                
+              }
+              this.inicializacionPartida(this.partida); // actualizo el estado de la partida
+              await new Promise(resolve => setTimeout(resolve, 1000)) // espero un rato
+              
+              this.limpiarTropas();
+              
+              //Pinto el mapa
+              this.distribuirPiezas();
+              this.ataqueDestino = ''
+              this.ataqueOrigen = ''
+              this.ataqueTropas = 0
+              // update the state of every client
+              this.socket.emit('actualizarEstado', this.partida._id);
+              // and notify the defense player 
+              
+              this.socket.emit('ataco', {userOrigen: this.whoami, userDestino: usuarioObjetivo?.usuario ?? '', 
+                               dadosAtacante: response.dadosAtacante, dadosDefensor: response.dadosDefensor, 
+                               tropasPerdidasAtacante: response.resultadoBatalla.tropasPerdidasAtacante,
+                               tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
+                               conquistado: response.conquistado, territorioOrigen: this.ataqueOrigen, 
+                               territorioDestino: enemyTerritoryId});
+              this.ataquePerpetrado = {userOrigen: this.whoami, userDestino: usuarioObjetivo?.usuario ?? '', 
+                                      dadosAtacante: response.dadosAtacante, dadosDefensor: response.dadosDefensor, 
+                                      tropasPerdidasAtacante: response.resultadoBatalla.tropasPerdidasAtacante,
+                                      tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
+                                      conquistado: response.conquistado, territorioOrigen: this.ataqueOrigen, 
+                                      territorioDestino: enemyTerritoryId}
+            },
+            error => {
+              this.toastr.error('¡ERROR FATAL!');
+              this.fase = 0;
+              this.fase = 1;
+              this.ataqueDestino = ''
+              this.ataqueOrigen = ''
+              this.ataqueTropas = 0
+            }
+          );
+        }
+
+        break
+      case 2: // maniobra -> reutilizo las variables de ataque jeje
+        if (this.ataqueTropas === 0) {
+          this.ataqueTropas = 0;
+          this.ataqueDestino = ''
+          this.ataqueOrigen = ''
+          const numTroops = await this.seleccionarTropas(e, svgDoc, this.whoami, false)
+          console.log(`Player has selected ${numTroops} troops`)
+          this.colocarTropas(e, svgDoc, 50, 50, this.whoami, false, true, -numTroops) // las quito del mapa
+          this.numTropas -= numTroops // tampoco las tengo colocables, las tengo seleccionadas así que las quito de ahí
+          this.cdr.detectChanges()
+        } else {
+          // una vez seleccionadas las tropas me tocará elegir un territorio enemigo
+          const enemyTerritoryId = await this.seleccionarTerritorioAmigo(e, svgDoc, this.whoami)
+          console.log(`Player has selected friendly territory ${enemyTerritoryId}`)
+          this.ataqueDestino = enemyTerritoryId
+          // TODO AVISAR AL BACK END, ESPERAR RESPUESTA Y ACTUALIZAR EL ESTADO DE LA PARTIDA
+          //this.partida._id, this.whoami, targetId, this.tropasPuestas
+          //atacarTerritorio(this.partida._id, this.whoami, this.ataqueOrigen, this.ataqueDestino, this.ataqueTropas)
+          // esto recibe el back end
+          console.log(this.partida._id, this.whoami, this.ataqueOrigen, this.ataqueDestino, this.ataqueTropas)
+          // dependiendo del resultado de la llamada al back, se actualizará el estado de la partida y permitirá continuar
+          await new Promise(resolve => setTimeout(resolve, 5000)) // falseo llamada al back
+          const territorios = this.mapa.flatMap(continent => continent.territorios)
+          const destinoTropas = await territorios.find(territorio => territorio.nombre === this.ataqueDestino)
+          if (destinoTropas)
+            destinoTropas.tropas += this.ataqueTropas // seguramente esto te lo dé el back? tampoco está mal hacerlo localmente
+          this.colocarTropas(e, svgDoc, 50, 50, this.whoami, false, true, this.ataqueTropas) // las pongo
+          console.log(destinoTropas)
+          // TODO ACTUALIZAR ESTADO ETC -> de momento no lo hago, es trivial
+          this.ataqueDestino = ''
+          this.ataqueOrigen = ''
+          this.ataqueTropas = 0
+        }
+        break
+      case 3: // robo 
+        //this.final(e, svgDoc, imgWidth, imgHeight);
+        break
+      case 4: // fin
+        //this.final(e, svgDoc, imgWidth, imgHeight);
+        break*/
+    }
+    //this.colocarTropas(e, svgDoc, imgWidth, imgHeight, this.whoami);
+    //this.cdr.detectChanges()
   }
 
   cartasStub =() => {
@@ -643,32 +844,9 @@ export default function RiskMap() {
          console.log(`The color of territory ${territorio.nombre} is ${color}, and it has ${territorio.tropas} troops.`);
          if(jugador){
           //console.log(jugador.usuario)
-          colocarTropas(territorio.nombre, svgDoc, 50, 50, jugador.usuario, true, false, territorio.tropas);
+          colocarTropas(territorio.nombre, jugador.usuario, true, territorio.tropas);
          }
 
-         //TODO: COMPRENDER ESTO Y MIRAR COMO HACERLO EN REACT NATIVE
-
-
-         //let svgElement = this.svgDoc?.getElementById(territorio.nombre);
-         /*let event;
-         //console.log(territorio.nombre, svgElement);
-         //console.log(this.svgDoc)
-          if (svgElement && svgElement.nodeName === 'path') {
-            //console.log(' entro en el if')
-            //let bbox = ((svgElement as unknown) as SVGGraphicsElement).getBBox();
-            let rect = svgElement.getBoundingClientRect();
-
-            let centerX = rect.left + bbox.width / 2;
-            let centerY = rect.top + bbox.height / 2 - 70; 
-
-            // Create a fake MouseEvent
-            event = new MouseEvent('click', {
-              clientX: centerX,
-              clientY: centerY,
-            });
-             // Dispatch the event on svgElement
-            svgElement.dispatchEvent(event);
-            //console.log(event)*/
           }
         /*
          if(jugador && event && this.svgDoc){
@@ -731,7 +909,7 @@ export default function RiskMap() {
   }
 
   const onLoad = () => {
-    //TODO fetch parida del back
+    //TODO fetch partida del back
     partida = { _id: '1', maxJugadores: 3, nombre: 'Partida 1', fechaInicio: '2021-06-01T00:00:00.000Z', fechaFin: '2021-06-01T00:00:00.000Z'
     , password: '1234', ganador: null, turno: 0, jugadores: [{usuario: "a", color: null}, {usuario: "b", color: null}], cartas: [], descartes: [], mapa: [], chat: [], fase: 0, __v: 0};
  
@@ -741,86 +919,109 @@ export default function RiskMap() {
 
   }
 
-  const colocarTropas = (territoriname, svgDoc, imgWidth, imgHeight, user, init, select, limite) => {
+  const [stateTropas, setStateTropas] = useState({territoriname: '', user: '', init: false});
+
+  const colocarTropas = async (territoriname2, user2, init2, limite= null) => {
     // Ask the user for the number of troops
 
     let troops;
-    let duenno = jugadores.find(jugador => jugador.usuario == user);
+    let duenno = jugadores.find(jugador => jugador.usuario == user2);
 
+
+    //TODO: Esto esta comentado para hacer pruebas
+    /*
     if(!(territoriname && duenno && duenno.territorios.includes(territoriname))){
       alert('No puedes poner tropas en territorios que no te pertenecen');
       //this.cdr.detectChanges();
       return;
-    }
+    }*/
 
+    //Si hay limite, es que no es un evento
     if(limite)
       troops = limite.toString();
-    else 
-     troops = window.prompt('Cuántas tropas deseas añadir?');
-
-    // Check if the user clicked the Cancel button
-    if (troops === null) {
+    else{ 
+     console.log('me meto en else');
+      setStateTropas({territoriname: territoriname2, user: user2, init: init2});
+      setVisible(true);
       return;
     }
 
+    //Aqui solo llego si no ha sido un evento click
     let numTroops = parseInt(troops);
 
-    if (!init && (numTroops > numTropas)) {
-      //this.toastr.error('¡No tienes suficientes tropas!');
-      return;
-    }
-    setNumTropas(numTropas - numTroops);
+    let newtropas = numTropas - numTroops;
+    setNumTropas(newtropas);
 
     tropasPuestas += numTroops;
    
-    const terrainInfo = tropasTest.find(terrain => terrain.terrainId === territoriname);
+    const terrainInfo = tropasTest.find(terrain => terrain.terrainId === territoriname2);
     console.log(terrainInfo)
     if (terrainInfo) {
       terrainInfo.numTropas += numTroops;
-      terrainInfo.user = user;
+      terrainInfo.user = user2;
       numTroops = terrainInfo.numTropas;
       setTropasTest(tropasTest);
     } else {
-      console.log("territorio: " + territoriname)
-      tropasTest.push({terrainId: territoriname, numTropas: numTroops, user});
+      console.log("territorio: " + territoriname2)
+      tropasTest.push({terrainId: territoriname2, numTropas: numTroops, user2});
       setTropasTest(tropasTest);
     }
 
-    // Get the point at which the click event occurred
-    const svgElement = svgDoc;
-    if (!svgElement) {
-      //console.error('SVG element not found');
-      return;
-    }
-    /*
-    // Check if the input is a valid number
-    if (isNaN(numTroops) || (numTroops < 1 && !select)) {
-      alert('Please enter a valid number of troops.');
-      //this.cdr.detectChanges();
-      return;
-    }
-
-    // Get the point at which the click event occurred
-    const svgElement = svgDoc.rootElement;
-    if (!svgElement) {
-      console.error('SVG element not found');
-      return;
-    }
-
-    const pt = svgElement.createSVGPoint();
-    pt.x = e.clientX;
-    pt.y = e.clientY;
-
-    // Transform the point to the SVG coordinate system
-    const screenCTM = svgElement.getScreenCTM();
-    if (!screenCTM) {
-      console.error('Unable to get screen CTM');
-      return;
-    }
-
-    */
+    
   }
 
+ 
+  const colocarTropasCorrectas = () => {
+    console.log('me meto en colocarTropasCorrectas: ', stateTropas.territoriname);
+    if (state.message === null) {
+      return;
+    }
+
+    let numTroops = parseInt(state.message);
+
+    if (!stateTropas.init && (numTroops > numTropas)) {
+      Alert.alert('¡No tienes suficientes tropas!');
+      //this.toastr.error('¡No tienes suficientes tropas!');
+      return;
+    }
+    let newtropas = numTropas - numTroops;
+    setNumTropas(newtropas);
+
+    tropasPuestas += numTroops;
+   
+    const terrainInfo = tropasTest.find(terrain => terrain.terrainId === stateTropas.territoriname);
+    console.log(terrainInfo)
+    if (terrainInfo) {
+      terrainInfo.numTropas += numTroops;
+      terrainInfo.user = stateTropas.user;
+      numTroops = terrainInfo.numTropas;
+      setTropasTest(tropasTest);
+    } else {
+      console.log("territorio: " + stateTropas.territoriname)
+      tropasTest.push({terrainId: stateTropas.territoriname, numTropas: numTroops, user: stateTropas.user});
+      setTropasTest(tropasTest);
+    }
+
+    
+    
+    // Check if the input is a valid number
+    if (isNaN(numTroops) || (numTroops < 1 && !select)) {
+      Alert.alert('Please enter a valid number of troops.');
+      return;
+    }
+  }
+
+
+  //rutina de OK del boton de dialog
+  const handleOK = () => {
+    setnumTropasTest(state.message);
+    setVisible(false);
+    console.log('me meto en handleOK: ', state.message);
+    colocarTropasCorrectas();
+  }
+
+
+  //TODO: Implementar la rutina de cancelar
 
   return (
     <View style={styles.container} >
@@ -839,7 +1040,18 @@ export default function RiskMap() {
         <Text1 style={styles.zoneText}>Tropas: {numTropas}</Text1>
 
         </View>
+        
+        <Dialog.Container visible={visible} >
+        <Dialog.Title>Password Recovery</Dialog.Title>
+           <Dialog.Input label="Troop" onChangeText={(troop ) => setState({ message: troop })} 
+            ></Dialog.Input>
+          <Dialog.Button label="Cancel" onPress={()=>{
+            setOkState("Cancelled");
+            setVisible(false)}} />
+          <Dialog.Button label="OK" onPress={handleOK} />
+        </Dialog.Container>
     </View>
+    
   );
 }
 
