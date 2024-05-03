@@ -1,14 +1,14 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, ImageBackground } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome from expo/vector-icons
 import { IP } from '../config';
 
-export default function Inicial({ navigation,route }) {
+export default function Inicial({ navigation, route }) {
+  const { id, token } = route.params;
 
-  const { id,token } = route.params;
-  console.log('Token:', token);
   const goToCrearPartida = () => {
     // Navigate to "Crear Partida" screen
-    navigation.navigate('Lobby', { id:id,token: token });
+    navigation.navigate('Lobby', { id: id, token: token });
   };
 
   const goToRanking = () => {
@@ -23,47 +23,67 @@ export default function Inicial({ navigation,route }) {
 
   const goToPerfil = () => {
     // Navigate to "Perfil" screen
-    navigation.navigate('Perfil', { id:id,token: token });
+    navigation.navigate('Perfil', { id: id, token: token });
   };
 
-  const goToFindPlayer = () => {
-    // Navigate to "Perfil" screen
-    navigation.navigate('BuscarJugador', { token: token });
-  };
-
-  const goToFindSol= () => {
-    // Navigate to "Perfil" screen
-    navigation.navigate('MisSolicitudes', { token: token });
-  };
 
   const goToMap = () => {
     // Navigate to "Perfil" screen
     navigation.navigate('RiskMap', { token: token });
   }
 
+  const goToChats = () => {
+    // Navigate to "Chats" screen
+    navigation.navigate('MyChats', { token: token });
+  };
+
+  const goToAmigos = () => {
+    // Navigate to "Chats" screen
+    navigation.navigate('MisAmigos', { token: token });
+  };
+
+  const goToAmistad = () => {
+    // Navigate to "Chats" screen
+    navigation.navigate('Amistad', { token: token });
+  };
+
+
   return (
-    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
+    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage} resizeMode="stretch">
       <View style={styles.container}>
-        <TouchableOpacity style={styles.button} onPress={goToCrearPartida}>
-          <Text style={styles.buttonText}>Lobby</Text>
+          <TouchableOpacity style={styles.Lobbybutton} onPress={goToCrearPartida}>
+          <FontAwesome name="gamepad" size={24} color="white" />
+            <Text style={styles.LobbybuttonText}>Lobby</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.Rankingbutton} onPress={goToRanking}>
+          <FontAwesome name="trophy" size={24} color="white" />
+            <Text style={styles.RankingbuttonText}>Ranking</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.Perfilbutton} onPress={goToPerfil}>
+          <FontAwesome name="user" size={24} color="white" />
+            <Text style={styles.PerfilbuttonText}>Perfil</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.Mapabutton} onPress={goToMap}>
+            <Text style={styles.AmistadbuttonText}>MapaXD</Text>
+          </TouchableOpacity>
+        <TouchableOpacity style={styles.Amistadbutton} onPress={goToAmistad}>
+        <FontAwesome name="user-plus" size={24} color="white" />
+            <Text style={styles.AmistadbuttonText}>Solicitudes</Text>
+          </TouchableOpacity>
+        {/* Chat button */}
+        <TouchableOpacity style={styles.chatButton} onPress={goToChats}>
+          <FontAwesome name="comments" size={24} color="white" />
+          <Text style={styles.chatButtonText}>Chat</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={goToRanking}>
-          <Text style={styles.buttonText}>Ranking</Text>
+
+        <TouchableOpacity style={styles.amigosButton} onPress={goToAmigos}>
+          <FontAwesome name="users" size={24} color="white" />
+          <Text style={styles.amigosButtonText}>Amigos</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.tiendaButton]} onPress={goToTienda}>
-          <Text style={styles.buttonText}>Tienda</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={goToPerfil}>
-          <Text style={styles.buttonText}>Perfil</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={goToFindPlayer}>
-          <Text style={styles.buttonText}>Buscar Jugador</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={goToFindSol}>
-          <Text style={styles.buttonText}>Buscar Solicitudes</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={goToMap}>
-          <Text style={styles.buttonText}>MapaXD</Text>
+        {/* Tienda button */}
+        <TouchableOpacity style={styles.tiendaButton} onPress={goToTienda}>
+          <FontAwesome name="shopping-basket" size={24} color="white" />
+          <Text style={styles.tiendaButtonText}>Tienda</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
@@ -76,24 +96,267 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  row: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
   backgroundImage: {
     flex: 1,
     resizeMode: 'cover',
     justifyContent: 'center',
   },
-  button: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 8, // Reduced padding
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    marginBottom: 10, // Reduced margin bottom
+  Lobbybutton: {
+    backgroundColor: '#DB4437',
+    paddingVertical: 11,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    marginBottom: 0,
+    marginRight: 10,
+    position: 'absolute',
+    top:70,
+    left:150,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    width:160,
+    height:80,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+    // Adding larger darker bottom part
+    borderBottomColor: 'rgba(0,0,0,0.2)',
+    borderBottomWidth: 5,
   },
-  buttonText: {
+  LobbybuttonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
   },
+  Rankingbutton: {
+    backgroundColor: '#DB4437',
+    paddingVertical: 11,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    marginBottom: 0,
+    width:160,
+    height:80,
+    position: 'absolute',
+    top:180,
+    left:150,
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+    // Adding larger darker bottom part
+    borderBottomColor: 'rgba(0,0,0,0.2)',
+    borderBottomWidth: 5,
+  },
+  RankingbuttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
+  },
+  Perfilbutton: {
+    backgroundColor: '#DB4437',
+    paddingVertical: 11,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    marginBottom: 0,
+    marginRight: 10,
+    position: 'absolute',
+    top:70,
+    width:160,
+    height:80,
+    right:200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+    // Adding larger darker bottom part
+    borderBottomColor: 'rgba(0,0,0,0.2)',
+    borderBottomWidth: 5,
+  },
+  PerfilbuttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
+  },
+  Amistadbutton: {
+    backgroundColor: '#DB4437',
+    paddingVertical: 11,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    marginBottom: 0,
+    width:180,
+    height:80,
+    position:'absolute',
+    top:180,
+    right:180,
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+    // Adding larger darker bottom part
+    borderBottomColor: 'rgba(0,0,0,0.2)',
+    borderBottomWidth: 5,
+  },
+  Mapabutton: {
+    backgroundColor: '#DB4437',
+    paddingVertical: 11,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    marginBottom: 0,
+    position:'absolute',
+    top:300,
+    right:250,
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+    // Adding larger darker bottom part
+    borderBottomColor: 'rgba(0,0,0,0.2)',
+    borderBottomWidth: 5,
+  },
+  AmistadbuttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
+  },
+  // Chat button styles
+  chatButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: 30,
+    backgroundColor: '#007bff',
+    borderRadius: 80,
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    
+  },
+  chatButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    marginLeft: 0,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1,
+  },
+  // amigos button styles
+  amigosButton: {
+    position: 'absolute',
+    bottom: 30,
+    left: 30,
+    backgroundColor: '#007bff',
+    borderRadius: 80,
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    
+  },
+  amigosButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    marginLeft: 0,
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1,
+  },
+  // Tienda button styles
   tiendaButton: {
-    marginTop: 1, // Increased margin top
+    position: 'absolute',
+    top: 100,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#007bff',
+    borderRadius: 25,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    // Adding 3D effect
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+    // Adding larger darker bottom part
+    borderBottomColor: 'rgba(0,0,0,0.2)',
+    borderBottomWidth: 5,
+  },
+  tiendaButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    marginLeft: 5,
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1,
   },
 });

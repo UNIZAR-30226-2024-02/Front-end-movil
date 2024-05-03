@@ -25,8 +25,7 @@ export default function App({ navigation }) {
 
         // Store token in AsyncStorage
         await AsyncStorage.setItem('token', token);
-        console.log('Token:', token);
-        Alert.alert('Success', 'Usuario logeado exitosamente');
+        Alert.alert('Éxito', 'Usuario logeado exitosamente');
         navigation.navigate('Inicial', { id: username, token: token });
 
       } catch (error) {
@@ -35,7 +34,7 @@ export default function App({ navigation }) {
       }
     } else {
       // Display error message or handle empty fields
-      alert('Please fill in both username and password fields.');
+      Alert.alert('Error','Por favor, rellene los dos campos');
     }
   };
 
@@ -56,6 +55,7 @@ export default function App({ navigation }) {
           top: 0,
           left: 0,
         }}
+        resizeMode="stretch"
       />
       <View style={styles.overlayContainer}>
         <Text style={styles.title}>Iniciar Sesión</Text>
@@ -85,8 +85,10 @@ export default function App({ navigation }) {
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Iniciar Sesión</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleRegister}>
-          <Text style={styles.registerText}>Si no tienes cuenta puedes registrarte aquí</Text>
+        <Text style={styles.registerText}>Si no tienes cuenta puedes registrarte aquí</Text>
+
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+          <Text style={styles.buttonText}>Registrarse</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -107,25 +109,31 @@ const styles = StyleSheet.create({
     padding: 15,
     shadowColor: 'rgba(0, 0, 0, 0.2)',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.8,
+    shadowOpacity: 0,
     shadowRadius: 8,
     borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Change the background color to a darker shade
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
-    color: 'black',
+    marginBottom: 5,
     textAlign: 'center', // Align text to the center
+    color: 'white',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: {width: 2, height: 1},
+    textShadowRadius: 3,
   },
+  
   inputContainer: {
     flexDirection: 'column', // Set flexDirection to 'column' for vertical layout
     marginBottom: 15,
   },
   input: {
     height: 40,
-    borderColor: 'gray',
+    borderColor: 'black',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
@@ -139,38 +147,82 @@ const styles = StyleSheet.create({
   passwordInput: {
     flex: 1,
     height: 40,
-    borderColor: 'gray',
+    borderColor: 'black',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
     marginRight: 10,
     backgroundColor: 'white',
+    
   },
   showPasswordButton: {
-    backgroundColor: '#4CAF50',
     padding: 8,
     borderRadius: 8,
+    backgroundColor: '#DB4437',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    // Adding 3D effect
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 1,
+      height: 3,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+    // Adding larger darker bottom part
+    borderBottomColor: 'rgba(0,0,0,0.5)',
+    borderBottomWidth: 5,
   },
   showPasswordButtonText: {
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
   },
   button: {
-    backgroundColor: '#4CAF50',
-    padding: 10,
-    borderRadius: 8,
+    backgroundColor: '#DB4437',
+    paddingVertical: 11,
+    paddingHorizontal: 40,
+    borderRadius: 25,
+    marginBottom: 0,
+    width: 270, // Ensuring all buttons have the same width
+    justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+    // Adding 3D effect
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+    // Adding larger darker bottom part
+    borderBottomColor: 'rgba(0,0,0,0.5)',
+    borderBottomWidth: 5,
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
   },
   registerText: {
-    marginTop: 10,
-    color: 'blue',
-    textDecorationLine: 'underline',
+    fontSize: 12,
+    marginTop:4,
+    fontWeight: 'bold',
+    color: 'white',
     textAlign: 'center', // Align text to the center
   },
 });

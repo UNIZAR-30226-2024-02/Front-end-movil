@@ -86,7 +86,7 @@ export default function Register({ navigation }) {
             onChangeText={setCorreo}
             value={correo}
           />
-          <View style={styles.passwordContainer}>
+          <View style={styles.passwordInputContainer}>
             <TextInput
               style={styles.passwordInput}
               placeholder="Contraseña"
@@ -98,7 +98,7 @@ export default function Register({ navigation }) {
               <Text style={styles.showPasswordButtonText}>{showPassword ? 'Ocultar' : 'Mostrar'}</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.passwordContainer}>
+          <View style={styles.passwordInputContainer}>
             <TextInput
               style={styles.passwordInput}
               placeholder="Repetir contraseña"
@@ -114,8 +114,9 @@ export default function Register({ navigation }) {
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>Registrarse</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={goToLogin}>
-          <Text style={styles.loginText}>¿Ya tienes una cuenta? Inicia sesión aquí</Text>
+        <Text style={styles.loginText}>¿Ya tienes una cuenta? Inicia sesión aquí</Text>
+        <TouchableOpacity style={styles.button} onPress={goToLogin}>
+          <Text style={styles.buttonText}>Iniciar Sesión</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -131,76 +132,129 @@ const styles = StyleSheet.create({
   },
   overlayContainer: {
     maxWidth: 300,
+    top:10,
+    bottom:20,
     width: '100%',
     margin: 40,
     padding: 15,
     shadowColor: 'rgba(0, 0, 0, 0.2)',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.8,
+    shadowOpacity: 0,
     shadowRadius: 8,
     borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Change the background color to a darker shade
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
-    color: 'black',
+    marginBottom: 5,
     textAlign: 'center', // Align text to the center
+    color: 'white',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: {width: 2, height: 1},
+    textShadowRadius: 3,
   },
+  
   inputContainer: {
-    marginBottom: 10,
+    flexDirection: 'column', // Set flexDirection to 'column' for vertical layout
+    marginBottom: 15,
   },
   input: {
-    height: 30, // Reduced height
-    borderColor: 'gray',
+    height: 40,
+    borderColor: 'black',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    marginBottom: 5, // Reduced margin bottom
+    marginBottom: 2,
     backgroundColor: 'white',
   },
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 5, // Reduced margin bottom
+  passwordInputContainer: {
+    flexDirection: 'row', // Set flexDirection to 'row' for horizontal layout
+    alignItems: 'center', // Align items vertically in the center
   },
   passwordInput: {
     flex: 1,
-    height: 30, // Reduced height
-    borderColor: 'gray',
+    height: 40,
+    borderColor: 'black',
     borderWidth: 1,
     borderRadius: 8,
+    marginBottom: 2,
     paddingHorizontal: 10,
+    marginRight: 10,
     backgroundColor: 'white',
+    
   },
   showPasswordButton: {
-    paddingVertical: 5, // Reduced padding
-    paddingHorizontal: 10, // Reduced padding
+    padding: 8,
     borderRadius: 8,
-    backgroundColor: '#4CAF50',
-    marginLeft: 5, // Reduced margin left
+    backgroundColor: '#DB4437',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    // Adding 3D effect
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 1,
+      height: 3,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+    // Adding larger darker bottom part
+    borderBottomColor: 'rgba(0,0,0,0.5)',
+    borderBottomWidth: 5,
   },
   showPasswordButtonText: {
     color: 'white',
+    fontSize: 12,
     fontWeight: 'bold',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
   },
   button: {
-    backgroundColor: '#4CAF50',
-    padding: 10,
-    borderRadius: 8,
+    backgroundColor: '#DB4437',
+    paddingVertical: 11,
+    paddingHorizontal: 40,
+    borderRadius: 25,
+    marginBottom: 0,
+    width: 270, // Ensuring all buttons have the same width
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    overflow: 'hidden',
+    // Adding 3D effect
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+    // Adding larger darker bottom part
+    borderBottomColor: 'rgba(0,0,0,0.5)',
+    borderBottomWidth: 5,
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
   },
   loginText: {
-    marginTop: 10,
-    color: 'blue',
-    textDecorationLine: 'underline',
-    textAlign: 'center',
+    fontSize: 12,
+    marginTop:4,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center', // Align text to the center
   },
 });
+
