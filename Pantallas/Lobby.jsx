@@ -3,26 +3,14 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, Button, StyleSheet
 import axios from 'axios';
 import { IP } from '../config';
 
-const availableGames = [
-  { id: 1, name: 'Game 1' },
-  { id: 2, name: 'Game 2' },
-  { id: 3, name: 'Game 3' },
-  { id: 4, name: 'Game 4' },
-  // Add more games as needed
-];
-
-const invitedGames = [
-  { id: 5, name: 'Invited Game 1' },
-  { id: 6, name: 'Invited Game 2' },
-  // Add more invited games as needed
-];
-
 const Lobby = ({ navigation, route }) => {
 
   const { token } = route.params;
-  console.log('Token:', token);
   const [partidas, setPartidasData] = useState([]);
   const [invitaciones, setInvitacionesData] = useState([]);
+
+
+
   const [selectedGame, setSelectedGame] = useState(null);
   const [joinGameId, setJoinGameId] = useState('');
   const [joinGamePassword, setJoinGamePassword] = useState('');
@@ -42,30 +30,51 @@ const Lobby = ({ navigation, route }) => {
   const fetchPartidasData = async () => {
     try {
       const response = await axios.get(IP+'/partidas', { headers: { 'Authorization': token } });
-      setPartidasData(response.data);
-      console.log(response.data);
+      const partidasData = await Promise.all(response.data.map(async partida => {
+        try {
+          const partidaInfoResponse = await axios.get(`${IP}/partidas/partida/${partida._id}`, { headers: { 'Authorization': token } });
+          return partidaInfoResponse.data;
+        } catch (error) {
+          console.error('Error fetching partida info:', error);
+          return null; // Returning null for failed requests
+        }
+      }));
+  
+      // Filter out null values and flatten the array
+      const flattenedPartidasData = partidasData.filter(partida => partida !== null).flat();
+  
+      setPartidasData(flattenedPartidasData);
     } catch (error) {
       console.error('Error fetching partida data:', error);
       Alert.alert('Error', 'Ha ocurrido un error al obtener las partidas. Por favor, inténtalo de nuevo más tarde.');
     }
   };
+  
 
   const fetchInvitations = async () => {
     try {
-      const response = await axios.get(IP + '/partidas/invitaciones', {
-        headers: {
-            'Authorization': `${token}`
+      const response = await axios.get(IP+'/partidas/invitaciones', { headers: {'Authorization': `${token}` } });
+      const invitacionesData = await Promise.all(response.data.Partidas.map(async partida => {
+        try {
+          const partidaInvitedInfoResponse = await axios.get(`${IP}/partidas/partida/${partida._id}`, { headers: { 'Authorization': token } });
+          return partidaInvitedInfoResponse.data;
+        } catch (error) {
+          console.error('Error fetching partida info:', error);
+          return null; // Returning null for failed requests
         }
-      });
+      }));
   
-      // Assuming the response.data structure is similar to partidas, you can set it using setInvitationsData
-      setInvitacionesData(response.data);
-      console.log('Invitaciones:',response.data);
+      // Filter out null values and flatten the array
+      const flattenedInvitacionesData = invitacionesData.filter(partida => partida !== null).flat();
+  
+      setInvitacionesData(flattenedInvitacionesData);
     } catch (error) {
       console.error('Error fetching invitations:', error);
       Alert.alert('Error', 'Ha ocurrido un error al obtener las invitaciones. Por favor, inténtalo de nuevo más tarde.');
     }
   };
+  
+  
   
   
 
@@ -110,7 +119,7 @@ const Lobby = ({ navigation, route }) => {
 
   const handleJoinGame = async () => {
     try {
-      const response = await axios.put(`${IP}/join`, { idPartida: joinGameId, password: joinGamePassword }, {
+      const response = await axios.put(`${IP}/nuevaPartida/join`, { idPartida: joinGameId, password: joinGamePassword }, {
         headers: {
           'Authorization': token,
         }
@@ -131,7 +140,7 @@ const Lobby = ({ navigation, route }) => {
   
   const handleInvite = async () => {
     try {
-      const response = await axios.put(`${IP}/invite`, { user: inviteUsername, idPartida: inviteGameId }, {
+      const response = await axios.put(`${IP}/nuevaPartida/invite`, { user: inviteUsername, idPartida: inviteGameId }, {
         headers: {
           'Authorization': token,
         }
@@ -150,6 +159,11 @@ const Lobby = ({ navigation, route }) => {
     }
   };
 
+  const handlePartidaPress = (id) => {
+    navigation.navigate('Partida', { id,token }); // Navigate to Partida component with id as a parameter
+  };
+
+  //-------------------------------------------------------------------------------------------------------------------------
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
       <View style={styles.container}>
@@ -157,13 +171,13 @@ const Lobby = ({ navigation, route }) => {
           <View>
             <Text style={[styles.title, styles.centeredTitle]}>Partidas Públicas</Text>
             <View style={styles.gamesList}>
-              {availableGames.map(game => (
+              {partidas.map(game => (
                 <TouchableOpacity 
-                  key={game.id} 
-                  onPress={() => setSelectedGame(game)}
-                  style={[styles.gameRectangle, selectedGame && selectedGame.id === game.id && styles.selectedGameRectangle]}
+                  key={game._id} 
+                  onPress={() => handlePartidaPress(game._id)}
+                  style={[styles.gameRectangle, selectedGame && selectedGame._id === game._id && styles.selectedGameRectangle]}
                 >
-                  <Text style={styles.gameRectangleText}>{game.name}</Text>
+                  <Text style={styles.gameRectangleText}>{game._id}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -171,13 +185,13 @@ const Lobby = ({ navigation, route }) => {
           <View>
             <Text style={[styles.title, styles.centeredTitle]}>Invitaciones</Text>
             <ScrollView>
-              {invitedGames.map(game => (
+              {invitaciones.map(game => (
                 <TouchableOpacity 
-                  key={game.id} 
+                  key={game._id} 
                   style={styles.invitedGame}
-                  onPress={() => console.log(`Join invited game: ${game.name}`)}
+                  onPress={() => handlePartidaPress(game._id)}
                 >
-                  <Text style={styles.invitedGameText}>{game.name}</Text>
+                  <Text style={styles.invitedGameText}>{game._id}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -200,7 +214,7 @@ const Lobby = ({ navigation, route }) => {
               onChangeText={setJoinGamePassword}
               placeholderTextColor="rgba(0, 0, 0, 0.7)"
             />
-            <TouchableOpacity style={styles.button} onPress={handleCreateGame}>
+            <TouchableOpacity style={styles.button} onPress={handleJoinGame}>
               <Text style={styles.buttonText}>Unirse</Text>
             </TouchableOpacity>
             <Text style={[styles.title, styles.centeredTitle]}>Crear Partida</Text>
@@ -263,6 +277,7 @@ const Lobby = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    top:20,
     flexDirection: 'row',
   },
   leftSide: {
