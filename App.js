@@ -24,6 +24,7 @@ import SolicitudDetails from './Pantallas/SolicitudDetails'; // Assuming Login i
 import Chat from './Pantallas/Chat'; // Assuming Login is in the "Pantallas" directory
 import Lobby from './Pantallas/Lobby'; // Assuming Login is in the "Pantallas" directory
 import SocketsTest from './Pantallas/SocketsTest'; // Assuming Login is in the "Pantallas" directory
+import Partida from './Pantallas/Partida'; // Assuming Login is in the "Pantallas" directory
 
 const Stack = createNativeStackNavigator();
 
@@ -54,7 +55,7 @@ export default function App() {
         <Stack.Screen name="Chat" component={Chat} options={{ headerShown: false }}/>
         <Stack.Screen name="Lobby" component={Lobby} options={{ headerShown: false }}/>
         <Stack.Screen name="SocketsTest" component={SocketsTest} options={{ headerShown: false }}/>
-        
+        <Stack.Screen name="Partida" component={Partida} options={{ headerShown: false }}/>
         {/* Add more screens here as needed */}
       </Stack.Navigator>
     </NavigationContainer>
