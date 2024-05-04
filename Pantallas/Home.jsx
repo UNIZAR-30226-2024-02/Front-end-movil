@@ -20,13 +20,17 @@ export default function Home() {
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage} resizeMode="stretch">
-      <View style={styles.container}>
+        <Text style={styles.title}>EL RISKILLO</Text>
+      <View style={styles.row}>
+
+      <TouchableOpacity style={styles.button} onPress={goToRegister}>
+          <Text style={styles.buttonText}>Registrarse</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.button} onPress={goToLogin}>
           <Text style={styles.buttonText}>Iniciar Sesión</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={goToRegister}>
-          <Text style={styles.buttonText}>Registrarse</Text>
-        </TouchableOpacity>
+        
 
         <TouchableOpacity style={styles.button} onPress={goToSockets}>
           <Text style={styles.buttonText}>Test Sockets</Text>
@@ -44,10 +48,24 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 160, // Adjust spacing as needed
+    color: 'white',
+    fontSize: 35,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
+  },
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    
   },
   button: {
     backgroundColor: '#DB4437',
@@ -55,6 +73,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     borderRadius: 25,
     marginBottom: 20,
+    marginLeft: 20,
     width: 200, // Ensuring all buttons have the same width
     justifyContent: 'center',
     alignItems: 'center',
@@ -63,14 +82,21 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 3,
+      height: 2,
     },
+    
     shadowOpacity: 0.5,
     shadowRadius: 4,
     elevation: 5,
     // Adding larger darker bottom part
-    borderBottomColor: 'rgba(0,0,0,0.5)',
+    borderBottomColor: 'rgba(0,0,0,0.3)',
     borderBottomWidth: 5,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    bottom:120,
   },
   buttonText: {
     color: 'white',

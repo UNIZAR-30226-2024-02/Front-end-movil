@@ -53,7 +53,7 @@ export default function Inicial({ navigation, route }) {
       <View style={styles.container}>
           <TouchableOpacity style={styles.Lobbybutton} onPress={goToCrearPartida}>
           <FontAwesome name="gamepad" size={24} color="white" />
-            <Text style={styles.LobbybuttonText}>Lobby</Text>
+            <Text style={styles.LobbybuttonText}>Partidas</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.Rankingbutton} onPress={goToRanking}>
           <FontAwesome name="trophy" size={24} color="white" />

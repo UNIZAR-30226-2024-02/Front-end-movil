@@ -7,7 +7,6 @@ import { images } from '../assets/Skins_image'
 export default function SkinDetailScreen({ route}) {
   const { skin,token} = route.params;
   const [misSkin,setSkinsMySkins]=useState([]);
-  console.log('Token:', token); // Access token
   const fetchData = async () => {
     try {
       const responseMy = await axios.get(
