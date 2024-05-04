@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity,ImageBackground, Alert } from 
 import axios from 'axios';
 import { IP } from '../config';
 
-export default function SolicitudDetails({ route }) {
+export default function SolicitudDetails({ navigation,route }) {
   const {solicitante,token} = route.params;
   console.log('Token:', token); // Access token
   console.log('amigo:', solicitante)
@@ -18,6 +18,7 @@ export default function SolicitudDetails({ route }) {
       );
       Alert.alert('Sucess.La petición se ha aceptado,ahora sois amigos.');
       console.log('Response:', response.data);
+      navigation.navigate('MisSolicitudes', { token: token });
     } catch (error) {
       console.error('Error friend:', error);
     }

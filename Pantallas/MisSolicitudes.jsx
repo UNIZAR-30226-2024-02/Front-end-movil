@@ -2,30 +2,38 @@ import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Image, ImageBackground, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
+import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
 
-export default function FriendshipRequests({ navigation,route }){
+export default function FriendshipRequests({ navigation, route }){
   const { token } = route.params;
   const [requests, setRequests] = useState([]);
   console.log('Token:', token); // Access token
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(IP+'/amistad/listarSolicitudes', {
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(IP+'/amistad/listarSolicitudes', {
         headers: {
           Authorization: token,
         },
       });
       const responseData = response.data;
       setRequests(responseData.solicitudes);
-      console.log(responseData.solicitudes)
-      } catch (error) {
-        console.error('Error fetching friendship:', error);
-      }
-    };
+      console.log(responseData.solicitudes);
+    } catch (error) {
+      console.error('Error fetching friendship:', error);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, [token]);
+
+  // Use useFocusEffect to refetch data when the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+    }, [])
+  );
 
   const handleSolicitudPress = (user) => {
     navigation.navigate('SolicitudDetails', { solicitante: user, token: token });
@@ -40,12 +48,12 @@ export default function FriendshipRequests({ navigation,route }){
           </View>
           {requests.map((userId) => (
             <TouchableOpacity
-            key={userId}
-            onPress={() => handleSolicitudPress(userId)}>
-            <View key={userId} style={styles.tableRow}>
-              <Text style={styles.playerName}>{userId}</Text>
-            </View>
-          </TouchableOpacity>
+              key={userId}
+              onPress={() => handleSolicitudPress(userId)}>
+              <View style={styles.tableRow}>
+                <Text style={styles.playerName}>{userId}</Text>
+              </View>
+            </TouchableOpacity>
           ))}
         </View>
       </ScrollView>

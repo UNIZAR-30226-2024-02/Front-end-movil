@@ -2,28 +2,36 @@ import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
+import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
 
 export default function FriendshipRequests({ navigation, route }) {
-  const { id,token } = route.params;
+  const { id, token } = route.params;
   const [chats, setChats] = useState([]);
-  
-  useEffect(() => {
-    const fetchChats = async () => {
-      try {
-        const response = await axios.get(IP+'/chats/listar', {
-          headers: {
-            Authorization: token,
-          },
-        });
-        setChats(response.data.chats);
-        console.log(response.data.chats)
-      } catch (error) {
-        console.error('Error fetching chats:', error);
-      }
-    };
 
+  const fetchChats = async () => {
+    try {
+      const response = await axios.get(IP+'/chats/listar', {
+        headers: {
+          Authorization: token,
+        },
+      });
+      setChats(response.data.chats);
+      console.log(response.data.chats);
+    } catch (error) {
+      console.error('Error fetching chats:', error);
+    }
+  };
+
+  useEffect(() => {
     fetchChats();
   }, [token]);
+
+  // Use useFocusEffect to refetch data when the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchChats();
+    }, [])
+  );
 
   const handleChatPress = (c) => {
     // Navigate to chat details screen or implement your logic here

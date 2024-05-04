@@ -35,10 +35,7 @@ export default function Inicial({ navigation, route }) {
             <Text style={styles.AmistadbuttonText}>Buscar Solicitudes</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.chatButton} onPress={goToChats}>
-          <FontAwesome name="comments" size={24} color="white" />
-          <Text style={styles.chatButtonText}>Chat</Text>
-        </TouchableOpacity>
+
       </View>
     </ImageBackground>
   );

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity,ImageBackground, Alert } from 
 import axios from 'axios';
 import { IP } from '../config';
 
-export default function PlayerDetails({ route }) {
+export default function PlayerDetails({navigation, route }) {
   const {friend,token} = route.params;
   console.log('Token:', token); // Access token
   console.log('amigo:', friend)
@@ -17,6 +17,7 @@ export default function PlayerDetails({ route }) {
       );
       Alert.alert("Sucess.Eliminado de la lista de amigos");
       console.log('Response:', response.data);
+      navigation.navigate('MisAmigos', { token: token });
       
     } catch (error) {
       console.error('Error friend:', error);
