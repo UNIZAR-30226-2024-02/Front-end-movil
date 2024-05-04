@@ -56,8 +56,11 @@ const Lobby = ({ navigation, route }) => {
       const response = await axios.get(IP+'/partidas/invitaciones', { headers: {'Authorization': `${token}` } });
       const invitacionesData = await Promise.all(response.data.Partidas.map(async partida => {
         try {
-          const partidaInvitedInfoResponse = await axios.get(`${IP}/partidas/partida/${partida._id}`, { headers: { 'Authorization': token } });
-          return partidaInvitedInfoResponse.data;
+          if (partida != null) {
+            const partidaInvitedInfoResponse = await axios.get(`${IP}/partidas/partida/${partida._id}`, { headers: { 'Authorization': token } });
+            return partidaInvitedInfoResponse.data;
+          }
+          return null;
         } catch (error) {
           console.error('Error fetching partida info:', error);
           return null; // Returning null for failed requests
@@ -173,11 +176,11 @@ const Lobby = ({ navigation, route }) => {
             <View style={styles.gamesList}>
               {partidas.map(game => (
                 <TouchableOpacity 
-                  key={game._id} 
+                  key={game.nombre}
                   onPress={() => handlePartidaPress(game._id)}
                   style={[styles.gameRectangle, selectedGame && selectedGame._id === game._id && styles.selectedGameRectangle]}
                 >
-                  <Text style={styles.gameRectangleText}>{game._id}</Text>
+                  <Text style={styles.gameRectangleText}>{game.nombre} ({game.jugadores.length}/{game.maxJugadores})</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -185,13 +188,13 @@ const Lobby = ({ navigation, route }) => {
           <View>
             <Text style={[styles.title, styles.centeredTitle]}>Invitaciones</Text>
             <ScrollView>
-              {invitaciones.map(game => (
+              {invitaciones.filter(game => game !== null).map(game => (
                 <TouchableOpacity 
-                  key={game._id} 
+                  key={game.nombre} 
                   style={styles.invitedGame}
                   onPress={() => handlePartidaPress(game._id)}
                 >
-                  <Text style={styles.invitedGameText}>{game._id}</Text>
+                  <Text style={styles.invitedGameText}>{game.nombre} ({game.jugadores.length}/{game.maxJugadores})</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
