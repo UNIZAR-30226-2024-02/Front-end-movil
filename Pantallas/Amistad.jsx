@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     justifyContent: 'center',
   },
-  Lobbybutton: {
+  Partidasbutton: {
     backgroundColor: '#DB4437',
     paddingVertical: 11,
     paddingHorizontal: 40,
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(0,0,0,0.2)',
     borderBottomWidth: 5,
   },
-  LobbybuttonText: {
+  PartidasbuttonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',

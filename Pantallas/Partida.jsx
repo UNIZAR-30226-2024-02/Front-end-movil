@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
 
-const Partida = ({ route }) => {
+const Partida = ({ navigation, route }) => {
   const { id, token } = route.params;
   const [partidaData, setPartidaData] = useState(null);
 
@@ -28,10 +28,10 @@ const Partida = ({ route }) => {
           'Authorization': token,
         }
       });
-      
+
       if (response.status === 200) {
         Alert.alert('Success', 'Unido correctamente');
-        // Optionally, you can navigate to another screen or perform additional actions after successful joining
+        navigation.navigate('Lobby', { id, token }); // Navigate to Lobby component with partidaData and token
       } else {
         Alert.alert('Error', 'Error uniendo');
       }
