@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView,Image, ImageBackground, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome from expo/vector-icons
 import axios from 'axios';
+import { images } from '../assets/Skins_image'
 import { IP } from '../config';
 
 export default function Perfil({ navigation,route }) {
 
   const { token } = route.params;
   const [perfil, setPerfil] = useState(null);
+  const [equipada,setEquipada]=useState([]);
+  const [money, setMoney]=useState({});
 
   const fetchData = async () => {
     try {
@@ -22,10 +25,38 @@ export default function Perfil({ navigation,route }) {
     }
   };
 
+  const equipadas = async () => {
+    try {
+      const response = await axios.get(
+        IP+'/misSkins/equipadas', // Replace with your server's URL
+        { headers: { Authorization: token } }
+      );
+      console.log("Equipadas: ",response.data['avatar']);
+      setEquipada(response.data['avatar']);
+    } catch (error) {
+      console.error('Error fetching skins:', error);
+    }
+  };
+
+  const dinero =async () => {
+    try{
+      const responseMoney=await axios.get(
+        IP+'/tienda/dineroUser', // Replace with your server's URL
+        { headers: { Authorization: token } }
+      );
+      setMoney(responseMoney.data);
+      console.log("Money: ",responseMoney.data);
+    } catch (error) {
+      console.error('Error fetching skins:', error);
+    }
+  };
+
+
 
   useEffect(() => {
-   
+    equipadas();
     fetchData();
+    dinero();
   }, [token]);
 
   
@@ -43,8 +74,19 @@ export default function Perfil({ navigation,route }) {
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}  resizeMode="stretch">
-      <Text style={styles.title}>Perfil de {perfil ? perfil.nombre : ''} </Text>
-      
+      <View style={styles.detailsContainer}>
+      {images.find(item => item.index === equipada.idSkin) && (
+        <Image
+          source={images.find(item => item.index === equipada.idSkin).img}
+          style={styles.skinImage}
+        />
+      )}
+        <View style={styles.perfilDetails}>
+          <Text style={styles.title}>{perfil ? perfil.nombre : ''} </Text>
+          <Text style={styles.title}>Dinero: {money.dinero} </Text>
+          <Text style={styles.title}>Elo: {perfil ? perfil.elo : ''} </Text>
+        </View>
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
         <TouchableOpacity style={styles.skinsbutton} onPress={goToMySkins}>
         <FontAwesome name="paint-brush" size={24} color="white" />
@@ -68,25 +110,36 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 10, 
+  },
+  detailsContainer:{
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: '#DB4437',
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    width: '90%',
+    elevation: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    marginTop:30,
+    marginLeft:15,
   },
   title: {
     fontWeight: 'bold',
     color: 'white',
-    top:50,
-    left:250,
-    fontSize: 25,
+    fontSize: 18,
     fontWeight: 'bold',
-    textTransform: 'uppercase',
-    // Adding text shadow to create black outline
     textShadowColor: 'black',
     textShadowOffset: { width: 2, height: 1 },
     textShadowRadius: 2,
   },
   skinImage: {
-    width: '40%',
-    aspectRatio: 1,
+    width: 100,
+    height: 100,
     borderRadius: 8,
+    margin: 10,
   },
   skinsbutton: {
     backgroundColor: '#DB4437',
@@ -96,7 +149,6 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     marginRight: 10,
     position: 'absolute',
-    top:200,
     left:50,
     justifyContent: 'center',
     alignItems: 'center',
@@ -115,6 +167,11 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(0,0,0,0.2)',
     borderBottomWidth: 5,
   },
+  perfilDetails: {
+    flex: 1,
+    justifyContent: 'center',
+    marginLeft: 10,
+  },
   amigosbutton: {
     backgroundColor: '#DB4437',
     paddingVertical: 11,
@@ -123,7 +180,6 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     marginRight: 10,
     position: 'absolute',
-    top:200,
     left:500,
     justifyContent: 'center',
     alignItems: 'center',
@@ -150,7 +206,6 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     marginRight: 10,
     position: 'absolute',
-    top:200,
     left:270,
     justifyContent: 'center',
     alignItems: 'center',

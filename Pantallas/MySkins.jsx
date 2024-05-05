@@ -7,6 +7,7 @@ import { images } from '../assets/Skins_image'
 export default function MisSkins({ navigation, route }) {
   const { token } = route.params;
   const [skins, setSkins] = useState([]);
+  const [equipada,setEquipada]=useState([]);
   console.log('Token:', token); // Access token
   useEffect(() => {
     const fetchData = async () => {
@@ -22,8 +23,24 @@ export default function MisSkins({ navigation, route }) {
       }
     };
 
+    const equipadas = async () => {
+      try {
+        const response = await axios.get(
+          IP+'/misSkins/equipadas', // Replace with your server's URL
+          { headers: { Authorization: token } }
+        );
+        console.log("Equipadas: ",response.data);
+        setEquipada(response.data);
+      } catch (error) {
+        console.error('Error fetching skins:', error);
+      }
+    };
+
     fetchData();
+    equipadas();
   }, [token]);
+
+
 
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {
@@ -44,6 +61,10 @@ export default function MisSkins({ navigation, route }) {
             <View style={styles.skinDetails}>
               <Text style={styles.skinName}>{skin.idSkin}</Text>
               <Text style={styles.skinDescription}>{skin.tipo}</Text>
+              {
+                equipada[skin.tipo.charAt(0).toLowerCase() + skin.tipo.slice(1)]._id === skin._id && 
+                (<Text style={styles.skinEquiped}>Equipada</Text>)
+              }
             </View>
           </TouchableOpacity>
         ))}
@@ -93,6 +114,11 @@ const styles = StyleSheet.create({
   skinDescription: {
     fontSize: 16,
     marginBottom: 5,
+  },
+  skinEquiped: {
+    fontSize: 16,
+    marginBottom: 5,
+    color:'green',
   },
   skinPrice: {
     fontSize: 16,

@@ -8,10 +8,25 @@ export default function Ranking({ route }) {
   const { token } = route.params;
   console.log('Token:', token);
   const [rankingData, setRankingData] = useState([]);
+  const [perfil, setPerfil] = useState(null);
 
   useEffect(() => {
     fetchRankingData();
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(
+        IP+'/perfil',
+        { headers: { Authorization: token } }
+      );
+      console.log(response.data.nombre)
+        setPerfil(response.data);
+    } catch (error) {
+      console.error('Error fetching skins:', error);
+    }
+  };
 
   const fetchRankingData = async () => {
     try {
@@ -26,6 +41,9 @@ export default function Ranking({ route }) {
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
+      <View style={styles.eloContainer}>
+        <Text style={styles.title}>ELO:  {perfil ? perfil.elo : ''}</Text>
+      </View>
       <ScrollView vertical={true} contentContainerStyle={styles.container}>
         <View style={[styles.table, { minWidth: '60%' }]}>
           <View style={styles.tableHeader}>
@@ -53,46 +71,85 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  eloContainer: {
+    marginTop: 30, 
+    marginLeft: 15, 
+    backgroundColor: 'gray',
+    borderRadius: 10,
+    width: 150,
+    borderColor: '#DB4437',
+    borderWidth: 2,
+  },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 20,
+    marginTop:10,
+  },
+  title: {
+    fontWeight: 'bold',
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
+    textAlign:'center',
   },
   table: {
     borderWidth: 1,
-    borderColor: 'white',
-    borderRadius: 8,
+    borderColor: '#DB4437',
+    borderRadius: 15,
     overflow: 'hidden',
+    width: '90%',
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#DB4437',
     padding: 10,
   },
   headerText: {
+    textAlign: 'center',
+    color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
   },
   tableRow: {
     flexDirection: 'row',
     backgroundColor: '#ffffff',
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#4CAF50',
+    borderBottomColor: '#DB4437',
   },
   rank: {
-    fontSize: 16,
     textAlign: 'center',
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
   },
   playerName: {
-    fontSize: 16,
     textAlign: 'center',
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
   },
   score: {
-    fontSize: 16,
     textAlign: 'center',
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
   },
 });

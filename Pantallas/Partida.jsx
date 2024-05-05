@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity, ImageBackground } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
 
@@ -42,27 +42,29 @@ const Partida = ({ route }) => {
   };
 
   return (
-    <View style={styles.container}>
-      {partidaData ? (
-        <View>
-          <Text style={styles.title}>Nombre de la partida: {partidaData.nombre}</Text>
-          <Text style={styles.subTitle}>Nombre del chat: {partidaData.chat.nombreChat}</Text>
-          <Text style={styles.subTitle}>Número máximo de jugadores: {partidaData.maxJugadores}</Text>
-          <Text style={styles.subTitle}>Jugadores:</Text>
-          <View style={styles.jugadoresContainer}>
-            {partidaData.jugadores.map(jugador => (
-              <Text key={jugador._id} style={styles.jugador}>{jugador.usuario}</Text>
-            ))}
+    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
+      <View style={styles.container}>
+        {partidaData ? (
+          <View>
+            <Text style={styles.title}>Nombre de la partida: {partidaData.nombre}</Text>
+            <Text style={styles.subTitle}>Nombre del chat: {partidaData.chat.nombreChat}</Text>
+            <Text style={styles.subTitle}>Número máximo de jugadores: {partidaData.maxJugadores}</Text>
+            <Text style={styles.subTitle}>Jugadores:</Text>
+            <View style={styles.jugadoresContainer}>
+              {partidaData.jugadores.map(jugador => (
+                <Text key={jugador._id} style={styles.jugador}>-{jugador.usuario}</Text>
+              ))}
+            </View>
+            {/* Render other details of the partida */}
+            <TouchableOpacity style={styles.button} onPress={handleJoinPartida}>
+              <Text style={styles.buttonText}>Unirse a Partida</Text>
+            </TouchableOpacity>
           </View>
-          {/* Render other details of the partida */}
-          <TouchableOpacity style={styles.button} onPress={handleJoinPartida}>
-            <Text style={styles.buttonText}>Unirse a Partida</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <Text>Loading...</Text>
-      )}
-    </View>
+        ) : (
+          <Text>Loading...</Text>
+        )}
+      </View>
+    </ImageBackground>
   );
 };
 
@@ -74,13 +76,24 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
     marginBottom: 10,
+    color: 'white',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
+    textAlign:'center',
   },
   subTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 5,
+    color: 'white',
+    textTransform: 'uppercase',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
   },
   jugadoresContainer: {
     marginTop: 5,
@@ -88,18 +101,47 @@ const styles = StyleSheet.create({
   jugador: {
     fontSize: 16,
     marginBottom: 3,
+
+    color: 'white',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
+    textAlign:'center',
   },
   button: {
-    marginTop: 20,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#DB4437',
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 8,
+    width:190,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+    borderBottomColor: 'rgba(0,0,0,0.2)',
+    borderBottomWidth: 5,
+    alignSelf: 'center',
   },
   buttonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
+    textTransform: 'uppercase',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
+  },
+  backgroundImage: {
+    flex: 1,
+    resizeMode: 'cover',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

@@ -82,9 +82,13 @@ const styles = StyleSheet.create({
     marginLeft: 15, 
   },
   moneyText: {
+    color: 'white',
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#ffffff',
+    textTransform: 'uppercase',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
   },
   background: {
     flex: 1,

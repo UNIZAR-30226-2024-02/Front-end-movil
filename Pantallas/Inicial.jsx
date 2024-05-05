@@ -137,7 +137,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     textTransform: 'uppercase',
-    // Adding text shadow to create black outline
     textShadowColor: 'black',
     textShadowOffset: { width: 2, height: 1 },
     textShadowRadius: 2,

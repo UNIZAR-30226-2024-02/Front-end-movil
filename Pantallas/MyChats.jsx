@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
+import { View, ScrollView, Text, TextInput,TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
@@ -7,6 +7,8 @@ import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEff
 export default function FriendshipRequests({ navigation, route }) {
   const { id, token } = route.params;
   const [chats, setChats] = useState([]);
+  const [filtred, setFiltred] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchChats = async () => {
     try {
@@ -16,6 +18,7 @@ export default function FriendshipRequests({ navigation, route }) {
         },
       });
       setChats(response.data.chats);
+      setFiltred(response.data.chats);
       console.log(response.data.chats);
     } catch (error) {
       console.error('Error fetching chats:', error);
@@ -33,6 +36,18 @@ export default function FriendshipRequests({ navigation, route }) {
     }, [])
   );
 
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    if (query === '') {
+      setFiltred(chats); // Mostrar todos los amigos cuando la búsqueda está vacía
+    } else {
+      const filtered = chats.filter(chat =>
+        chat.nombre.includes(query)
+      );
+      setFiltred(filtered);
+    }
+  };
+
   const handleChatPress = (c) => {
     // Navigate to chat details screen or implement your logic here
     navigation.navigate('Chat',{ chat:c, id:id, token: token });
@@ -40,21 +55,26 @@ export default function FriendshipRequests({ navigation, route }) {
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Introduce el nombre del chat a buscar"
+          onChangeText={handleSearch}
+          value={searchQuery}
+          mode="outlined"
+        />
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={[styles.table, { minWidth: '60%' }]}>
-          <View style={styles.tableHeader}>
-            <Text style={styles.headerText}>Chat ID</Text>
-          </View>
-          {chats.map((chat) => (
+          {filtred.map((chat) => (
             <TouchableOpacity
               key={chat.nombre}
+              style={styles.ChatItem}
               onPress={() => handleChatPress(chat)}>
-              <View style={styles.tableRow}>
-                <Text style={styles.chatId}>{chat.nombre}</Text>
+              <View style={styles.ChatDetails}>
+                <Text style={styles.ChatName}>{chat.nombre}</Text>
               </View>
             </TouchableOpacity>
           ))}
-        </View>
       </ScrollView>
     </ImageBackground>
   );
@@ -65,38 +85,48 @@ const styles = StyleSheet.create({
     flex: 1,
     resizeMode: 'cover',
     justifyContent: 'center',
-    alignItems: 'center',
+  },
+  searchContainer: {
+    marginTop: 25, 
+    marginLeft: 15,
+    marginBottom: 10, 
+  },
+  searchInput: {
+    backgroundColor: '#ffffff',
+    padding: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#DB4437',
+    borderRadius: 8,
+    minWidth: '80%',
   },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 10,
   },
-  table: {
-    borderWidth: 1,
-    borderColor: 'white',
-    borderRadius: 8,
-    overflow: 'hidden',
+  ChatDetails: {
+    flex: 1,
+    justifyContent: 'center',
+    marginLeft: 10,
   },
-  tableHeader: {
-    backgroundColor: '#4CAF50',
-    padding: 10,
-  },
-  headerText: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  ChatName: {
     color: 'white',
-    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
   },
-  tableRow: {
-    backgroundColor: '#ffffff',
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#4CAF50',
-  },
-  chatId: {
-    fontSize: 16,
-    textAlign: 'center',
+  ChatItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 8,
+    width: '90%',
+    elevation: 3,
+    height: 60,
   },
 });
