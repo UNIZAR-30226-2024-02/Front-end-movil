@@ -66,7 +66,7 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
                 socket.emit('gameStarted', id);
                 console.log(id)
                 console.log(token)
-                navigation.navigate('RiskMap', { token: token });
+                navigation.navigate('RiskMap', { token: token, partida: partidaData });//Envio token y partida a mapa
             } else {
                 console.error('Error al empezar la partida:', response.data.message);
                 Alert.alert('Error', 'Ha ocurrido un error al empezar la partida. Por favor, inténtalo de nuevo más tarde.');

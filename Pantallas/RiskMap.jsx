@@ -7,7 +7,9 @@ import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-vi
 
 import Dialog from "react-native-dialog";
 
-export default function RiskMap() {
+export default function RiskMap({ naviagtion, route }) {
+
+  //const {token, partida} = route.params;
 
   //Pruebas para cambiar el color
   const [colorTest, setColorTest] = useState(["#ff0", "#cc6"]);
@@ -401,14 +403,13 @@ export default function RiskMap() {
     let nombrePartida = '';
     let ganador = null;
     let turno= 0;
-    let jugadores = [];
+    const [jugadores, setJugadores] = useState([]);
     let cartas= [];
     let descartes= [];
     let mapa = [];
     let colores = ['verde', 'rojo', 'azul', 'amarillo', 'rosa', 'morado'];
-    let turnoJugador = 'ab';
+    const [turnoJugador, setTurnoJugador] = useState('q');
     let numJugadores = 3; // stub
-    let partida= {}; // para inicializarlo
     let fase = 0; // Colocar- -> 0; Atacar -> 1; Maniobrar -> 2; Robar -> 3; Fin -> 4;
     // Atributos especfícios (míos, del jugador que juega en este cliente)
     const [numTropas, setNumTropas] = useState(1000);
@@ -418,12 +419,14 @@ export default function RiskMap() {
     let ocupado = false;
 
     //TODO: Guardar el nombre de jugador en el localStorage para meterlo aqui
-    let whoami= 'ab';
+    let whoami= 'q'; // stub
     let colorMap =  {}; // no parece necesario
     let text= '';
     let tropasPuestas = 0;
-
+    let partida ={};
     let recolocacion = false;
+
+    const [textoFase, setTextoFase] = useState('Falta implementar el cambiar este texto(FASE)');
     /*
     // FASES PARTIDA
     const Colocar = 0;
@@ -451,6 +454,36 @@ export default function RiskMap() {
       }, 1);
     });
   }
+
+  const updateText = (fase ) =>{
+    if(turnoJugador === whoami){
+      switch(fase){
+        case 0:
+          if(turnoJugador === whoami){
+            setTextoFase('Fase colocación: Coloca una tropa en un país libre');
+          }
+          else 
+            setTextoFase('Espera tu turno');
+            
+          break;
+        case 1:
+          setTextoFase('Fase ataque: Mueve las tropas de un país tuyo a uno enemigo contiguo');
+          break;
+        case 2:
+          setTextoFase('Fase maniobra: Mueve las tropas de un país tuyo a otro tuyo');
+          break;
+        case 3:
+          setTextoFase('Fase robo: Roba una carta');
+
+          break;
+      }
+    } else {
+      setTextoFase('Espera tu turno');
+      numTropas =  0 ;
+    }
+  }
+
+  //maquina de estados de la partida
   const stateMachine = async (path , territoriname , e) =>   {
     const targetId = path;
     console.log(`Clic en la región con ID: ${targetId}`);
@@ -882,7 +915,8 @@ export default function RiskMap() {
   const inicializarPartida = (partida) => {
     // Inicializa los atributos de la partida
     
-    jugadores = partida.jugadores;
+    //jugadores = partida.jugadores;
+    setJugadores(jugadores);
     console.log(jugadores);
     for (let i = 0; i < jugadores.length; i++) {
       jugadores[i].color = colores[i];
@@ -904,16 +938,18 @@ export default function RiskMap() {
     //TODO fetch cartas del back
     cartasStub();
 
+    //setTurnoJugador(jugadores[turno % numJugadores].usuario);
     //turnoJugador = partida.jugadores[partida.turno % this.numJugadores];
 
   }
 
   const onLoad = () => {
-    //TODO fetch partida del back
-    partida = { _id: '1', maxJugadores: 3, nombre: 'Partida 1', fechaInicio: '2021-06-01T00:00:00.000Z', fechaFin: '2021-06-01T00:00:00.000Z'
-    , password: '1234', ganador: null, turno: 0, jugadores: [{usuario: "a", color: null}, {usuario: "b", color: null}], cartas: [], descartes: [], mapa: [], chat: [], fase: 0, __v: 0};
- 
-      inicializarPartida(partida);
+    //Partida viene del lobby
+      //Solo para testear
+      let partidaTest = {id: 1, nombre: 'Partida 1', jugadores: [{usuario: 'Jugador 1', color: 'red', territorios: []}, {usuario: 'Jugador 2', color: 'blue', territorios: []}], turno: 0, fase: 0, ganador: '', descartes: [], mapa: []};
+      partida = partidaTest;
+      //setJugadores(partida.jugadores);
+      inicializarPartida(partidaTest);
 
       distribuirPiezas();
 
@@ -972,7 +1008,7 @@ export default function RiskMap() {
 
  
   const colocarTropasCorrectas = () => {
-    console.log('me meto en colocarTropasCorrectas: ', stateTropas.territoriname);
+    //console.log('me meto en colocarTropasCorrectas: ', stateTropas.territoriname);
     if (state.message === null) {
       return;
     }
@@ -1026,22 +1062,33 @@ export default function RiskMap() {
   return (
     <View style={styles.container} >
       <View style={styles.containerleft}>
-      <ReactNativeZoomableView
-        maxZoom={3}
-        minZoom={0.8}
-        zoomStep={0.5}
-        initialZoom={1}
-        bindToBorders={false}
->
-        <MapSVGComponent />
-      </ReactNativeZoomableView>
+        <ReactNativeZoomableView
+          maxZoom={3}
+          minZoom={0.8}
+          zoomStep={0.5}
+          initialZoom={1}
+          bindToBorders={false}
+  >
+          <MapSVGComponent />
+        </ReactNativeZoomableView>
       </View>
       <View style={styles.containerRight}>
         <Text1 style={styles.zoneText}>Tropas: {numTropas}</Text1>
+        <Text1 style={styles.zoneText}>Turno del jugador: {turnoJugador}</Text1>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.botonControl}>
+            <Text1 style={styles.zoneText}>Siguiente Fase</Text1>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.botonControl}>
+            <Text1 style={styles.zoneText}>Cambiar turno</Text1>
+          </TouchableOpacity>
 
+          <Text1 style={styles.zoneText}>{textoFase}</Text1>
         </View>
-        
-        <Dialog.Container visible={visible} >
+      </View>
+
+      {/*DIALOGO PARA LAS TROPAS */}
+        <Dialog.Container visible={visible} > 
         <Dialog.Title>Password Recovery</Dialog.Title>
            <Dialog.Input label="Troop" onChangeText={(troop ) => setState({ message: troop })} 
             ></Dialog.Input>
@@ -1063,12 +1110,12 @@ const styles = StyleSheet.create({
     justifyContent: 'left',
   },
   containerRight: {
-    left: 50,
-    top: 50,
+    top: 25,
+    left: 15,
     flex: 1,
-    alignItems: 'end',
+    alignItems: 'start',
     flexDirection: 'column',
-    justifyContent: 'right',
+    justifyContent: 'start',
   },
   containerleft: {
     height: 400,
@@ -1079,43 +1126,21 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
   },
-  lowRiskZone: {
-    left: 50,
-    width: 100,
-    height: 100,
-    backgroundColor: 'green',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 50,
-  },
-  mediumRiskZone: {
-    position: 'absolute',
-    top: 150,
-    left: 150,
-    width: 100,
-    height: 100,
-    backgroundColor: 'yellow',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 50,
-  },
-  highRiskZone: {
-    position: 'absolute',
-    top: 250,
-    left: 250,
-    width: 100,
-    height: 100,
-    backgroundColor: 'red',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 50,
-  },
   zoneText: {
     color: 'black',
     fontWeight: 'bold',
   },
-  svgcontainer: {
-    width: 1000,
-    height: 1000,
+  buttonContainer: {
+    flexDirection: 'column',
+    justifyContent: 'space-around',
+    width: 200
+  },
+  botonControl: {
+    backgroundColor: '#007bff',
+    color: 'white',
+    padding: 10,
+    textAlign: 'center',
+    margin: 10,
+    borderRadius: 5,
   },
 });
