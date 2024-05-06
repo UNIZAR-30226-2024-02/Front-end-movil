@@ -3,6 +3,7 @@ import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleShe
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { IP } from '../config';
+import CryptoJS from 'crypto-js';
 
 export default function Register({ navigation }) {
   const { width, height } = useWindowDimensions();
@@ -27,7 +28,7 @@ export default function Register({ navigation }) {
               try {
                   const response = await axios.post(IP+'/register', {
                   idUsuario: idUsuario,
-                  password: password,
+                  password: CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex),
                   correo: correo, // Add email here if needed
                 });
           

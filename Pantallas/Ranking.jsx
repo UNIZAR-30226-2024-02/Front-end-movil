@@ -42,14 +42,14 @@ export default function Ranking({ route }) {
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
       <View style={styles.eloContainer}>
-        <Text style={styles.title}>ELO:  {perfil ? perfil.elo : ''}</Text>
+        <Text style={styles.title}>Mi elo:  {perfil ? perfil.elo : ''}</Text>
       </View>
       <ScrollView vertical={true} contentContainerStyle={styles.container}>
         <View style={[styles.table, { minWidth: '60%' }]}>
           <View style={styles.tableHeader}>
             <Text style={[styles.headerText, { flex: 1 }]}>Rank</Text>
             <Text style={[styles.headerText, { flex: 3 }]}>Player</Text>
-            <Text style={[styles.headerText, { flex: 1 }]}>Pts</Text>
+            <Text style={[styles.headerText, { flex: 1 }]}>Elo</Text>
           </View>
           {rankingData.map((player, index) => (
             <View key={index} style={styles.tableRow}>
