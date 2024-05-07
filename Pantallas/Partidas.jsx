@@ -23,9 +23,9 @@ const Partidas = ({ navigation, route }) => {
 
 
   useEffect(() => {
-    fetchPartidasData();
-    fetchInvitations();
-  }, []);
+    fetchPartidasData()
+    fetchInvitations()
+  }, [])
 
   const fetchPartidasData = async () => {
     try {
@@ -87,10 +87,10 @@ const Partidas = ({ navigation, route }) => {
       return;
     } else {
       try {
-        const privacidad = !!createGamePassword;
+        const password = createGamePassword === '' ? null : createGamePassword;
         const response = await axios.post(IP+'/nuevaPartida', {
           nombre: createGameName,
-          password: createGamePassword,
+          password: password,
           numJugadores: createGamePlayers,
         }, {
           headers: {

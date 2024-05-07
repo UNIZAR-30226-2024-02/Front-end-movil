@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TextInput, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TextInput, StyleSheet, ToastAndroid, Alert, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
 import io from 'socket.io-client';
 import { images } from '../assets/Skins_image'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Lobby = ({ navigation, route }) => { // Partida and session token are passed as props
     const { id, token } = route.params
-    const socket = io(IP); // Update the URL with your server URL
-    const [partidaData, setPartidaData] = useState(null);
+    const [socket, setSocket] = useState('')
+    const [partidaData, setPartidaData] = useState(null)
+    const [username, setUsername] = useState('')
     const [jugadores, setJugadores] = useState(null)
-    const [invitado, setInvitado] = useState('');
-    const [mensaje, setMensaje] = useState('');
+    const [invitado, setInvitado] = useState('')
+    const [mensaje, setMensaje] = useState('')
 
     useEffect(() => {
-        fetchPartidaData()
+        setSocket(io(IP))
     }, [])
 
     useEffect(() => {
@@ -23,12 +25,52 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
         }
     }, [partidaData]);
 
+    useEffect(() => {
+        if (socket) {
+            fetchPartidaData()
+
+            // TODO: Socket del chat, si se implementa en esta pantalla
+            /*socket.on('chatMessage', (mensaje, user, timestamp, chatId) => {
+            if (chat) {
+                if (!chat.mensajes) {
+                chat.mensajes = []
+                }
+                chat.mensajes.push({ texto: mensaje, idUsuario: user, timestamp: timestamp });
+            }
+            })*/
+
+            /* TODO: no sé por qué no funcionan los .on, el socket no es undefined
+            console.log('socket:', socket)
+            socket.on('userJoined', (user) => {
+                console.log('userJoined', user)
+                ToastAndroid.show(`${user} se ha unido a la partida`, ToastAndroid.SHORT)*/
+                /*this.userService.getUserSkin(user).subscribe(response => {
+                this.users[user] = response.path
+                this.partida.jugadores.push({ usuario: user, territorios: [], cartas: [], abandonado: false, _id: '', skinFichas: '', color: ''})
+                })*/ // Para las skins
+                // use setjugadores for the new user with an empty image path
+                /*setJugadores([...jugadores, [user, '']])
+            })
+        
+            socket.on('userDisconnected', (user) => {
+                console.log('userDisconnected', user)
+                this.toastr.info(user + ' ha abandonado la partida', 'Jugador desconectado')
+                delete this.users[user]
+                console.log(this.users)
+            })
+            this.socket.on('gameStarted', (gameId) => {
+                console.log('gameStarted', gameId)
+                this.router.navigate(['/partida'], { state: { partida: this.partida } })
+            })*/
+        }
+    }, [socket])
+
     const fetchPartidaData = async () => {
         try {
             const response = await axios.get(`${IP}/partidas/partida/${id}`, { headers: { 'Authorization': token } })
-            // TODO: emitir a los sockets de la partida y el chat
-            //this.socket.emit('joinChat', this.chat._id);
-            //this.socket.emit('joinGame', { gameId: this.partida._id, user: this.userService.getUsername() });
+            setUsername(await AsyncStorage.getItem('username'))
+            socket.emit('joinChat', response.data.chat._id)
+            socket.emit('joinGame', { gameId: response.data._id, user: username })
             setPartidaData(response.data)
         } catch (error) {
             console.error('Error fetching partida data:', error)
@@ -92,7 +134,7 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
         axios.put(`${IP}/partida/salirPartida`, { idPartida: id }, { headers: { 'Authorization': token } })
         .then(response => {
             if (response.status === 200) {
-                //this.socket.emit('disconnectGame', { gameId: id, user:  }) TODO
+                socket.emit('disconnectGame', { gameId: id, user: username })
                 navigation.navigate('Partidas', { token: token });
             } else {
                 console.error('Error al salir de la partida:', response.data.message);
@@ -108,11 +150,27 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
         axios.put(`${IP}/nuevaPartida/invite`, { user: invitado, idPartida: id }, { headers: { 'Authorization': token } })
         .then(response => {
             if (response.status === 200) {
-                Alert.alert('Invitación enviada con éxito al jugador ' + invitado);
-                //this.socket.emit('inviteGame', { gameId: id, user_dest: invitado, user_from: this.userService.getUsername()}) TODO
+                ToastAndroid.show('Invitación enviada con éxito al jugador ' + invitado, ToastAndroid.SHORT)
+                socket.emit('inviteGame', { gameId: id, user_dest: invitado, user_from: username})
             } else {
                 console.error('Error al invitar a la partida:', response.data.message);
                 Alert.alert('Error', 'Ha ocurrido un error al invitar a la partida. Por favor, inténtalo de nuevo más tarde.');
+            }
+        })
+        .catch(error => {
+            console.error(error)
+        })
+    }
+
+    const enviarMensaje = () => {
+        axios.post(`${IP}/chats/enviarMensaje`, { OID: partidaData.chat._id, textoMensaje: mensaje }, { headers: { 'Authorization': token } })
+        .then(response => {
+            if (response.status === 200) {
+                partidaData.chat.mensajes.push({texto: mensaje, idUsuario: username , timestamp: new Date().toISOString()})
+                socket.emit('sendChatMessage', { chatId: partidaData.chat._id, message: mensaje, user: username, timestamp: new Date().toISOString()})
+            } else {
+                console.error('Error al enviar mensaje al chat:', response.data.message)
+                Alert.alert('Error', 'Ha ocurrido un error al enviar mensaje al chat. Por favor, inténtalo de nuevo más tarde.')
             }
         })
         .catch(error => {
@@ -131,7 +189,7 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
                         <View key={jugador[0]}>
                             <Text key={jugador[0]} style={styles.jugador}>{jugador[0]}</Text>
                             {
-                                //<Image source={{ uri: jugador[1] }} style={{ width: 50, height: 50 }} />
+                                //<Image source={{ uri: jugador[1] }} style={{ width: 50, height: 50 }} /> TODO: implementar skins
                             }
                         </View>
                     ))) : (<Text>Loading...</Text>)}
@@ -161,7 +219,7 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
                 </View>
                 <View>
                     <Text style={styles.title}>Chat de la partida</Text>
-                    {partidaData.chat.mensajes.map((mensaje, index) => ( // TODO: pensar qué hacer con el chat y TODO: implementar enviar mensaje
+                    {partidaData.chat.mensajes.map((mensaje, index) => ( // TODO: pensar qué hacer con el chat
                         <View key={index} style={styles.messageContainer}>
                             <Text style={styles.messageText}>{mensaje.idUsuario}:</Text>
                             <Text style={styles.messageText}>{mensaje.texto}</Text>
@@ -175,7 +233,7 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
                         onChangeText={setMensaje}
                     />
                     <View style={styles.buttonLeftContainer}>
-                        <TouchableOpacity style={styles.normalButton}>
+                        <TouchableOpacity style={styles.normalButton} onPress={enviarMensaje}>
                             <Text style={styles.buttonText}>Enviar</Text>
                         </TouchableOpacity>
                     </View>
