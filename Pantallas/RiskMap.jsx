@@ -10,8 +10,11 @@ import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-vi
 import Dialog from "react-native-dialog";
 
 export default function RiskMap({ naviagtion, route }) {
+
+  //Esto esta para pruebas
   const { token} = route.params.token;
 
+  //Descomentar esto para final
   //const {token, partida} = route.params;
   let partida ={};
   
@@ -33,6 +36,7 @@ export default function RiskMap({ naviagtion, route }) {
   const [isOk, setOkState] = useState("No");
 
   useEffect(() => {
+    //COMENTADO PARA PRUEBAS SIN VENIR DEL LOBBY
     //console.log(partida)
     //setIdPartida(partida._id)
     onLoad()
@@ -544,13 +548,17 @@ export default function RiskMap({ naviagtion, route }) {
     let seguir = false;
     useEffect(() => {
       console.log(dialog);
-      if(dialog === 'colocar'){
+      switch(dialog){
+        case 'colocar':
+          setDialog(null);
+          setDialogBool(false);
+          colocarTropasCorrectas();
+          break;
+      case 'seleccionar':
         setDialog(null);
         setDialogBool(false);
-        colocarTropasCorrectas();
-      }
-      else if('seleccionar'){
-        seleccionarTropasCorrectas
+        seleccionarTropasCorrectas();
+        break;
       }
     }, [dialogBool]);
 
@@ -867,7 +875,7 @@ export default function RiskMap({ naviagtion, route }) {
     const Argentina = { nombre: "ARGENTINA", frontera: ["PERU", "BRASIL"], tropas: Math.floor(Math.random() * 2) + 1};
     const Brasil = { nombre: "BRASIL", frontera: ["ARGENTINA", "VENEZUELA", "PERU", "AFRICA NORTE"], tropas: Math.floor(Math.random() * 2) + 1};
     const Peru = { nombre: "PERU", frontera: ["ARGENTINA", "VENEZUELA", "BRASIL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Venezuela = { nombre: "VENEZUELA ", frontera: ["AMERICA CENTRAL", "PERU", "BRASIL"], tropas: Math.floor(Math.random() * 2) + 1};
+    const Venezuela = { nombre: "VENEZUELA", frontera: ["AMERICA CENTRAL", "PERU", "BRASIL"], tropas: Math.floor(Math.random() * 2) + 1};
     const GranBretana = { nombre: "GRAN BRETANA", frontera: ["EUROPA OCCIDENTAL", "EUROPA NORTE", "ESCANDINAVIA", "ISLANDIA"], tropas: Math.floor(Math.random() * 2) + 1};
     const Islandia = { nombre: "ISLANDIA", frontera: ["GRAN BRETANA", "GROENLANDIA", "ESCANDINAVIA"], tropas: Math.floor(Math.random() * 2) + 1};
     const EuropaNorte = { nombre: "EUROPA NORTE", frontera: ["EUROPA SUR", "EUROPA OCCIDENTAL", "RUSIA", "GRAN BRETANA", "ESCANDINAVIA"], tropas: Math.floor(Math.random() * 2) + 1};
@@ -1086,7 +1094,7 @@ export default function RiskMap({ naviagtion, route }) {
   const onLoad = async () => {
     // Partida viene del lobby
     // (Al parecer getPartida es un put)
-    /*
+    /* COMENTAO PARA PRUEBAS SIN VENIR DEL LOBBY
     const response = await axios.put(`${IP}/partida/getPartida/`, { idPartida: partida._id }, { headers: { 'Authorization': token } })
     if (response.status === 200) {
       //console.log('Previa',  partida)
