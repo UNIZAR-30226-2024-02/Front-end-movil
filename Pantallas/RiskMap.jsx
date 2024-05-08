@@ -6,22 +6,21 @@ import Svg, { Defs, G, Path, Circle, Use, Text as Text2 , TSpan } from "react-na
 import Risk from '../assets/Risk_game_board.svg'
 import { useEffect } from 'react';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
+import io from 'socket.io-client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Dialog from "react-native-dialog";
 
 export default function RiskMap({ naviagtion, route }) {
+  const socket = io(IP);
 
-  //Esto esta para pruebas
-  const { token} = route.params.token;
 
-  //Descomentar esto para final
-  //const {token, partida} = route.params;
-  let partida ={};
+  const { token, partida, whoami} = route.params;
   
-
+  const [thisPartida, setThisPartida] = useState(partida);
   //const [partida, setPartida] = useState(null);
-  const [idPartida, setIdPartida] = useState(null)
-  const [map, setMap] = useState(null);
+  const [idPartida, setIdPartida] = useState(route.params.partida._id);
+  const [mapa, setMap] = useState(null);
 
   //Pruebas para cambiar el color
   const [colorTest, setColorTest] = useState(["#ff0", "#cc6"]);
@@ -30,26 +29,18 @@ export default function RiskMap({ naviagtion, route }) {
     message: '',
   });
 
-  const [numtropasTest, setnumTropasTest] = useState(0);
+  const [numterritoriosTropas, setnumterritoriosTropas] = useState(0);
   const [visible, setVisible] = useState(false);
 
   const [isOk, setOkState] = useState("No");
 
   useEffect(() => {
     //COMENTADO PARA PRUEBAS SIN VENIR DEL LOBBY
-    //console.log(partida)
-    //setIdPartida(partida._id)
+    console.log(partida)
+    //setIdPartida(partida._id);
     onLoad()
   }, []);
 
-  useEffect(() => {
-    if (map) {
-      console.log("hiii :3")
-      map.forEach(object => {
-        console.log(object.territorios);
-      })
-    }
-  }, [map])
 
   /*
   *
@@ -80,9 +71,9 @@ export default function RiskMap({ naviagtion, route }) {
 
   //Esta fundion sirve para buscar el numero de tropas en un territorio y represetarlo en el svg
   const findTropas = (key) => {
-    let tropa = tropasTest.find(tropa => tropa.terrainId === key);
+    let tropa = territoriosTropas.find(tropa => tropa.terrainId === key);
     if (tropa) {
-      return tropa.numTropas;
+      return tropa.numTropas.toString();
     }
     else
       return "";
@@ -112,7 +103,7 @@ export default function RiskMap({ naviagtion, route }) {
           d="M254 242c-1-1 0 0-1-2 0-2-1-2-2-3 0 0-1 0-1-2 1-1 1-1 1-2l-3-3v-2c0-1 0-2-1-2-2-1-3 1-4-1 0-2 0-1-2-1-1 0-2 0-2-1-1-1-1-2-2-2s-2 0-3-1c0-1-1-2-2-2s-1 0-2 1c-2 0 2 1-1 2s-4 1-5 0c0 0-3 1-2 0 0-2 0-2 1-3 1 0 2 0 2-1-1 0-1-1-3 0-3 0-4 0-5 1s-1 2-1 3c0 0 1 0-2 1-3 2-1 0-4 2-3 3-2 3-4 4-3 0-1 0-3 2-2 1-1 2-3 2s-1 3-3 1-3-1-1-2c1-1 1-1 2-1s1 0 2-1c1-2 1-2 2-3 2 0 2 2 3 0 0-3 0-3 1-4s3-2 1-3c-2 0-2 0-3 1-2 0-2 1-4 1-1-1-2-1-2-1v-3s1-1-1-1c-2-1-2 1-2-1 0-1 1-1 0-2s-1-1-2-1c-1 1-3 2-2 0s2-2 3-3c0-1 1-3 1-4 1-1-1-1 1-2 1-1 1-1 3-1s1 0 2 1c2 0 2 1 3 0l2-2 1-1c0-1 1-2-1-1-1 0-1 0-2 1-2 0-2 1-3 0-1-2-1-3-1-3v-1c0-2-1-5 2-6s5 0 6 0c0 1-1 1 0 2 2 0 2 0 3-1 0-1 1-1 0-2-1 0-1 0-2-1v-3l-2-2c0-1-2-3 0-4 3 0 5-1 5-1s2-3 4-2c2 0 4 0 6-2 2-1 4 0 4 0l3 1s2 3 4 2 2 2 5 2c3 1 5 1 8 2 0 0 1 0 1 1-1 1-2 31-2 31l8 1v2c1 1 1 2 2 4 2 2 1 8 1 8l2 3s1 1 2 1v4c0 2-2 1-2 1-1 1-2 3-2 4s-2 1-2 1Z"
           onPress={stateMachine.bind(this, 0, "ALASKA")}/>
           <Text2
-            x="223" y="210" text-anchor="middle" fill="black">{findTropas("ALASKA")}
+            x="223" y="210" text-anchor="middle" stroke="green" fill="black">{findTropas("ALASKA")}
           </Text2>
         <Path
         //ALBERTA
@@ -357,7 +348,7 @@ export default function RiskMap({ naviagtion, route }) {
             onPress={stateMachine.bind(this, 27, "CHINA")}
         />
         <Text2
-            x="750" y="355"  text-anchor="middle" fill="none" >{findTropas("CHINA")}
+            x="750" y="355"  text-anchor="middle" stroke="green" fill="black" >{findTropas("CHINA")}
           </Text2>
         <Path
         //INDIA
@@ -528,17 +519,18 @@ export default function RiskMap({ naviagtion, route }) {
     let ganador = null;
     let turno= 0;
     const [jugadores, setJugadores] = useState([]);
-    let cartas= [];
+    const [cartas, setCartas] = useState(null);
     let descartes= [];
-    let mapa = [];
+    //let mapa = [];
     let colores = ['verde', 'rojo', 'azul', 'amarillo', 'rosa', 'morado'];
-    const [turnoJugador, setTurnoJugador] = useState('q');
+    const [turnoJugador, setTurnoJugador] = useState('');
     let numJugadores = 3; // stub
     //let fase = 0; // Colocar- -> 0; Atacar -> 1; Maniobrar -> 2; Robar -> 3; Fin -> 4;
     // Atributos especfícios (míos, del jugador que juega en este cliente)
     const [numTropas, setNumTropas] = useState(1000);
     //let numTropas = 1000;
-    const [tropasTest, setTropasTest] = useState([{terrainId: '', numTropas: 0, user: ''}]);
+    const [territoriosTropas, setterritoriosTropas] = useState([{terrainId: '', numTropas: 0, user: ''}]);
+    let territoriosTropasAux = [{terrainId: '', numTropas: 0, user: ''}]; // stub
     let tropas = [{terrainId: '', numTropas: 0, user: ''}];
     let ocupado = false;
 
@@ -562,8 +554,6 @@ export default function RiskMap({ naviagtion, route }) {
       }
     }, [dialogBool]);
 
-    //TODO: Guardar el nombre de jugador en el localStorage para meterlo aqui
-    let whoami= 'q'; // stub
     let colorMap =  {}; // no parece necesario
     let text= '';
     let tropasPuestas = 0;
@@ -578,7 +568,6 @@ export default function RiskMap({ naviagtion, route }) {
     const Robar = 3;
     const Fin = 4; // No se usa
     */
-    let svgDoc = null;
     let eventoCancelado = false;
     // Ataque
     let ataqueOrigen = '';
@@ -590,7 +579,7 @@ export default function RiskMap({ naviagtion, route }) {
   const waitForTropasPuestas = async () => {
     return new Promise((resolve) => {
       const checkInterval = setInterval(() => {
-        if (numtropasTest !== 0  || isOk === 'Cancelled') {
+        if (numterritoriosTropas !== 0  || isOk === 'Cancelled') {
           clearInterval(checkInterval);
           resolve();
         }
@@ -602,6 +591,7 @@ export default function RiskMap({ naviagtion, route }) {
     if(turnoJugador === whoami){
       switch(fase){
         case 0:
+          console.log('Fase colocación', whoami, turnoJugador);
           if(turnoJugador === whoami){
             setTextoFase('Fase colocación: Coloca una tropa en un país libre');
           }
@@ -622,7 +612,7 @@ export default function RiskMap({ naviagtion, route }) {
       }
     } else {
       setTextoFase('Espera tu turno');
-      numTropas =  0 ;
+      setNumTropas(0);
     }
   }, [fase, turnoJugador]);
 
@@ -633,8 +623,7 @@ export default function RiskMap({ naviagtion, route }) {
     console.log(`Clic en la región : ${territoriname}`);
     if(recolocacion) return;
     if (turnoJugador !== whoami) {
-      //TODO Crear sta funcion
-      clickWrongTerrain(e, 'No es tu turno');
+      Alert.alert('No es tu turno');
       console.log('No es tu turno');
       return;
     } 
@@ -646,13 +635,8 @@ export default function RiskMap({ naviagtion, route }) {
           eventoCancelado = false;
           colocarTropas(territoriname, whoami, false, false);
           //La emision al socket se hace en la funcion anterior
-
-          //ESTO PARA PROBAR 
-          //seleccionarTropas(territoriname, whoami, false);
-          
-              
         } else {
-          if(!this.ocupado) this.clickWrongTerrain(e, 'No es tu turno')
+          if(!this.ocupado) Alert.alert('No es tu turno');
         }
         break;
       /*case 1: // ataque
@@ -734,7 +718,7 @@ export default function RiskMap({ naviagtion, route }) {
         }
 
         break
-      case 2: // maniobra -> reutilizo las variables de ataque jeje
+      /*case 2: // maniobra -> reutilizo las variables de ataque jeje
         if (this.ataqueTropas === 0) {
           this.ataqueTropas = 0;
           this.ataqueDestino = ''
@@ -778,317 +762,103 @@ export default function RiskMap({ naviagtion, route }) {
     //this.colocarTropas(e, svgDoc, imgWidth, imgHeight, this.whoami);
     //this.cdr.detectChanges()
   }
-
-  cartasStub =() => {
-    cartas = [
-      // NA
-      {territorio: "ALASKA", estrellas: 1},
-      {territorio: "ALBERTA", estrellas: 2},
-      {territorio: "AMERICA CENTRAL", estrellas: 1},
-      {territorio: "ESTADOS UNIDOS ESTE", estrellas: 2},
-      {territorio: "GROENLANDIA", estrellas: 1},
-      {territorio: "TERRITORIOS DEL NOROESTE", estrellas: 2},
-      {territorio: "ONTARIO", estrellas: 1},
-      {territorio: "QUEBEC", estrellas: 2},
-      {territorio: "ESTADOS UNIDOS OESTE", estrellas: 1},
-      // SA
-      {territorio: "ARGENTINA", estrellas: 1},
-      {territorio: "BRASIL", estrellas: 2},
-      {territorio: "PERU", estrellas: 1},
-      {territorio: "VENEZUELA", estrellas: 2},
-      // EU
-      {territorio: "GRAN BRETANA", estrellas: 1},
-      {territorio: "ISLANDIA", estrellas: 2},
-      {territorio: "EUROPA NORTE", estrellas: 1},
-      {territorio: "ESCANDINAVIA", estrellas: 1},
-      {territorio: "EUROPA SUR", estrellas: 2},
-      {territorio: "RUSIA", estrellas: 1},
-      {territorio: "EUROPA OCCIDENTAL", estrellas: 1},
-      // AF
-      {territorio: "CONGO", estrellas: 1},
-      {territorio: "AFRICA ORIENTAL", estrellas: 2},
-      {territorio: "EGIPTO", estrellas: 1},
-      {territorio: "MADAGASCAR", estrellas: 1},
-      {territorio: "AFRICA NORTE", estrellas: 2},
-      {territorio: "SUDAFRICA", estrellas: 1},
-      // AS
-      {territorio: "AFGANISTAN", estrellas: 1},
-      {territorio: "CHINA", estrellas: 2},
-      {territorio: "INDIA", estrellas: 1},
-      {territorio: "IRKUTSK", estrellas: 2},
-      {territorio: "JAPON", estrellas: 1},
-      {territorio: "KAMCHATKA", estrellas: 2},
-      {territorio: "ORIENTE MEDIO", estrellas: 1},
-      {territorio: "MONGOLIA", estrellas: 2},
-      {territorio: "SUDESTE ASIATICO", estrellas: 1},
-      {territorio: "SIBERIA", estrellas: 2},
-      {territorio: "URAL", estrellas: 1},
-      {territorio: "YAKUTSK", estrellas: 2},
-      // OC
-      {territorio: "AUSTRALIA ORIENTAL", estrellas: 1},
-      {territorio: "AUSTRALIA OCCIDENTAL", estrellas: 2},
-      {territorio: "INDONESIA", estrellas: 1},
-      {territorio: "NUEVA GUINEA", estrellas: 2}
-    ];
-  }
-
-  mapaStub = () =>{
-    const Alaska  ={ nombre: "ALASKA", frontera: ["ALBERTA", "TERRITORIOS DEL NOROESTE", "KAMCHATKA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Alberta = { nombre: "ALBERTA", frontera: ["ALASKA", "ESTADOS UNIDOS OESTE" , "ONTARIO", "TERRITORIOS DEL NOROESTE"], tropas: Math.floor(Math.random() * 2) + 1};
-    const AmericaCentral = { nombre: "AMERICA CENTRAL", frontera: ["ESTADOS UNIDOS ESTE", "ESTADOS UNIDOS OESTE", "VENEZUELA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const EstadosUnidosEste = { nombre: "ESTADOS UNIDOS ESTE", frontera: ["ALBERTA", "AMERICA CENTRAL", "ESTADOS UNIDOS OESTE", "ONTARIO"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Groenlandia = { nombre: "GROENLANDIA", frontera: ["TERRITORIOS DEL NOROESTE", "ONTARIO", "QUEBEC", "ISLANDIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const TerritoriosDelNoroeste = { nombre: "TERRITORIOS DEL NOROESTE", frontera: ["ALASKA", "ALBERTA", "ONTARIO", "GROENLANDIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Ontario = { nombre: "ONTARIO", frontera: ["TERRITORIOS DEL NOROESTE", "ALASKA", "QUEBEC", "GROENLANDIA", "ESTADOS UNIDOS OESTE", "ESTADOS UNIDOS ESTE"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Quebec = { nombre: "QUEBEC", frontera: ["ONTARIO", "ESTADOS UNIDOS ESTE", "GROENLANDIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const EstadosUnidosOeste = { nombre: "ESTADOS UNIDOS OESTE", frontera: ["ESTADOS UNIDOS ESTE", "ONTARIO", "QUEBEC", "AMERICA CENTRAL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Argentina = { nombre: "ARGENTINA", frontera: ["PERU", "BRASIL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Brasil = { nombre: "BRASIL", frontera: ["ARGENTINA", "VENEZUELA", "PERU", "AFRICA NORTE"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Peru = { nombre: "PERU", frontera: ["ARGENTINA", "VENEZUELA", "BRASIL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Venezuela = { nombre: "VENEZUELA", frontera: ["AMERICA CENTRAL", "PERU", "BRASIL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const GranBretana = { nombre: "GRAN BRETANA", frontera: ["EUROPA OCCIDENTAL", "EUROPA NORTE", "ESCANDINAVIA", "ISLANDIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Islandia = { nombre: "ISLANDIA", frontera: ["GRAN BRETANA", "GROENLANDIA", "ESCANDINAVIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const EuropaNorte = { nombre: "EUROPA NORTE", frontera: ["EUROPA SUR", "EUROPA OCCIDENTAL", "RUSIA", "GRAN BRETANA", "ESCANDINAVIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Escandinavia = { nombre: "ESCANDINAVIA", frontera: ["RUSIA", "EUROPA NORTE", "GRAN BRETANA", "ISLANDIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const EuropaSur = { nombre: "EUROPA SUR", frontera: ["EUROPA OCCIDENTAL", "EUROPA NORTE", "RUSIA", "AFRICA NORTE", "EGIPTO"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Rusia = { nombre: "RUSIA", frontera: ["ESCANDINAVIA", "EUROPA NORTE", "EUROPA SUR", "URAL", "AFGANISTAN", "ORIENTE MEDIO"], tropas: Math.floor(Math.random() * 2) + 1};
-    const EuropaOccidental = { nombre: "EUROPA OCCIDENTAL", frontera: ["EUROPA NORTE", "EUROPA SUR", "AFRICA NORTE", "GRAN BRETANA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Congo = { nombre: "CONGO", frontera: ["AFRICA ORIENTAL", "SUDAFRICA", "AFRICA NORTE"], tropas: Math.floor(Math.random() * 2) + 1};
-    const AfricaOriental = { nombre: "AFRICA ORIENTAL", frontera: ["EGIPTO", "AFRICA NORTE", "CONGO", "SUDAFRICA", "MADAGASCAR"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Egipto = { nombre: "EGIPTO", frontera: ["AFRICA NORTE", "AFRICA ORIENTAL", "EUROPA SUR"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Madagascar = { nombre: "MADAGASCAR", frontera: ["AFRICA ORIENTAL", "SUDAFRICA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const AfricaNorte = { nombre: "AFRICA NORTE", frontera: ["EGIPTO", "BRASIL", "AFRICA ORIENTAL", "CONGO"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Sudafrica = { nombre: "SUDAFRICA", frontera: ["MADAGASCAR", "CONGO", "AFRICA ORIENTAL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Afganistan = { nombre: "AFGANISTAN", frontera: ["RUSIA", "URAL", "INDIA", "ORIENTE MEDIO", "CHINA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const China = { nombre: "CHINA", frontera: ["INDIA", "SUDESTE ASIATIOCO", "MONGOLIA", "SIBERIA", "URAL", "AFGANISTAN"], tropas: Math.floor(Math.random() * 2) + 1};
-    const India = { nombre: "INDIA", frontera: ["CHINA", "ORIENTE MEDIO", "AFGANISTAN", "SUDESTE ASIATICO"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Irkutsk = { nombre: "IRKUTSK", frontera: ["YAKUTSK", "SIBERIA", "MONGOLIA", "KAMCHATKA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Japon = { nombre: "JAPON", frontera: ["KAMCHATKA", "MONGOLIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Kamchatka = { nombre: "KAMCHATKA", frontera: ["ALASKA", "YAKUTSK", "IRKUTSK", "MONGOLIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const OrienteMedio = { nombre: "ORIENTE MEDIO", frontera: ["RUSIA", "AFGANISTAN", "INDIA", "EGIPTO"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Mongolia = { nombre: "MONGOLIA", frontera: ["IRKUTSK", "CHINA", "JAPON", "SIBERIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const SudesteAsiatico = { nombre: "SUDESTE ASIATICO", frontera: ["CHINA", "INDIA", "INDONESIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Siberia = { nombre: "SIBERIA", frontera: ["IRKUTSK", "YAKUTSK", "MONGOLIA", "CHINA", "URAL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Ural = { nombre: "URAL", frontera: ["SIBERIA", "RUSIA", "AFGANISTAN"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Yakutsk = { nombre: "YAKUTSK", frontera: ["IRKUTSK", "KAMCHATKA", "SIBERIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Indonesia = { nombre: "INDONESIA", frontera: ["SUDESTE ASIATICO", "NUEVA GUINEA", "AUSTRALIA OCCIDENTAL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const NuevaGuinea = { nombre: "NUEVA GUINEA", frontera: ["AUSTRALIA OCCIDENTAL", "AUSTRALIA ORIENTAL", "INDONESIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const AustraliaOccidental = { nombre: "AUSTRALIA OCCIDENTAL", frontera: ["AUSTRALIA ORIENTAL", "INDONESIA", "NUEVA GUINEA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const AustraliaOriental = { nombre: "AUSTRALIA ORIENTAL", frontera: ["AUSTRALIA OCCIDENTAL", "NUEVA GUINEA"], tropas: Math.floor(Math.random() * 2) + 1};
-
-    const NATerritorios = [
-      Alaska, Alberta, AmericaCentral, EstadosUnidosEste,
-      Groenlandia, TerritoriosDelNoroeste, Ontario, Quebec, EstadosUnidosOeste
-    ];
-
-    const SATerritorios = [
-      Argentina, Brasil, Peru, Venezuela
-    ];
-
-    const EUTerritorios = [
-      GranBretana, Islandia, EuropaNorte, Escandinavia,
-      EuropaSur, Rusia, EuropaOccidental
-    ];
-
-    const AFTerritorios = [
-      Congo, AfricaOriental, Egipto, Madagascar,
-      AfricaNorte, Sudafrica
-    ];
-
-    const ASTerritorios = [
-      Afganistan, China, India, Irkutsk, Japon,
-      Kamchatka, OrienteMedio, Mongolia, SudesteAsiatico,
-      Siberia, Ural, Yakutsk
-    ];
-
-    const OCTerritorios = [
-      Indonesia, NuevaGuinea, AustraliaOccidental, AustraliaOriental
-    ];
-
-    // Create continents
-    const NA = {
-      territorios: NATerritorios,
-      valor: 5
+  
+  //Pone todas las tropas en 0
+  const limpiarTropas = () => {
+    let tropas = territoriosTropas;
+    for(let i = 0; i < tropas.length; i++){
+      tropas[i].numTropas = 0;
     }
-
-    const SA = {
-      territorios: SATerritorios,
-      valor: 2
-    }
-
-    const EU = {
-      territorios: EUTerritorios,
-      valor: 5
-    }
-
-    const AF = {
-      territorios: AFTerritorios,
-      valor: 3
-    }
-
-    const AS = {
-      territorios: ASTerritorios,
-      valor: 7
-    }
-
-    const OC = {
-      territorios: OCTerritorios,
-      valor: 2
-    }
-
-    const Mapa = [NA, SA, EU, AF, AS, OC];
-    mapa = Mapa;
-    // Shuffle function
-    let shuffle = (array) => {
-      let currentIndex = array.length, temporaryValue, randomIndex;
-
-      // While there remain elements to shuffle...
-      while (0 !== currentIndex) {
-
-        // Pick a remaining element...
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-
-        // And swap it with the current element.
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-      }
-
-      return array;
-    };
-    // Flatten the Mapa array to get an array of all Territorio objects
-    let allTerritories = mapa.flatMap(continente => continente.territorios);
-
-    // Shuffle the territories
-    let shuffledTerritories = shuffle(allTerritories);
-
-    // Distribute the territories among the players
-    partida.jugadores.forEach((jugador, i) => {
-      jugador.territorios = shuffledTerritories
-        .filter((_, index) => index % partida.jugadores.length === i)
-        .slice(0, Math.floor(shuffledTerritories.length / partida.jugadores.length)) 
-        .map(territorio => territorio.nombre); // Store only the territory name
-    });
-
-    //console.log(jugadores);
+    setterritoriosTropas(tropas);
   }
 
   //Esto pinta el mapa con las piezas de cada territorio pero creo que no hace fala aqui en movil
   const distribuirPiezas = () => {
     //console.log("Continentes", mapa)
     //console.log("Jugadores", jugadores)
+    let mapa = partida.mapa;
+    setMap(mapa);
+    //console.log(mapa[0].territorios);
     for(let continente of mapa){
       for(let territorio of continente.territorios){
+        //console.log(territorio)
         // Find the player who owns this territory
         let jugador = partida.jugadores.find(jugador => jugador.territorios.includes(territorio.nombre));
         //console.log(jugador)
   
         // If a player was found, get their color
         let color = jugador ? jugador.color : undefined;
-        console.log(color)
+        //console.log(color)
         if(color !== undefined && jugador) {
           //console.log(`The color of territory ${territorio.nombre} is ${color}, and it has ${territorio.tropas} troops.`);
           colocarTropas(territorio.nombre, jugador.usuario, true, territorio.tropas);
-         //console.log(`The color of territory ${territorio.nombre} is ${color}, and it has ${territorio.tropas} troops.`);
-         //if(jugador){
-          //console.log(jugador.usuario)
-          //colocarTropas(territorio.nombre, jugador.usuario, true, territorio.tropas);
-         //}
-
-          }
-        /*
-         if(jugador && event && this.svgDoc){
-          this.colocarTropas(event, this.svgDoc, 50, 50, jugador.usuario, true, false, territorio.tropas)
-          //console.log(jugador.usuario)
-          }
-        }*/
+        }
       }
     }
-
-    setNumTropas(40);
-    /*
-    // Esto es stub, luego se hará una llamada al back para obtener el número de tropas
-    switch(this.partida.jugadores.length){
-      case 2: 
-        this.numTropas = 40;
-        break;
-      case 3:
-        this.numTropas = 35;
-        break;
-      case 4:
-        this.numTropas = 30;
-        break;
-      case 5:
-        this.numTropas = 25;
-        break;
-      case 6:
-        this.numTropas = 20;
-        break;
-    }*/
+    setterritoriosTropas(territoriosTropasAux);
   }
 
   const inicializarPartida = (partida) => {
     // Inicializa los atributos de la partida
-    
+    //console.log("MAPA:", partida.mapa[0].territorios);
     //jugadores = partida.jugadores;
+    //console.log(partida);
     setJugadores(partida.jugadores);
-
+    //let me = partida.jugadores.find(jugador => jugador.usuario === whoami);
     
     for (let i = 0; i < partida.jugadores.length; i++) {
       partida.jugadores[i].color = colores[i];
-    }
-    console.log(partida.jugadores);
+    };
     turno  = partida.turno;
     nombrePartida = partida.nombre;
     numJugadores = partida.jugadores.length;
-    mapa = partida.mapa;
-
-    //TODO fetch mapa del back
-    mapaStub();
+    setMap(partida.mapa);
 
     descartes = partida.descartes;
 
     ganador = partida.ganador;
-    //fase = partida.fase;
     setFase(partida.fase);
+    setTurnoJugador(partida.jugadores[turno % numJugadores].usuario)
+    //fase = partida.fase;
+    
 
     //TODO fetch cartas del back
-    cartasStub();
+    setCartas(partida.cartas);
 
+    limpiarTropas();
+    distribuirPiezas();
     //setTurnoJugador(jugadores[turno % numJugadores].usuario);
     //turnoJugador = partida.jugadores[partida.turno % this.numJugadores];
-
+    //console.log(partida.jugadores[turno % numJugadores].usuario);
+    if(partida.jugadores[turno % numJugadores].usuario === whoami){
+      //STUB
+      //partida.auxColocar = 3;
+      setNumTropas(partida.auxColocar);
+      
+    }
+    
   }
 
   const onLoad = async () => {
     // Partida viene del lobby
-    // (Al parecer getPartida es un put)
-    /* COMENTAO PARA PRUEBAS SIN VENIR DEL LOBBY
-    const response = await axios.put(`${IP}/partida/getPartida/`, { idPartida: partida._id }, { headers: { 'Authorization': token } })
+    //whoami = await AsyncStorage.getItem('username');
+    //console.log(idPartida);
+    /* (Al parecer getPartida es un put)
+    const response = await axios.put(`${IP}/partida/getPartida/`, { idPartida: partidaID }, { headers: { 'Authorization': token } })
     if (response.status === 200) {
-      //console.log('Previa',  partida)
-      console.log('nueva: ', response.data.partida)
-      setMap(response.data.partida.mapa)
+      partida = response.data.partida;
     } else {
       Alert.alert('Error', 'Error cargando partida');
     }*/
+    
 
-    //Solo para testear
-    let partidaTest = {id: 1, nombre: 'Partida 1', jugadores: [{usuario: 'q', color: '', territorios: []}, {usuario: 'Jugador 2', color: '', territorios: []}], turno: 0, fase: 0, ganador: '', descartes: [], mapa: []};
-    //partida = route.params.partida;
-    //console.log(partida);
-    partida = partidaTest;
-    //setJugadores(partida.jugadores);
     inicializarPartida(partida);
-
-    distribuirPiezas();
-    console.log(partida.jugadores);
+    //console.log(partida.jugadores);
   }
 
     const [stateTropas, setStateTropas] = useState({territoriname: '', user: '', init: false});
 
-  const colocarTropas = async (territoriname2, user2, init2, limite= null) => {
+  const colocarTropas = (territoriname2, user2, init2, limite= null) => {
     // Ask the user for the number of troops
 
     let troops;
@@ -1114,21 +884,25 @@ export default function RiskMap({ naviagtion, route }) {
         return;
       }
 
-    
       tropasPuestas += numTroops;
-       
-      const terrainInfo = tropasTest.find(terrain => terrain.terrainId === territoriname2);
-      console.log('terrainInfo: ', terrainInfo);
+      //console.log(territoriosTropas.length);
+      const terrainInfo = territoriosTropas.find(terrain => terrain.terrainId === territoriname2);
+      //terrainInfo = {terrainId: "ALASKA", numTropas: numTroops, user: user2};
+      //console.log('terrainInfo: ', terrainInfo);
       if (terrainInfo) {
         terrainInfo.numTropas += numTroops;
         terrainInfo.user = user2;
         numTroops = terrainInfo.numTropas;
-        setTropasTest(tropasTest);
-        let newtropas = numTropas - numTroops;
-        setNumTropas(newtropas);
+        setterritoriosTropas(territoriosTropas);
+        if(!init2){
+          let newtropas = numTropas - numTroops;
+          setNumTropas(newtropas);
+        }
       } else {
-        tropasTest.push({terrainId: territoriname2, numTropas: numTroops, user: user2});
-        setTropasTest(tropasTest);
+        //console.log("territorio: " + territoriname2, numTroops, user2);
+        //territoriosTropas.push({terrainId: territoriname2, numTropas: numTroops, user: user2});
+        //setterritoriosTropas([...territoriosTropas, {terrainId: territoriname2, numTropas: numTroops, user: user2}]);
+        territoriosTropasAux.push({terrainId: territoriname2, numTropas: numTroops, user: user2});
       }
     }
     else if(recolocacion){ 
@@ -1141,7 +915,7 @@ export default function RiskMap({ naviagtion, route }) {
       setState(newState);
       setDialog('colocar');
       setVisible(true);
-      //Sigue en otra funcion
+      //Sigue en otra funcion por el dialog
     }
 
   }
@@ -1168,16 +942,16 @@ export default function RiskMap({ naviagtion, route }) {
 
     tropasPuestas += numTroops;
    
-    const terrainInfo = tropasTest.find(terrain => terrain.terrainId === stateTropas.territoriname);
+    const terrainInfo = territoriosTropas.find(terrain => terrain.terrainId === stateTropas.territoriname);
     if (terrainInfo) {
       terrainInfo.numTropas += numTroops;
       terrainInfo.user = stateTropas.user;
       numTroops = terrainInfo.numTropas;
-      setTropasTest(tropasTest);
+      setterritoriosTropas(territoriosTropas);
     } else {
-      console.log("territorio: " + stateTropas.territoriname)
-      tropasTest.push({terrainId: stateTropas.territoriname, numTropas: numTroops, user: stateTropas.user});
-      setTropasTest(tropasTest);
+      //console.log("territorio: " + stateTropas.territoriname)
+      territoriosTropas.push({terrainId: stateTropas.territoriname, numTropas: numTroops, user: stateTropas.user});
+      setterritoriosTropas(territoriosTropas);
     }
 
     //si estoy en fase de colocacion socket emit
@@ -1192,40 +966,32 @@ export default function RiskMap({ naviagtion, route }) {
 
       //EN TEORIA, si llego hata aqui esque no he cancelado nada asi que se podra borrar este if, creo
       //Lita
-      /*if(!this.eventoCancelado){
-
-            console.log(this.numTropas);
-            this.ocupado = true;
-            this.partidaService.ColocarTropas(this.partida._id, targetId, this.tropasPuestas).subscribe(
-              response => {
-                console.log(response);
-                this.tropasPuestas = 0;
-                this.cdr.detectChanges();
-                this.ocupado = false;
-                // notify to back with a socket, the back will notify every client in the game
-                this.socket.emit('actualizarEstado', this.partida._id);
-              },
-              error => {
-                Alert.alert('¡ERROR FATAL!');
-                this.colocarTropas(e, svgDoc, whoami, false, tropasPuestas);
-                this.ocupado = false
-                this.numTropas += this.tropasPuestas;
-                this.tropasPuestas = 0;
-              }
-            );  
-            setTimeout(() => { // si no recibo respuesta del back, está caído
-              console.log("entro")
-              if(this.ocupado){ 
-                console.log("fatal error")
-                Alert.alert('¡ERROR FATAL!');
-                this.ocupado = false;
-                this.numTropas += this.tropasPuestas;
-              }
-            }, 2000);
-
-          } else{
-            console.log('Evento cancelado')
-          } */ 
+      ocupado = true;
+      //console.log('Colocando tropas en el territorio: ', stateTropas.territoriname, ' con ', numTroops, ' tropas.');
+      const response = await axios.put(`${IP}/partida/colocarTropas`, {idPartida, territorio: stateTropas.territoriname, numTropas: tropasPuestas}, { headers: { 'Authorization': token } })
+        if (response.status === 200) {
+          console.log(response);
+          tropasPuestas = 0;
+          ocupado = false;
+          // notify to back with a socket, the back will notify every client in the game
+          socket.emit('actualizarEstado', partida._id);
+        } else {
+          Alert.alert('¡ERROR FATAL!');
+          colocarTropas(stateTropas.territoriname,stateTropas.user, stateTropas.init, tropasPuestas);
+          ocupado = false
+          numTropas += tropasPuestas;
+          tropasPuestas = 0;
+        }
+      
+      setTimeout(() => { // si no recibo respuesta del back, está caído
+        console.log("entro")
+        if(ocupado){ 
+          console.log("fatal error")
+          Alert.alert('¡ERROR FATAL!');
+          ocupado = false;
+          numTropas += tropasPuestas;
+        }
+      }, 2000);
     }
 
   }
@@ -1276,7 +1042,7 @@ export default function RiskMap({ naviagtion, route }) {
       return;
     }
 
-    const terrainInfo = tropasTest.find(terrain => terrain.terrainId === stateTropas.territoriId);
+    const terrainInfo = territoriosTropas.find(terrain => terrain.terrainId === stateTropas.territoriId);
     if (terrainInfo) {
       if (terrainInfo.numTropas < numTroops + 1) { // se debe dejar al menos una tropa y no quedarnos con tropas negativasd
         Alert.alert('No tienes suficientes tropas en este territorio. Recuerda que debes dejar al menos una tropa.');
@@ -1300,7 +1066,7 @@ export default function RiskMap({ naviagtion, route }) {
 
   //rutina de OK del boton de dialog
   const handleOK = async () => {
-    //setnumTropasTest(state.message);
+    //setnumterritoriosTropas(state.message);
     setDialogBool(true);
     setVisible(false);
     console.log('me meto en handleOK: ', state.message);
