@@ -2,6 +2,8 @@ import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, ImageBackground } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome from expo/vector-icons
 import { IP } from '../config';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Inicial({ navigation, route }) {
   const { id, token } = route.params;
@@ -27,9 +29,22 @@ export default function Inicial({ navigation, route }) {
   };
 
 
-  const goToMap = () => {
+  const goToMap = async () => {
     // Navigate to "Perfil" screen
-    navigation.navigate('RiskMap', { token: token });
+    let id ="663ba1f8598d1be7784223ed"
+    try {
+      const response = await axios.get(`${IP}/partidas/partida/${id}`, { headers: { 'Authorization': token } })
+      let username = await AsyncStorage.getItem('username')
+      socket.emit('joinChat', response.data.chat._id)
+      socket.emit('joinGame', { gameId: response.data._id, user: username })
+      let partidaData = response.data
+      navigation.navigate('RiskMap', { token: token, partida: partidaData, whoami: username});
+  } catch (error) {
+      console.error('Error fetching partida data:', error)
+      Alert.alert('Error', 'Ha ocurrido un error al obtener los datos de la partida. Por favor, inténtalo de nuevo más tarde.')
+  }
+  //
+  //navigation.navigate('RiskMap', { token: token, partida: partidaData});
   }
 
   const goToChats = () => {
