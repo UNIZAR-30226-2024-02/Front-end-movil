@@ -534,7 +534,7 @@ export default function RiskMap({ naviagtion, route }) {
     let colores = ['verde', 'rojo', 'azul', 'amarillo', 'rosa', 'morado'];
     const [turnoJugador, setTurnoJugador] = useState('q');
     let numJugadores = 3; // stub
-    let fase = 0; // Colocar- -> 0; Atacar -> 1; Maniobrar -> 2; Robar -> 3; Fin -> 4;
+    //let fase = 0; // Colocar- -> 0; Atacar -> 1; Maniobrar -> 2; Robar -> 3; Fin -> 4;
     // Atributos especfícios (míos, del jugador que juega en este cliente)
     const [numTropas, setNumTropas] = useState(1000);
     //let numTropas = 1000;
@@ -544,7 +544,7 @@ export default function RiskMap({ naviagtion, route }) {
 
     const [dialogBool, setDialogBool] = useState(false);
     const[dialog, setDialog] = useState(null);
-
+    const [fase, setFase] = useState(0);// Colocar- -> 0; Atacar -> 1; Maniobrar -> 2; Robar -> 3; Fin -> 4;
     let seguir = false;
     useEffect(() => {
       console.log(dialog);
@@ -598,7 +598,7 @@ export default function RiskMap({ naviagtion, route }) {
     });
   }
 
-  const updateText = (fase ) =>{
+  useEffect(() => {
     if(turnoJugador === whoami){
       switch(fase){
         case 0:
@@ -624,7 +624,7 @@ export default function RiskMap({ naviagtion, route }) {
       setTextoFase('Espera tu turno');
       numTropas =  0 ;
     }
-  }
+  }, [fase, turnoJugador]);
 
   //maquina de estados de la partida
   const stateMachine = async (path , territoriname , e) =>   {
@@ -645,42 +645,12 @@ export default function RiskMap({ naviagtion, route }) {
           tropasPuestas=0;
           eventoCancelado = false;
           colocarTropas(territoriname, whoami, false, false);
+          //La emision al socket se hace en la funcion anterior
 
-          //TODO: COnectar con el back, mirar los sockets
-          //await this.waitForTropasPuestas()
-          /*if(!this.eventoCancelado){
-            console.log(this.numTropas);
-            this.ocupado = true;
-            this.partidaService.ColocarTropas(this.partida._id, targetId, this.tropasPuestas).subscribe(
-              response => {
-                console.log(response);
-                this.tropasPuestas = 0;
-                this.cdr.detectChanges();
-                this.ocupado = false;
-                // notify to back with a socket, the back will notify every client in the game
-                this.socket.emit('actualizarEstado', this.partida._id);
-              },
-              error => {
-                this.toastr.error('¡ERROR FATAL!');
-                this.colocarTropas(e, svgDoc, whoami, false, tropasPuestas);
-                this.ocupado = false
-                this.numTropas += this.tropasPuestas;
-                this.tropasPuestas = 0;
-              }
-            );  
-            setTimeout(() => { // si no recibo respuesta del back, está caído
-              console.log("entro")
-              if(this.ocupado){ 
-                console.log("fatal error")
-                this.toastr.error('¡ERROR FATAL!');
-                this.ocupado = false;
-                this.numTropas += this.tropasPuestas;
-              }
-            }, 2000);
-
-          } else{
-            console.log('Evento cancelado')
-          } */     
+          //ESTO PARA PROBAR 
+          //seleccionarTropas(territoriname, whoami, false);
+          
+              
         } else {
           if(!this.ocupado) this.clickWrongTerrain(e, 'No es tu turno')
         }
@@ -722,7 +692,7 @@ export default function RiskMap({ naviagtion, route }) {
                 this.toastr.success('¡Territorio conquistado!');
 
               } else {
-                this.toastr.error('¡No has conquistado el territorio!');
+                Alert.alert('¡No has conquistado el territorio!');
                 
               }
               this.inicializacionPartida(this.partida); // actualizo el estado de la partida
@@ -753,7 +723,7 @@ export default function RiskMap({ naviagtion, route }) {
                                       territorioDestino: enemyTerritoryId}
             },
             error => {
-              this.toastr.error('¡ERROR FATAL!');
+              Alert.alert('¡ERROR FATAL!');
               this.fase = 0;
               this.fase = 1;
               this.ataqueDestino = ''
@@ -1080,8 +1050,8 @@ export default function RiskMap({ naviagtion, route }) {
     descartes = partida.descartes;
 
     ganador = partida.ganador;
-    fase = partida.fase;
-
+    //fase = partida.fase;
+    setFase(partida.fase);
 
     //TODO fetch cartas del back
     cartasStub();
@@ -1372,7 +1342,7 @@ export default function RiskMap({ naviagtion, route }) {
 
       {/*DIALOGO PARA LAS TROPAS */}
         <Dialog.Container visible={visible} > 
-        <Dialog.Title>Password Recovery</Dialog.Title>
+        <Dialog.Title>Cuantas Tropas quieres seleccionar</Dialog.Title>
            <Dialog.Input label="Troop" onChangeText={(troop ) => setState({ message: troop })} 
             ></Dialog.Input>
           <Dialog.Button label="Cancel" onPress={handleCancel} />
