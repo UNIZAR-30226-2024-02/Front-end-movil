@@ -20,7 +20,7 @@ export default function RiskMap({ naviagtion, route }) {
   const [thisPartida, setThisPartida] = useState(partida);
   //const [partida, setPartida] = useState(null);
   const [idPartida, setIdPartida] = useState(route.params.partida._id);
-  const [mapa, setMap] = useState(null);
+  const [mapa, setMapa] = useState(null);
 
   //Pruebas para cambiar el color
   const [colorTest, setColorTest] = useState(["#ff0", "#cc6"]);
@@ -80,10 +80,22 @@ export default function RiskMap({ naviagtion, route }) {
       
   }
 
-  //Pruebas para cambiar el color
   const findColor = (key) => {
-    let color = colorTest[key];
-    return color;
+    let tropa = territoriosTropas.find(tropa => tropa.terrainId === key);
+    if (tropa) {
+      // find the user in partidadata and get his color
+      let user = thisPartida.jugadores.find(jugador => jugador.usuario === tropa.user);
+      console.log(user.color); // TODO: terminar y borrar cuando tengamos todos los colores
+      switch (user.color) {
+        case "verde":
+          return "#0f0";
+        case "rojo":
+          return "#f00";
+      }
+    }
+    else
+      return "";
+      
   }
 
   const MapSVGComponent = (props) => (
@@ -102,60 +114,87 @@ export default function RiskMap({ naviagtion, route }) {
           fill={colorTest[0]} 
           d="M254 242c-1-1 0 0-1-2 0-2-1-2-2-3 0 0-1 0-1-2 1-1 1-1 1-2l-3-3v-2c0-1 0-2-1-2-2-1-3 1-4-1 0-2 0-1-2-1-1 0-2 0-2-1-1-1-1-2-2-2s-2 0-3-1c0-1-1-2-2-2s-1 0-2 1c-2 0 2 1-1 2s-4 1-5 0c0 0-3 1-2 0 0-2 0-2 1-3 1 0 2 0 2-1-1 0-1-1-3 0-3 0-4 0-5 1s-1 2-1 3c0 0 1 0-2 1-3 2-1 0-4 2-3 3-2 3-4 4-3 0-1 0-3 2-2 1-1 2-3 2s-1 3-3 1-3-1-1-2c1-1 1-1 2-1s1 0 2-1c1-2 1-2 2-3 2 0 2 2 3 0 0-3 0-3 1-4s3-2 1-3c-2 0-2 0-3 1-2 0-2 1-4 1-1-1-2-1-2-1v-3s1-1-1-1c-2-1-2 1-2-1 0-1 1-1 0-2s-1-1-2-1c-1 1-3 2-2 0s2-2 3-3c0-1 1-3 1-4 1-1-1-1 1-2 1-1 1-1 3-1s1 0 2 1c2 0 2 1 3 0l2-2 1-1c0-1 1-2-1-1-1 0-1 0-2 1-2 0-2 1-3 0-1-2-1-3-1-3v-1c0-2-1-5 2-6s5 0 6 0c0 1-1 1 0 2 2 0 2 0 3-1 0-1 1-1 0-2-1 0-1 0-2-1v-3l-2-2c0-1-2-3 0-4 3 0 5-1 5-1s2-3 4-2c2 0 4 0 6-2 2-1 4 0 4 0l3 1s2 3 4 2 2 2 5 2c3 1 5 1 8 2 0 0 1 0 1 1-1 1-2 31-2 31l8 1v2c1 1 1 2 2 4 2 2 1 8 1 8l2 3s1 1 2 1v4c0 2-2 1-2 1-1 1-2 3-2 4s-2 1-2 1Z"
           onPress={stateMachine.bind(this, 0, "ALASKA")}/>
-          <Text2
-            x="223" y="210" text-anchor="middle" stroke="green" fill="black">{findTropas("ALASKA")}
-          </Text2>
+        <Circle
+          fill={findColor("ALASKA")}
+          cx="223" cy="210" r="10"
+        />
+        <Text2
+          x="223" y="210" text-anchor="middle" fill="black">{findTropas("ALASKA")}
+        </Text2>
         <Path
         //ALBERTA
-          //fill="#cc6"
-          fill={findColor(1)}
+          fill="#cc6"
           d="M253 214v2c1 1 1 2 2 4 2 2 1 8 1 8l2 3s1 1 2 1v4c0 2-2 1-2 1-1 1-2 3-2 4s-2 1-2 1c1 1 2 1 2 3 1 3 1 2 1 3 1 1 2 1 2 3 1 2 1 1 2 3 1 3 0 4 0 6 1 3 2 2 3 3v1h48l4-48-63-2Z"
             onPress={stateMachine.bind(this, 1, "ALBERTA")}
         />
+        <Circle
+          fill={findColor("ALBERTA")}
+          cx="280" cy="250" r="10"
+        />
         <Text2
-            x="278" y="255" text-anchor="middle" fill="black">{findTropas("ALBERTA")}
-          </Text2>
+          x="280" y="250" text-anchor="middle" fill="black">{findTropas("ALBERTA")}
+        </Text2>
         <Path
         //America Central
           fill="#ff3"
           d="M264 319s0 3 1 3h8l4 2s1 2 2 2h10c0 1 3 4 4 4s1 0 2 1c0 0 1 1 2 1h5v4c0 1-1 2-1 4-1 1-2 3-2 3 0 1 2 3 2 3-1 2-1 5 0 6v2l2 3s2 3 5 2c3 0 1 0 4-1 2-1 1 1 3-1 1-3 0-3 1-3 2-1 1-1 3-1 1 1 0 1 2 1s3-3 2 0v4c-1 1 0 0-1 2l-2 2c-1 0-1 0-1 1 0 2 0 2-1 3-1 0-2 0-2 1 0 2 0 2 1 3 1 0 2 0 2 1 1 2 1 3 1 3 0 1 0 3-1 3s-2 0-2 2c0 1 1 3 0 3 0 0-2-1-2 0v3l-1 1v2c0 1-1 2 0 2 2 0 2 1 3 0h2c0-1 1-2 2-2l2 1s1 1 1 2c-1 1 0 1 0 2 0 2 0 3-1 3v2c-1 0 0 0-1 1v1c-1 0 0 0-1-1 0 0 0-1-1-2s-1-1-2-1c-2-1-2-2-3-1-1 0 0 1-1 0-2-1-2-1-3-2v-1c-1-1-2 0-2-2 0-1 1-1 0-2 0-1-1-1-1-2v-4l-1-2v-2l-1-1-1-1c0-1-1-3-1-4-1-1-2-2-6-4-4-1-4-2-7-2-4-1-5-2-5-3 0-2 0-2-1-3-1 0-2 0-1-1 0-1 1-1 1-2 1-1 1-2 1-3 0 0 0-1-1-1-1-1-4-3-4-3s1-1-2 0c-4 0-4 2-5 1s1-5 0-6c-2-1-1 0-2-1-1-2 0-3-1-5 0-1 0 1-1-4-1-4 1-3-1-6-2-2-5-2-5-4v-6Z"
           onPress={stateMachine.bind(this, 2, "AMERICA CENTRAL")}
         />
+        <Circle
+          fill={findColor("ALBERTA")}
+          cx="286" cy="355" r="10"
+        />
         <Text2
-            x="286" y="355" text-anchor="middle" fill="black">{findTropas("AMERICA CENTRAL")}
-          </Text2>
+          x="286" y="355" text-anchor="middle" fill="black">{findTropas("AMERICA CENTRAL")}
+        </Text2>
         <Path
         //ESTADOS UNIDOS DEL ESTE
           fill="#cc3"
           d="M326 264h6c1 0 0 5 0 5s4-2 6-1c3 1 5-3 6-1 0 3 1 4 2 5 0 1 1 2 2 5s1 5 0 7c0 1-2 3-1 4 2 0 3 2 4 3s5-3 5-4-1-2 0-2c1-1 3 0 3-1 1-1 2-2 3-2s4-1 4-1l2-1s10-1 11-2c2-1 2 0 2 0s-1-4 0-5c0 0 1 0 2-1 0-1 1-1 2 0 1 0 5 2 4 4 0 2-1 5 0 5 2 1 3 0 3 1s1 2 1 2c1 1 3 0 3 0 0-1-1 1-2 2 0 1-1 2-1 2-3 1-3 4-4 3 0-1-1-1-1-3 1-2 2-1 2-3-1-1 0-2-1-2s0 0-2 1c-1 0-1-1-3 1-1 2-1 1-2 2-1 0-1 1-1 2l-2 2v2c0 1 1 3 1 3l-1 2c-1 1-1-1-5 3-3 4-2 4-4 5s-2 1-2 2c0 0-2 1-1 2s0 1 1 2c1 0 2-1 2 1s-1 3-3 4c-2 2-5 6-7 6-3 1-4 2-4 3s0 3-1 3c-2 0-1 0-1 3s0 4 1 5 1 1 1 3v4s1 0-1 1-4 2-4 0c-1-2-3-1-3-3 0-1 1-5 1-5s-2 0-2-1c-1-1-1-4-2-4 0-1-1-1-2-1-1 1-3 2-4 1 0 0 1 1-2 0-4-1-6-2-7-2h-6s-6 1-7 1-6 2-7 3c-2 1-2 3-3 3l-2 1s-2 2-2 3-1 3-2 3c0 1-1 0 0 2 0 0-2-2-2-3 0 0 1-2 2-3 0-2 1-3 1-4v-4s-2-4-1-5c0-1-2-1-2-1v-3h3c1-1 2-1 2-1l1-6c0-1 1-4 1-5s4-2 4-2c1 0 2 1 2 0 1-2 0-5 1-6 0-1 0-1 1-1 0-1 11-1 11-1 1-1 0-37 1-37Z"
           onPress={stateMachine.bind(this, 3, "ESTADOS UNIDOS ESTE")}
         />
+        <Circle
+          fill={findColor("ESTADOS UNIDOS ESTE")}
+          cx="335" cy="326" r="10"
+        />
         <Text2
-            x="335" y="326" text-anchor="middle" fill="black">{findTropas("ESTADOS UNIDOS ESTE")}
-          </Text2>
+          x="335" y="326" text-anchor="middle" fill="black">{findTropas("ESTADOS UNIDOS ESTE")}
+        </Text2>
         <Path
         //Groenlandia
           fill="#cc0"
           d="M434 219s0 4-1 6c0 2-1 1-1 3-1 2 0 3-1 5-1 1-1-1-1 2 0 4 0 5-1 5-1 1 0 2-1 2-2 0-2 1-3 0 0-2 1-2-1-2-1-1-2 1-3-1 0-1 1-2 0-2-2-1 1 3-3-2s-4-8-4-8-1-1-1-2 1-4 0-5c-1-2-2-5-1-6s3 0 3-2 0-2 1-3c0-1 0-1-1-2-1 0 0 1-2 0-1 0-1-1-2-1 0 0 1 1-1 0s-3-1-1-2c2 0 3-1 4 0 0 0 1 1 0-1 0-1-4-2-4-4v-2c0-1 0-2-1-3s-1-1-1-2c0-2 0-2-1-3s-1 0-2-1c-1-2-1-2-2-2s-1 0-2-1-1-2-2-2c-2 1-3 1-3 2-1 0 0 1-2 1h-4s-1-2-3-1c-2 0-2 1-2 0-1-1-2-1-2-2 0 0-2 0 0-1 1-2 0-2 2-2h3c1-1 2-1 1-1 0 0 0-1-1-1-2 0-3 0-3-1s-1-2 0-2c2 0 3 1 4 0s1-1 2-1c1 1 3 1 3 0s2-1 1-1c-2-1-3-1-2-2 0 0 1 0 1-1-1-1-2-2 0-2 3 0 4 1 4 0 1-2-1-3 1-3 3 0 5-1 5-2s0-1 2-1c2 1 2 2 3 0 1-1 0-1 2-1 2 1 2 1 3 0 1 0-1-1 2 0 2 0 1 1 2-1 0-2-2-2 0-2 3-1 3 0 4-2 1-1 0-1 2-1 2-1 2 0 1-2-1-1-3-2 0-2 2 0 4 0 4-1 0 0 0 1 1 0 2 0 2 0 3-2 0-1 0-1 1 0 1 0 0 1 2 0s1-1 3-1h5c2 0 1 1 2 1h3c2 0 2 0 3 1 1 0 1 1 3 1s3-1 3 0c1 2 0 2 2 2 3 1 4 0 2 1-1 1-4 1-3 2s0 1-2 1c-2 1-6 1-3 2 3 0 5-1 6 0 0 1-1 1 2 1s2-1 4-1c3 1 3 2 3 0 1-2-1-3 2-2s2 1 4 0 2-3 3-1c0 2 0 3-1 4-2 0-2-1-2 1-1 2-1 2-2 3s-2 0-2 2c1 2 1 2 0 3 0 2-1 3 0 4s1 0 2 1c1 2 1 2 0 3 0 2-1 1-1 3 0 3 0 4 1 3 0 0 1-2 1 0 0 1 0 2-1 3-2 1-2 0-2 1s1 2 0 3 0 2-2 1c-1-2-2-3-3-2s-2 0-1 1c1 2 2 1 2 2 0 0 0 1 1 2 0 0 0 1 1 1 1-1 1 0 1 1v2l1 1c-1 1-1 1-2 1-1 1-1 2-1 2-1 0-2 0-2-1s0-3-1-3c-1-1-2-3-2-1v3c-1 0-2-1-1 1l2 1s2 1 1 2c0 0 0 1-2 1-1 0-1-2-2 0l-3 3-1-1s-1-2-1-1 0 1-1 3-1 3-2 3-2-1-2 0c-1 1 0 1-1 2s-2 1-3 1c0 0 1-2-1 0-1 2 0 2-2 3h-8c-1 1-1 2-1 2Z"
           onPress={stateMachine.bind(this, 4, "GROENLANDIA")}
         />
+        <Circle
+          fill={findColor("GROENLANDIA")}
+          cx="430" cy="200" r="10"
+        />
         <Text2
-            x="430" y="200" text-anchor="middle" fill="black">{findTropas("GROENLANDIA")}
-          </Text2>
+          x="430" y="200" text-anchor="middle" fill="black">{findTropas("GROENLANDIA")}
+        </Text2>
         <Path
         //TERRITORIOS DEL NOROESTE
           fill="#996"
           d="M334 217c1-3 9-11 9-11s3 0 5-1c1-1-2-4-2-4l1-2 2 1s1 2 3 2 1-2 2-3c2 0 3-4 3-4s3 2 6-1 1-2 0-3c-1-2 1-3 1-3h-2s1-1 0-4c-2-2-2 2-4 3-1 1-1 2-5 1-3-1 0-2 0-4 0-1-4 1-5-1s-2 1-1-1c0-2-1-5-2-6s3-7 3-7 3 1 3-1c0-3 2-3 2-4s-4 0-4 0l-1 2s-4-3-4 0c0 4-1 4-3 8s-1 7-1 7 2 0 2 2c-1 3-5 2-5 2l-1-4h-2s-1 4 0 6c0 1-8 0-10-2s-5 2-7 3-4 0-6-1c-2 0-1 3-6 3-4-1-2-7-3-4-1 2-6-2-8-4s-7-2-7-2v-2h-6s-3 2-5 1c-2 0-1 2-1 2s-3 1-6 1c-3-1-3 1-4 2-2 1-7-2-10-3s-5 1-8 0c0 0-2 32-2 33 1 0 83 3 87 2 4 0 2 1 2 1Z"
           onPress={stateMachine.bind(this, 5, "TERRITORIOS DEL NOROESTE")}
         />
+        <Circle
+          fill={findColor("TERRITORIOS DEL NOROESTE")}
+          cx="300" cy="205" r="10"
+        />
         <Text2
-            x="300" y="205" text-anchor="middle" fill="black">{findTropas("TERRITORIOS DEL NOROESTE")}
-          </Text2>
+          x="300" y="205" text-anchor="middle" fill="black">{findTropas("TERRITORIOS DEL NOROESTE")}
+        </Text2>
         <Path
         //ONTARIO
           fill="#ff6"
           d="M333 219c-1 3-2 9-2 9l2 2s2 2 3 4c2 2 3 5 6 5 3-1 4 2 4 2l2-1s2-2 3-1c0 1 2 2 2 2s2-2 4-2 0 2 0 2l-4 2s1 2 2 2 2 4 1 5c-2 1 0 3 0 3l1 2 2 1v3c-1 2-1 19-1 19s1-2 2-2c0 0 2 1 2 2 1 0 1-2 1-2 1-1 1 0 2 0 1 1 0 0 1 0 2 0 2 3 2 4l-2 1s-3 1-4 1-2 1-3 2c0 1-2 0-3 1-1 0 0 1 0 2s-4 5-5 4-2-3-4-3c-1-1 1-3 1-4 1-2 1-4 0-7s-2-4-2-5c-1-1-2-2-2-5-1-2-3 2-6 1-2-1-6 1-6 1s1-5 0-5h-20v-3c0-2 4-45 4-45h18l-1 3Z"
           onPress={stateMachine.bind(this, 6, "ONTARIO")}
+        />
+        <Circle
+          fill={findColor("ONTARIO")}
+          cx="320" cy="245" r="10"
         />
         <Text2
             x="320" y="245" text-anchor="middle" fill="black">{findTropas("ONTARIO")}
@@ -166,18 +205,26 @@ export default function RiskMap({ naviagtion, route }) {
           d="M359 259s1-4 2-5 2-6 2-7c-1-1-2-1-1-3 1-1 0-4 2-3 2 0 4 0 4-1v-2c0-2 1-2 2-2 0 0 1 0 0-2v-3c-1-2-1-1-1-3-1-1-1-4 0-4 2 0 0-2 1-3 2 0 4 0 3-2 0-2-3-6-1-6s4 1 4 1h7s-1 2 1 3c2 0 2 1 3 1 0 1 1 2 1 2v2c0 1 1 2 0 2 0 1-1 1-1 2s1 3 1 3 1 1 2 1c1-1 1-2 2-2 2-1 2 1 3-1s1-2 1-3c0 0 2-2 3-1 1 0-1 5 0 6 1 2 3 0 3 0v3c1 0 0 1 0 2 1 1 1 1 1 2s1 1 1 1 1-1 2 0c0 2 0 3 1 3s2 2 2 2l1 2 3-2 2 1s-4 2-3 4c1 1 5-3 5 0 0 2-1 5-2 5s-2 1-2 1c0 1-2 2-3 2-1 1 0 2-2 2h-4s0 1-1 2v2c-1 0 2 0-2 1s-5 1-5 1h-3s0-1-2-1-3 2-3 2h-2l-2 2s-1 0-1 2c0 1 2 3 3 2 0-1 2-5 4-5s4 1 4 4c-1 3-1 2-1 3 1 2 2 3 1 4 0 1-1 1 1 2 1 1 2 3 3 1 0-2 1-3 2-2 0 0 2-1 1 2-1 2-1 2-2 3s-1-1-3 2c0 0-2 1-3 0 0 0-1-1-1-2s-1 0-3-1c-1 0 0-3 0-5 1-2-3-4-4-4-1-1-2-1-2 0-1 1-2 1-2 1-1 1 0 5 0 5s0-1-2 0c-1 1-11 2-11 2 0-1 0-4-2-4-1 0 0 1-1 0-1 0-1-1-2 0 0 0 0 2-1 2 0-1-2-2-2-2-1 0-2 2-2 2s0-17 1-19Z"
             onPress={stateMachine.bind(this, 7, "Quebec")}
         />
+        <Circle
+          fill={findColor("QUEBEC")}
+          cx="370" cy="250" r="10"
+        />
         <Text2
-            x="370" y="250" text-anchor="middle" fill="black">{findTropas("QUEBEC")}
-          </Text2>
+          x="370" y="250" text-anchor="middle" fill="black">{findTropas("QUEBEC")}
+        </Text2>
         <Path
         //ESTADOS UNIDOS DEL OESTE
           fill="#993"
           d="M326 264c-1 0 0 36-1 37 0 0-11 0-11 1-1 0-1 0-1 1-1 1 0 4-1 6 0 1-1 0-2 0 0 0-4 1-4 2s-1 4-1 5l-1 6s-1 0-2 1h-3v3s2 0 2 1c-1 1 1 5 1 5h-5c-1 0-2-1-2-1-1-1-1-1-2-1s-4-3-4-4h-10c-1 0-2-2-2-2l-4-2h-8c-1 0-1-3-1-3-1-2-1-2-1-4s-3-5-4-7c-2-2-2-8-2-9 1-1 0-6 1-9 1-2 1-5 2-8 0-2-1-2 1-5 1-4 1-2 2-5 0-3 1-1 1-4 0-2 1-4 0-5 0 0-1 1 0 1s58 1 62 0Z"
             onPress={stateMachine.bind(this, 8, "ESTADOS UNIDOS OESTE")}
         />
+        <Circle
+          fill={findColor("ESTADOS UNIDOS OESTE")}
+          cx="280" cy="300" r="10"
+        />
         <Text2
-            x="280" y="300" text-anchor="middle" fill="black">{findTropas("ESTADOS UNIDOS OESTE")}
-          </Text2>
+          x="280" y="300" text-anchor="middle" fill="black">{findTropas("ESTADOS UNIDOS OESTE")}
+        </Text2>
         <Path
         //Argentina
           fill="#c03"
@@ -777,7 +824,7 @@ export default function RiskMap({ naviagtion, route }) {
     //console.log("Continentes", mapa)
     //console.log("Jugadores", jugadores)
     let mapa = partida.mapa;
-    setMap(mapa);
+    setMapa(mapa);
     //console.log(mapa[0].territorios);
     for(let continente of mapa){
       for(let territorio of continente.territorios){
@@ -812,7 +859,7 @@ export default function RiskMap({ naviagtion, route }) {
     turno  = partida.turno;
     nombrePartida = partida.nombre;
     numJugadores = partida.jugadores.length;
-    setMap(partida.mapa);
+    setMapa(partida.mapa);
 
     descartes = partida.descartes;
 

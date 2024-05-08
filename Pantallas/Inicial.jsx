@@ -35,8 +35,6 @@ export default function Inicial({ navigation, route }) {
     try {
       const response = await axios.get(`${IP}/partidas/partida/${id}`, { headers: { 'Authorization': token } })
       let username = await AsyncStorage.getItem('username')
-      socket.emit('joinChat', response.data.chat._id)
-      socket.emit('joinGame', { gameId: response.data._id, user: username })
       let partidaData = response.data
       navigation.navigate('RiskMap', { token: token, partida: partidaData, whoami: username});
   } catch (error) {
