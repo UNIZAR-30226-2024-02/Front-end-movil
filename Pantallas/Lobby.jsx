@@ -105,10 +105,11 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
         axios.put(`${IP}/partida/iniciarPartida`, { idPartida: id }, { headers: { 'Authorization': token } })
         .then(response => {
             if (response.status === 200) {
-                socket.emit('gameStarted', id);
+                socket.emit('gameStarted', id)
                 console.log(id)
                 console.log(token)
-                navigation.navigate('RiskMap', { token: token, partida: partidaData });//Envio token y partida a mapa
+                console.log(partidaData)
+                navigation.navigate('RiskMap', { token: token, partida: partidaData }) //Envio token y partida a mapa
             } else {
                 console.error('Error al empezar la partida:', response.data.message);
                 Alert.alert('Error', 'Ha ocurrido un error al empezar la partida. Por favor, inténtalo de nuevo más tarde.');
