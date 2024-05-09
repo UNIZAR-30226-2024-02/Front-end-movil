@@ -593,10 +593,10 @@ export default function RiskMap({ naviagtion, route }) {
           setDialogBool(false);
           colocarTropasCorrectas();
           break;
-      case 'seleccionar':
-        setDialog(null);
-        setDialogBool(false);
-        seleccionarTropasCorrectas();
+        case 'seleccionar':
+          setDialog(null);
+          setDialogBool(false);
+          seleccionarTropasCorrectas();
         break;
       }
     }, [dialogBool]);
@@ -617,9 +617,9 @@ export default function RiskMap({ naviagtion, route }) {
     */
     let eventoCancelado = false;
     // Ataque
-    let ataqueOrigen = '';
-    let ataqueDestino = '';
-    let ataqueTropas = 0; 
+    const [ataqueTropas, setAtaqueTropas] = useState(0);
+    const [ataqueOrigen, setAtaqueOrigen] = useState('');
+    const [ataqueDestino, setAtaqueDestino] = useState('');
     let avatarAMostrar = '';
 
 
@@ -686,15 +686,15 @@ export default function RiskMap({ naviagtion, route }) {
           if(!this.ocupado) Alert.alert('No es tu turno');
         }
         break;
-      /*case 1: // ataque
+      case 1: // ataque
         // antes de atacar, selecciono las tropas q quiero utilizar para atacar
-        if (this.ataqueTropas === 0) {
+        if (ataqueTropas === 0) {
           console.log('Seleccionar tropas para atacar')
-          this.ataqueTropas = 0;
-          this.ataqueDestino = '';
-          this.ataqueOrigen = '';
-          const numTroops = await this.seleccionarTropas(e, svgDoc, this.whoami, true);
-          console.log(this.ataqueTropas, this.ataqueOrigen, this.ataqueDestino, numTroops)
+          setAtaqueTropas(0)
+          setAtaqueDestino('')
+          setAtaqueOrigen('')
+          const numTroops = await seleccionarTropas(e, svgDoc, this.whoami, true);
+          console.log(ataqueTropas, ataqueOrigen, ataqueDestino, numTroops)
           console.log(`Player has selected ${numTroops} troops`);
           console.log(this.recolocacion)
           this.tropasPuestas = 0;
@@ -735,7 +735,7 @@ export default function RiskMap({ naviagtion, route }) {
               this.distribuirPiezas();
               this.ataqueDestino = ''
               this.ataqueOrigen = ''
-              this.ataqueTropas = 0
+              setAtaqueTropas(0)
               // update the state of every client
               this.socket.emit('actualizarEstado', this.partida._id);
               // and notify the defense player 
@@ -759,7 +759,7 @@ export default function RiskMap({ naviagtion, route }) {
               this.fase = 1;
               this.ataqueDestino = ''
               this.ataqueOrigen = ''
-              this.ataqueTropas = 0
+              setAtaqueTropas(0)
             }
           );
         }
@@ -1096,7 +1096,7 @@ export default function RiskMap({ naviagtion, route }) {
 
         return;
       }
-      this.ataqueTropas += numTroops;
+      setAtaqueTropas(ataqueTropas + numTroops)
     } else {
       Alert.alert('Ha ocurrido un error interno.', 'Atención');
 
