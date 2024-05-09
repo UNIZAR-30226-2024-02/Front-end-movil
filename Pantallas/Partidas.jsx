@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Button, StyleSheet, ImageBackground, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Button, StyleSheet, ImageBackground, ToastAndroid, Alert } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
 
@@ -100,7 +100,7 @@ const Partidas = ({ navigation, route }) => {
 
         if (response.status === 200) {
           console.log('Partida creada exitosamente');
-          Alert.alert('Success', 'Partida creada exitosamente');
+          ToastAndroid.show('Partida creada exitosamente', ToastAndroid.SHORT)
           const id = response.data.idPartida
           navigation.navigate('Lobby', { id, token }); // Navigate to Lobby component with partidaData and token
         } else {

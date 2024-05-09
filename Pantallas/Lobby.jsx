@@ -14,8 +14,7 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
     const [jugadores, setJugadores] = useState(null)
     const [invitado, setInvitado] = useState('')
     const [mensaje, setMensaje] = useState('')
-    // const [chat, setChat] = useState(null) // TODO: implementar chat, es trivial 
-    //gestión del estado (no el de israel)
+    // const [chat, setChat] = useState(null) // TODO: implementar chat, es trivial
     const [gameStarted, setGameStarted] = useState(null);
     const [userExited, setUserExited] = useState(null);
     const [userJoined, setUserJoined] = useState(null);
@@ -27,35 +26,37 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
 
     useEffect(() => {
         if (partidaData) {
-            fetchJugadores();
+            fetchJugadores()
         }
-    }, [partidaData]);
+    }, [partidaData])
 
     useEffect(() => {
         if (socket) {
-            fetchPartidaData()
+            if (!partidaData) {
+                fetchPartidaData()
+            }
 
             // TODO: Socket del chat, si se implementa en esta pantalla
             // lo he dejado preparado para que cuando se implemente sea simplemente des-comentar esto
-           /* socket.on('chatMessage', (mensaje, user, timestamp, chatId) => {
+            /* socket.on('chatMessage', (mensaje, user, timestamp, chatId) => {
                 console.log('chatMessage', mensaje, user, timestamp, chatId)
                 setChatMessage({ mensaje, user, timestamp, chatId })
             }) */
 
             socket.on('userJoined', (user) => {
                 console.log('userJoined', user)
-
+                ToastAndroid.show(`${user} se ha unido a la partida`, ToastAndroid.SHORT)
                 /*this.userService.getUserSkin(user).subscribe(response => {
                 this.users[user] = response.path
                 this.partida.jugadores.push({ usuario: user, territorios: [], cartas: [], abandonado: false, _id: '', skinFichas: '', color: ''})
                 })// Para las skins*/
-                // use setjugadores for the new user with an empty image path
-                setUserJoined(user);
+                setUserJoined(user)
             })
-        
+
             socket.on('userDisconnected', (user) => {
                 console.log('userDisconnected', user)
-                setUserExited(user);
+                ToastAndroid.show(`${user} ha abandonado la partida`, ToastAndroid.SHORT)
+                setUserExited(user)
             })
             socket.on('gameStarted', (gameId) => {
                 console.log('gameStarted', gameId)
