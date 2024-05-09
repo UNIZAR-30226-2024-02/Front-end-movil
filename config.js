@@ -1,4 +1,4 @@
-const IP = "http://10.1.64.81:4000";
+const IP = "http://192.168.1.42:4000";
 
 module.exports = {
     IP

@@ -14,6 +14,12 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
     const [jugadores, setJugadores] = useState(null)
     const [invitado, setInvitado] = useState('')
     const [mensaje, setMensaje] = useState('')
+    // const [chat, setChat] = useState(null) // TODO: implementar chat, es trivial 
+    //gestión del estado (no el de israel)
+    const [gameStarted, setGameStarted] = useState(null);
+    const [userExited, setUserExited] = useState(null);
+    const [userJoined, setUserJoined] = useState(null);
+    const [chatMessage, setChatMessage] = useState(null);
 
     useEffect(() => {
         setSocket(io(IP))
@@ -30,48 +36,79 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
             fetchPartidaData()
 
             // TODO: Socket del chat, si se implementa en esta pantalla
-            /*socket.on('chatMessage', (mensaje, user, timestamp, chatId) => {
-            if (chat) {
-                if (!chat.mensajes) {
-                chat.mensajes = []
-                }
-                chat.mensajes.push({ texto: mensaje, idUsuario: user, timestamp: timestamp });
-            }
-            })*/
+            // lo he dejado preparado para que cuando se implemente sea simplemente des-comentar esto
+           /* socket.on('chatMessage', (mensaje, user, timestamp, chatId) => {
+                console.log('chatMessage', mensaje, user, timestamp, chatId)
+                setChatMessage({ mensaje, user, timestamp, chatId })
+            }) */
 
-            /* TODO: no sé por qué no funcionan los .on, el socket no es undefined
-            console.log('socket:', socket)
             socket.on('userJoined', (user) => {
                 console.log('userJoined', user)
-                ToastAndroid.show(`${user} se ha unido a la partida`, ToastAndroid.SHORT)*/
+
                 /*this.userService.getUserSkin(user).subscribe(response => {
                 this.users[user] = response.path
                 this.partida.jugadores.push({ usuario: user, territorios: [], cartas: [], abandonado: false, _id: '', skinFichas: '', color: ''})
-                })*/ // Para las skins
+                })// Para las skins*/
                 // use setjugadores for the new user with an empty image path
-                /*setJugadores([...jugadores, [user, '']])
+                setUserJoined(user);
             })
         
             socket.on('userDisconnected', (user) => {
                 console.log('userDisconnected', user)
-                this.toastr.info(user + ' ha abandonado la partida', 'Jugador desconectado')
-                delete this.users[user]
-                console.log(this.users)
+                setUserExited(user);
             })
-            this.socket.on('gameStarted', (gameId) => {
+            socket.on('gameStarted', (gameId) => {
                 console.log('gameStarted', gameId)
-                this.router.navigate(['/partida'], { state: { partida: this.partida } })
-            })*/
+                setGameStarted(gameId); // Store the gameId in state
+            })
         }
     }, [socket])
+
+    // gestión del ilegítimo estado de israel
+    useEffect(() => {
+        if (gameStarted && partidaData) {
+            // If a game has started and partidaData is not null, navigate to RiskMap
+            navigation.navigate('RiskMap', { token: token, partida: partidaData })
+        }
+    }, [gameStarted, partidaData])
+
+    useEffect(() => {
+        if (userExited && partidaData && jugadores) { 
+            ToastAndroid.show(`${userExited} ha abandonado la partida`, ToastAndroid.SHORT)
+            for(let i = 0; i < jugadores.length; i++) {
+                if (jugadores[i][0] === userExited) {
+                    jugadores.splice(i, 1)
+                    break
+                }
+            }
+            setUserExited(null);
+        }
+    }, [userExited, partidaData, jugadores])
+
+    useEffect(() => {
+        if(userJoined && jugadores){
+            ToastAndroid.show(`${userJoined} se ha unido a la partida`, ToastAndroid.SHORT)
+            jugadores.push([userJoined, ''])
+            setUserJoined(null);
+        }
+    }, [userJoined, jugadores])
+
+    /*useEffect(() => {
+        if(chatMessage && partidaData && chat){
+            chat.mensajes.push({texto: chatMessage.mensaje, idUsuario: chatMessage.user, timestamp: chatMessage.timestamp})
+            setChatMessage(null)
+        }
+    }, [chatMessage, partidaData, chat])*/
 
     const fetchPartidaData = async () => {
         try {
             const response = await axios.get(`${IP}/partidas/partida/${id}`, { headers: { 'Authorization': token } })
-            setUsername(await AsyncStorage.getItem('username'))
-            socket.emit('joinChat', response.data.chat._id)
-            socket.emit('joinGame', { gameId: response.data._id, user: username })
+            const storedUsername = await AsyncStorage.getItem('username');
+            setUsername(storedUsername);
+            socket.emit('joinChat', response.data.chat._id);
+            socket.emit('joinGame', { gameId: response.data._id, user: storedUsername });
             setPartidaData(response.data)
+            this.partida = response.data;
         } catch (error) {
             console.error('Error fetching partida data:', error)
             Alert.alert('Error', 'Ha ocurrido un error al obtener los datos de la partida. Por favor, inténtalo de nuevo más tarde.')
