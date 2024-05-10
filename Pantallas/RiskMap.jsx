@@ -779,7 +779,7 @@ export default function RiskMap({ naviagtion, route }) {
         }*/
 
         break
-      case 2: // maniobra -> reutilizo las variables de ataque jeje
+      /*case 2: // maniobra -> reutilizo las variables de ataque jeje
         if (ataqueTropas === 0) {
           setAtaqueTropas(0)
           setAtaqueDestino('')
@@ -811,7 +811,7 @@ export default function RiskMap({ naviagtion, route }) {
           this.ataqueTropas = 0
         }
         break
-      /*case 3: // robo 
+      case 3: // robo 
         //this.final(e, svgDoc, imgWidth, imgHeight);
         break
       case 4: // fin
