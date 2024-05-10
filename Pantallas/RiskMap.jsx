@@ -30,6 +30,7 @@ export default function RiskMap({ naviagtion, route }) {
 
   const [numterritoriosTropas, setnumterritoriosTropas] = useState(0);
   const [visible, setVisible] = useState(false);
+  const [dialogState, setDialogState] = useState({visible: false, title: '', type: ''});
 
   const [isOk, setOkState] = useState("No");
 
@@ -599,20 +600,26 @@ export default function RiskMap({ naviagtion, route }) {
     let ocupado = false;
 
     const [dialogBool, setDialogBool] = useState(false);
+    const [seguir, setSeguir] = useState(false);
     const[dialog, setDialog] = useState(null);
     const [fase, setFase] = useState(0);// Colocar- -> 0; Atacar -> 1; Maniobrar -> 2; Robar -> 3; Fin -> 4;
-    let seguir = false;
+    //let seguir = false;
     useEffect(() => {
-      console.log(dialog);
-      switch(dialog){
+      //console.log(dialog);
+      switch(dialogState.type){
         case 'colocar':
-          setDialog(null);
+          //setDialog(null);
+          setDialogState({type: null, visible: dialogState.visible, title: dialogState.title})
           setDialogBool(false);
+          //setSeguir(true);
+
           colocarTropasCorrectas();
           break;
         case 'seleccionar':
-          setDialog(null);
+          setDialogState({type: null, visible: dialogState.visible, title: dialogState.title})
           setDialogBool(false);
+          //setSeguir(true);
+          console.log('seleccionar');
           seleccionarTropasCorrectas();
         break;
       }
@@ -640,16 +647,6 @@ export default function RiskMap({ naviagtion, route }) {
     let avatarAMostrar = '';
 
 
-  const waitForTropasPuestas = async () => {
-    return new Promise((resolve) => {
-      const checkInterval = setInterval(() => {
-        if (numterritoriosTropas !== 0  || isOk === 'Cancelled') {
-          clearInterval(checkInterval);
-          resolve();
-        }
-      }, 1);
-    });
-  }
 
   useEffect(() => {
     if(turnoJugador === whoami){
@@ -823,22 +820,25 @@ export default function RiskMap({ naviagtion, route }) {
   }
   
   //Pone todas las tropas en 0
-  const limpiarTropas = () => {
-    let tropas = territoriosTropas;
-    for(let i = 0; i < tropas.length; i++){
-      tropas[i].numTropas = 0;
-    }
-    setterritoriosTropas(tropas);
+  const limpiarTropas =  () => {
+    let mapa = thisPartida.mapa;
+    mapa.forEach(continente => {
+      continente.territorios.forEach(territorio => {
+        territorio.tropas = 0;
+      });
+    });
+
   }
 
-  //Esto pinta el mapa con las piezas de cada territorio pero creo que no hace fala aqui en movil
+  //Esto pinta el mapa con las piezas de cada territorio pero creo que no hace falta aqui porque ya se pinta en el colocar tropas
+  //Lo dejo de momento porque no se si hara falta para otra cosa, pero creo que no
   const distribuirPiezas = () => {
     //console.log("Continentes", mapa)
     //console.log("Jugadores", jugadores)
     let mapa = partida.mapa;
     setMapa(mapa);
     //console.log(mapa[0].territorios);
-    for(let continente of mapa){
+    /*for(let continente of mapa){
       for(let territorio of continente.territorios){
         //console.log(territorio)
         // Find the player who owns this territory
@@ -850,14 +850,15 @@ export default function RiskMap({ naviagtion, route }) {
         //console.log(color)
         if(color !== undefined && jugador) {
           //console.log(`The color of territory ${territorio.nombre} is ${color}, and it has ${territorio.tropas} troops.`);
-          colocarTropas(territorio.nombre, jugador.usuario, true, territorio.tropas);
+          //colocarTropas(territorio.nombre, jugador.usuario, true, territorio.tropas);
         }
       }
-    }
+    }*/
     setterritoriosTropas(territoriosTropasAux);
+    setThisPartida(partida);
   }
 
-  const inicializarPartida = (partida) => {
+  const inicializarPartida =  (partida) => {
     // Inicializa los atributos de la partida
     //console.log("MAPA:", partida.mapa[0].territorios);
     //jugadores = partida.jugadores;
@@ -878,7 +879,7 @@ export default function RiskMap({ naviagtion, route }) {
     //TODO fetch cartas del back
     setCartas(partida.cartas);
 
-    limpiarTropas();
+    //limpiarTropas();
     distribuirPiezas();
     //setTurnoJugador(jugadores[turno % numJugadores].usuario);
     //turnoJugador = partida.jugadores[partida.turno % this.numJugadores];
@@ -922,7 +923,7 @@ export default function RiskMap({ naviagtion, route }) {
       }
     }
     
-    //Si hay limite, es que no es un evento
+    //Si hay limite, no hace falta preguntar por las tropas, esto solo se usa cuando hay que quitar tropas del mapa
     if(limite){
       troops = limite.toString();
 
@@ -936,23 +937,28 @@ export default function RiskMap({ naviagtion, route }) {
 
       tropasPuestas += numTroops;
       //console.log(territoriosTropas.length);
-      const terrainInfo = territoriosTropas.find(terrain => terrain.terrainId === territoriname2);
-      //terrainInfo = {terrainId: "ALASKA", numTropas: numTroops, user: user2};
-      //console.log('terrainInfo: ', terrainInfo);
-      if (terrainInfo) {
-        terrainInfo.numTropas += numTroops;
-        terrainInfo.user = user2;
-        numTroops = terrainInfo.numTropas;
-        setterritoriosTropas(territoriosTropas);
-        if(!init2){
-          let newtropas = numTropas - numTroops;
-          setNumTropas(newtropas);
+      let thisPartidaAux = thisPartida;
+      const territorios = thisPartidaAux.mapa.flatMap(continent => continent.territorios);
+      if (territorios) {
+        const terrainInfo = territorios.find(territorio => territorio.nombre === territoriname2)
+        if (terrainInfo) {
+          let aux = terrainInfo.tropas;
+          terrainInfo.tropas += numTroops;
+          terrainInfo.user = user2;
+          numTroops = terrainInfo.tropas;
+          //setterritoriosTropas(territoriosTropas);
+          setThisPartida(thisPartidaAux);
+          if(!init2){
+            let newtropas = numTropas - numTroops;
+            setNumTropas(newtropas);
+          }
         }
-      } else {
-        //console.log("territorio: " + territoriname2, numTroops, user2);
-        //territoriosTropas.push({terrainId: territoriname2, numTropas: numTroops, user: user2});
-        //setterritoriosTropas([...territoriosTropas, {terrainId: territoriname2, numTropas: numTroops, user: user2}]);
-        territoriosTropasAux.push({terrainId: territoriname2, numTropas: numTroops, user: user2});
+        else {
+          //console.log("territorio: " + territoriname2, numTroops, user2);
+          //territoriosTropas.push({terrainId: territoriname2, numTropas: numTroops, user: user2});
+          //setterritoriosTropas([...territoriosTropas, {terrainId: territoriname2, numTropas: numTroops, user: user2}]);
+          territoriosTropasAux.push({terrainId: territoriname2, numTropas: numTroops, user: user2});
+        }
       }
     }
     else if(recolocacion){ 
@@ -963,17 +969,16 @@ export default function RiskMap({ naviagtion, route }) {
       setStateTropas({territoriname: territoriname2, user: user2, init: init2});
       let newState = { message: null };
       setState(newState);
-      setDialog('colocar');
-      setVisible(true);
-      //Sigue en otra funcion por el dialog
+      let auxDialog = {visible: true, type: 'colocar', title: 'Cuantas tropas quieres colocar?'};
+      setDialogState(auxDialog);
     }
 
   }
 
- 
+ //Aqui sigue la funcion colocar tropas despus de introducirlas en el dialog
   const colocarTropasCorrectas = async () => {
     
-    //console.log('me meto en colocarTropasCorrectas: ', stateTropas.territoriname);
+    console.log('me meto en colocarTropasCorrectas: ', stateTropas.territoriname);
     if (state.message === null) {
       return;
     }
@@ -992,33 +997,31 @@ export default function RiskMap({ naviagtion, route }) {
 
     tropasPuestas += numTroops;
    
-    const terrainInfo = territoriosTropas.find(terrain => terrain.terrainId === stateTropas.territoriname);
-    if (terrainInfo) {
-      terrainInfo.numTropas += numTroops;
-      terrainInfo.user = stateTropas.user;
-      numTroops = terrainInfo.numTropas;
-      setterritoriosTropas(territoriosTropas);
-    } else {
-      //console.log("territorio: " + stateTropas.territoriname)
-      territoriosTropas.push({terrainId: stateTropas.territoriname, numTropas: numTroops, user: stateTropas.user});
-      setterritoriosTropas(territoriosTropas);
-    }
+    let thisPartidaAux = thisPartida;
+    const territorios = thisPartidaAux.mapa.flatMap(continent => continent.territorios);
 
-    //si estoy en fase de colocacion socket emit
+      if (territorios) {
+        const terrainInfo = territorios.find(territorio => territorio.nombre === stateTropas.territoriname)
+        if (terrainInfo) {
+          terrainInfo.tropas += numTroops;
+          terrainInfo.user = stateTropas.user;
+          numTroops = terrainInfo.numTropas;
+          //setterritoriosTropas(territoriosTropas);
+          setThisPartida(thisPartidaAux);
+        }
+        else {
+          //console.log("territorio: " + territoriname2, numTroops, user2);
+          //territoriosTropas.push({terrainId: territoriname2, numTropas: numTroops, user: user2});
+          //setterritoriosTropas([...territoriosTropas, {terrainId: territoriname2, numTropas: numTroops, user: user2}]);
+          territoriosTropasAux.push({terrainId: stateTropas.territoriname, numTropas: numTroops, user: stateTropas.user});
+        }
+      }
+
+    //si estoy en fase de colocacion socket emit y coloco tropas e back
     if(fase === 0){
-      /*
-      *
-      * ESTO ES LO QUE HAY EN WEB, NO TENGO NI IDEA DE COMO VAN LOS SOCKETS, MIRAR ESTO PLIS
-      * Lita
-      * 
-      */
-
-
-      //EN TEORIA, si llego hata aqui esque no he cancelado nada asi que se podra borrar este if, creo
-      //Lita
       ocupado = true;
       //console.log('Colocando tropas en el territorio: ', stateTropas.territoriname, ' con ', numTroops, ' tropas.');
-      const response = await axios.put(`${IP}/partida/colocarTropas`, {idPartida, territorio: stateTropas.territoriname, numTropas: tropasPuestas}, { headers: { 'Authorization': token } })
+      const response = await axios.put(`${IP}/partida/colocarTropas`, {idPartida: thisPartida._id, territorio: stateTropas.territoriname, numTropas: tropasPuestas}, { headers: { 'Authorization': token } })
         if (response.status === 200) {
           console.log(response);
           tropasPuestas = 0;
@@ -1034,7 +1037,7 @@ export default function RiskMap({ naviagtion, route }) {
         }
       
       setTimeout(() => { // si no recibo respuesta del back, está caído
-        console.log("entro")
+        //console.log("entro")
         if(ocupado){ 
           console.log("fatal error")
           Alert.alert('¡ERROR FATAL!');
@@ -1047,31 +1050,65 @@ export default function RiskMap({ naviagtion, route }) {
   }
 
 
+  //Todo esto es para esperar a que se introduzcan las tropas en el dialog
+  useEffect(() => {
+    if (seguir) {
+      colocarSeguir();
+    }
+  }, [seguir, numTroops]);
+
+  const colocarSeguir = async () => {
+    console.log('seguir');
+    await AsyncStorage.setItem('numTroops', numTroops.toString());
+    await AsyncStorage.setItem('seguir', 'true');
+  }
+
+  const waitForTropasSeleccionadas = async () => {
+    let sigo = await AsyncStorage.getItem('seguir');
+    if (sigo === 'true') {
+      setSeguir(false);
+      await AsyncStorage.removeItem('seguir');
+      return;
+    }
+    else{
+      await new Promise(
+        resolve => setTimeout(resolve, 500)
+      );
+    }
+    await waitForTropasSeleccionadas();
+  }
+
+
+  const [numTroops, setNumTroops] = useState(0);
   //Funcion para seleccionar tropas que se usa en el statemachine
-  const seleccionarTropas =  (_territoriId, user2, attack2) => {
-    console.log('Seleccionar tropas');
+  const seleccionarTropas = async (_territoriId, user2, attack2) => {
+    //console.log('Seleccionar tropas');
     
       
       const terrainId = _territoriId;
       //para probar comento esto
-      /*let duenno = partida.jugadores.find(jugador => jugador.usuario == user);
+      let duenno = thisPartida.jugadores.find(jugador => jugador.usuario == user2);
       if (!(terrainId && duenno && duenno.territorios.includes(terrainId))) {
         Alert.alert('No puedes seleccionar tropas en territorios que no te pertenecen');
         //this.cdr.detectChanges();
 
         return;
-      }*/
+      }
       //Preguntar por tropas
       setStateTropas({territoriId: _territoriId, user: user2, attack: attack2});
       let newState = { message: null };
       setState(newState);
-      setDialog('seleccionar');
-      setVisible(true);
+      setDialogState({visible: true, type: 'seleccionar', title: 'Cuantas tropas quieres seleccionar?'});
+      //setDialog('seleccionar');
+      //setVisible(true);
+      //Despues del dialog se sigue en el SelectTropasCorrectas
+      await waitForTropasSeleccionadas();
 
+      return parseInt(await AsyncStorage.getItem('numTroops'));
       
-    
   }
 
+  //Aqui sigue la funcion seleccionar tropas despus de introducirlas en el dialog
   const seleccionarTropasCorrectas = async () => {
     const troops = state.message;
 
@@ -1092,9 +1129,12 @@ export default function RiskMap({ naviagtion, route }) {
       return;
     }
 
-    const terrainInfo = territoriosTropas.find(terrain => terrain.terrainId === stateTropas.territoriId);
+    let thisPartidaAux = thisPartida;
+    const territorios = thisPartidaAux.mapa.flatMap(continent => continent.territorios);
+    //console.log(territorios);
+    const terrainInfo = territorios.find(terrain => terrain.nombre === stateTropas.territoriId);
     if (terrainInfo) {
-      if (terrainInfo.numTropas < numTroops + 1) { // se debe dejar al menos una tropa y no quedarnos con tropas negativasd
+      if (terrainInfo.tropas < numTroops + 1) { // se debe dejar al menos una tropa y no quedarnos con tropas negativasd
         Alert.alert('No tienes suficientes tropas en este territorio. Recuerda que debes dejar al menos una tropa.');
 
         return;
@@ -1107,9 +1147,9 @@ export default function RiskMap({ naviagtion, route }) {
     }
 
     Alert.alert(`Has seleccionado ${numTroops} tropas.`);
-    //TODO: Mirar Esto
-    //this.ataqueOrigen = terrainId;
-
+    setAtaqueOrigen(stateTropas.territoriId);
+    setNumTroops(numTroops);
+    setSeguir(true);
   }
 
 
@@ -1118,7 +1158,7 @@ export default function RiskMap({ naviagtion, route }) {
   const handleOK = async () => {
     //setnumterritoriosTropas(state.message);
     setDialogBool(true);
-    setVisible(false);
+    setDialogState({type: dialogState.type, visible: false, title: dialogState.title})
     console.log('me meto en handleOK: ', state.message);
     
   }
@@ -1126,7 +1166,7 @@ export default function RiskMap({ naviagtion, route }) {
 
   //TODO: Implementar la rutina de cancelar
   const handleCancel = async () => {
-    setVisible(false);
+    setDialogState({type: null, visible: false, title: dialogState.title})
   }
   return (
     <View style={styles.container} >
@@ -1157,9 +1197,9 @@ export default function RiskMap({ naviagtion, route }) {
       </View>
 
       {/*DIALOGO PARA LAS TROPAS */}
-        <Dialog.Container visible={visible} > 
-        <Dialog.Title>Cuantas Tropas quieres seleccionar</Dialog.Title>
-           <Dialog.Input label="Troop" onChangeText={(troop ) => setState({ message: troop })} 
+        <Dialog.Container visible={dialogState.visible} > 
+        <Dialog.Title>{dialogState.title}</Dialog.Title>
+           <Dialog.Input inputMode='numeric' label="Troop" onChangeText={(troop ) => setState({ message: troop })} 
             ></Dialog.Input>
           <Dialog.Button label="Cancel" onPress={handleCancel} />
           <Dialog.Button label="OK" onPress={handleOK} />
