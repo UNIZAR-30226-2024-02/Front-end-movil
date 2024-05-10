@@ -15,11 +15,10 @@ export default function RiskMap({ naviagtion, route }) {
   const socket = io(IP);
 
 
-  const { token, partida, whoami} = route.params;
+  const { token, partida, whoami } = route.params;
   
   const [thisPartida, setThisPartida] = useState(partida);
   //const [partida, setPartida] = useState(null);
-  const [idPartida, setIdPartida] = useState(route.params.partida._id);
   const [mapa, setMapa] = useState(null);
 
   //Pruebas para cambiar el color
@@ -35,12 +34,22 @@ export default function RiskMap({ naviagtion, route }) {
   const [isOk, setOkState] = useState("No");
 
   useEffect(() => {
+    socket.on('cambioEstado', async () => {
+      console.log('Partida1', partida)
+      setThisPartida(partida); // actualizo el estado de la partida
+      await new Promise(resolve => setTimeout(resolve, 1000)) // espero un rato
+
+      //limpiarTropas() // TODO
+
+      //Pinto el mapa
+      //distribuirPiezas() // TODO
+    });
     //COMENTADO PARA PRUEBAS SIN VENIR DEL LOBBY
     console.log(partida)
     //setIdPartida(partida._id);
     onLoad()
+    return () => socket.disconnect();
   }, []);
-
 
   /*
   *
@@ -71,31 +80,40 @@ export default function RiskMap({ naviagtion, route }) {
 
   //Esta fundion sirve para buscar el numero de tropas en un territorio y represetarlo en el svg
   const findTropas = (key) => {
-    let tropa = territoriosTropas.find(tropa => tropa.terrainId === key);
-    if (tropa) {
-      return tropa.numTropas.toString();
+    if (thisPartida) {
+      const territorios = thisPartida.mapa.flatMap(continent => continent.territorios);
+      if (territorios) {
+        const territorio = territorios.find(territorio => territorio.nombre === key)
+        if (territorio) {
+          return territorio.tropas
+        }
+      }
     }
-    else
-      return "";
-      
   }
 
   const findColor = (key) => {
-    let tropa = territoriosTropas.find(tropa => tropa.terrainId === key);
-    if (tropa) {
-      // find the user in partidadata and get his color
-      let user = thisPartida.jugadores.find(jugador => jugador.usuario === tropa.user);
-      console.log(user.color); // TODO: terminar y borrar cuando tengamos todos los colores
-      switch (user.color) {
-        case "verde":
-          return "#0f0";
-        case "rojo":
-          return "#f00";
+    if (thisPartida) {
+      const user = thisPartida.jugadores.find(jugador => jugador.territorios.includes(key))
+
+      if (user) {
+        switch (user.color) {
+          case "verde":
+            return "#0f0";
+          case "rojo":
+            return "#f00";
+          case "azul":
+            return "#00f";
+          case "amarillo":
+            return "#ff0";
+          case "rosa":
+            return "#f0f";
+          case "morado":
+            return "#808";
+        }
       }
     }
     else
-      return "";
-      
+      return "#000";
   }
 
   const MapSVGComponent = (props) => (
@@ -565,7 +583,6 @@ export default function RiskMap({ naviagtion, route }) {
     let nombrePartida = '';
     let ganador = null;
     let turno= 0;
-    const [jugadores, setJugadores] = useState([]);
     const [cartas, setCartas] = useState(null);
     let descartes= [];
     //let mapa = [];
@@ -639,12 +656,10 @@ export default function RiskMap({ naviagtion, route }) {
       switch(fase){
         case 0:
           console.log('Fase colocación', whoami, turnoJugador);
-          if(turnoJugador === whoami){
-            setTextoFase('Fase colocación: Coloca una tropa en un país libre');
-          }
-          else 
-            setTextoFase('Espera tu turno');
-            
+          setTextoFase('Fase colocación: Coloca una tropa en un país libre');
+          console.log(thisPartida.auxColocar)
+          setNumTropas(thisPartida.auxColocar || 0 );
+          console.log(numTropas)
           break;
         case 1:
           setTextoFase('Fase ataque: Mueve las tropas de un país tuyo a uno enemigo contiguo');
@@ -654,7 +669,6 @@ export default function RiskMap({ naviagtion, route }) {
           break;
         case 3:
           setTextoFase('Fase robo: Roba una carta');
-
           break;
       }
     } else {
@@ -688,7 +702,7 @@ export default function RiskMap({ naviagtion, route }) {
         break;
       case 1: // ataque
         // antes de atacar, selecciono las tropas q quiero utilizar para atacar
-        if (ataqueTropas === 0) {
+        /*if (ataqueTropas === 0) {
           console.log('Seleccionar tropas para atacar')
           setAtaqueTropas(0)
           setAtaqueDestino('')
@@ -762,19 +776,17 @@ export default function RiskMap({ naviagtion, route }) {
               setAtaqueTropas(0)
             }
           );
-        }
+        }*/
 
         break
-      /*case 2: // maniobra -> reutilizo las variables de ataque jeje
-        if (this.ataqueTropas === 0) {
-          this.ataqueTropas = 0;
-          this.ataqueDestino = ''
-          this.ataqueOrigen = ''
-          const numTroops = await this.seleccionarTropas(e, svgDoc, this.whoami, false)
-          console.log(`Player has selected ${numTroops} troops`)
-          this.colocarTropas(e, svgDoc, 50, 50, this.whoami, false, true, -numTroops) // las quito del mapa
+      case 2: // maniobra -> reutilizo las variables de ataque jeje
+        if (ataqueTropas === 0) {
+          setAtaqueTropas(0)
+          setAtaqueDestino('')
+          setAtaqueOrigen('')
+          //colocarTropas(e, svgDoc, 50, 50, this.whoami, false, true, -numTroops) // las quito del mapa
+          setNumTropas(prevNumTropas => prevNumTropas - numTroops)
           this.numTropas -= numTroops // tampoco las tengo colocables, las tengo seleccionadas así que las quito de ahí
-          this.cdr.detectChanges()
         } else {
           // una vez seleccionadas las tropas me tocará elegir un territorio enemigo
           const enemyTerritoryId = await this.seleccionarTerritorioAmigo(e, svgDoc, this.whoami)
@@ -799,7 +811,7 @@ export default function RiskMap({ naviagtion, route }) {
           this.ataqueTropas = 0
         }
         break
-      case 3: // robo 
+      /*case 3: // robo 
         //this.final(e, svgDoc, imgWidth, imgHeight);
         break
       case 4: // fin
@@ -850,12 +862,8 @@ export default function RiskMap({ naviagtion, route }) {
     //console.log("MAPA:", partida.mapa[0].territorios);
     //jugadores = partida.jugadores;
     //console.log(partida);
-    setJugadores(partida.jugadores);
     //let me = partida.jugadores.find(jugador => jugador.usuario === whoami);
-    
-    for (let i = 0; i < partida.jugadores.length; i++) {
-      partida.jugadores[i].color = colores[i];
-    };
+
     turno  = partida.turno;
     nombrePartida = partida.nombre;
     numJugadores = partida.jugadores.length;
@@ -866,8 +874,6 @@ export default function RiskMap({ naviagtion, route }) {
     ganador = partida.ganador;
     setFase(partida.fase);
     setTurnoJugador(partida.jugadores[turno % numJugadores].usuario)
-    //fase = partida.fase;
-    
 
     //TODO fetch cartas del back
     setCartas(partida.cartas);
@@ -887,19 +893,16 @@ export default function RiskMap({ naviagtion, route }) {
   }
 
   const onLoad = async () => {
-    // Partida viene del lobby
-    //whoami = await AsyncStorage.getItem('username');
-    //console.log(idPartida);
-    /* (Al parecer getPartida es un put)
-    const response = await axios.put(`${IP}/partida/getPartida/`, { idPartida: partidaID }, { headers: { 'Authorization': token } })
+    // Aunque venga del lobby, es necesario actualizar el estado con la información de la partida (como los colores de los jugadores)
+    // (Al parecer getPartida es un put)
+    const response = await axios.put(`${IP}/partida/getPartida/`, { idPartida: partida._id }, { headers: { 'Authorization': token } })
     if (response.status === 200) {
-      partida = response.data.partida;
+      setThisPartida(response.data.partida)
     } else {
       Alert.alert('Error', 'Error cargando partida');
-    }*/
-    
+    }
 
-    inicializarPartida(partida);
+    inicializarPartida(response.data.partida);
     //console.log(partida.jugadores);
   }
 
@@ -909,7 +912,7 @@ export default function RiskMap({ naviagtion, route }) {
     // Ask the user for the number of troops
 
     let troops;
-    let duenno = jugadores.find(jugador => jugador.usuario == user2);
+    let duenno = thisPartida.jugadores.find(jugador => jugador.usuario == user2);
 
     if(!init2 && !recolocacion){
       if(!(territoriname2 && duenno && duenno.territorios.includes(territoriname2))){
