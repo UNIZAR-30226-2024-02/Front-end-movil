@@ -14,10 +14,11 @@ import Dialog from "react-native-dialog";
 export default function RiskMap({ naviagtion, route }) {
   const socket = io(IP);
 
+  const [whoami, setWhoami] = useState(null);
 
-  const { token, partida, whoami } = route.params;
+  const { token, partida } = route.params;
   
-  const [thisPartida, setThisPartida] = useState(partida);
+  const [thisPartida, setThisPartida] = useState(null);
   //const [partida, setPartida] = useState(null);
   const [mapa, setMapa] = useState(null);
 
@@ -48,7 +49,8 @@ export default function RiskMap({ naviagtion, route }) {
     //COMENTADO PARA PRUEBAS SIN VENIR DEL LOBBY
     console.log(partida)
     //setIdPartida(partida._id);
-    onLoad()
+    setThisPartida(partida);
+    onLoad();
     return () => socket.disconnect();
   }, []);
 
@@ -831,12 +833,13 @@ export default function RiskMap({ naviagtion, route }) {
   }
 
   //Esto pinta el mapa con las piezas de cada territorio pero creo que no hace falta aqui porque ya se pinta en el colocar tropas
+  //No hace falta pintar nada, al hacer setThisPartida se pinta el mapa
   //Lo dejo de momento porque no se si hara falta para otra cosa, pero creo que no
   const distribuirPiezas = () => {
     //console.log("Continentes", mapa)
     //console.log("Jugadores", jugadores)
-    let mapa = partida.mapa;
-    setMapa(mapa);
+    //let mapa = thisPartida.mapa;
+    //setMapa(mapa);
     //console.log(mapa[0].territorios);
     /*for(let continente of mapa){
       for(let territorio of continente.territorios){
@@ -855,16 +858,17 @@ export default function RiskMap({ naviagtion, route }) {
       }
     }*/
     setterritoriosTropas(territoriosTropasAux);
+    console.log(partida);
     setThisPartida(partida);
   }
 
   const inicializarPartida =  (partida) => {
     // Inicializa los atributos de la partida
-    //console.log("MAPA:", partida.mapa[0].territorios);
+    //console.log(partida);
     //jugadores = partida.jugadores;
     //console.log(partida);
     //let me = partida.jugadores.find(jugador => jugador.usuario === whoami);
-
+    //setThisPartida(partida);
     turno  = partida.turno;
     nombrePartida = partida.nombre;
     numJugadores = partida.jugadores.length;
@@ -880,7 +884,7 @@ export default function RiskMap({ naviagtion, route }) {
     setCartas(partida.cartas);
 
     //limpiarTropas();
-    distribuirPiezas();
+    //distribuirPiezas();
     //setTurnoJugador(jugadores[turno % numJugadores].usuario);
     //turnoJugador = partida.jugadores[partida.turno % this.numJugadores];
     //console.log(partida.jugadores[turno % numJugadores].usuario);
@@ -890,19 +894,23 @@ export default function RiskMap({ naviagtion, route }) {
       setNumTropas(partida.auxColocar);
       
     }
-    
+
+    console.log("MAPA:", thisPartida);
   }
+
 
   const onLoad = async () => {
     // Aunque venga del lobby, es necesario actualizar el estado con la información de la partida (como los colores de los jugadores)
     // (Al parecer getPartida es un put)
+
     const response = await axios.put(`${IP}/partida/getPartida/`, { idPartida: partida._id }, { headers: { 'Authorization': token } })
     if (response.status === 200) {
       setThisPartida(response.data.partida)
     } else {
       Alert.alert('Error', 'Error cargando partida');
     }
-
+    setWhoami(await AsyncStorage.getItem('username'));
+    console.log(response.data.partida);
     inicializarPartida(response.data.partida);
     //console.log(partida.jugadores);
   }
