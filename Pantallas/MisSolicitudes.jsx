@@ -41,18 +41,21 @@ export default function FriendshipRequests({ navigation, route }){
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
-      <Text style={styles.headerText}>Solicitudes</Text>
       <ScrollView contentContainerStyle={styles.container}>
-        {requests.map((userId) => (
-          <TouchableOpacity
-            key={userId}
-            style={styles.FriendItem}
-            onPress={() => handleSolicitudPress(userId)}>
-            <View style={styles.tableRow}>
-              <Text style={styles.playerName}>{userId}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+        <View style={[styles.table, { minWidth: '60%' }]}>
+          <View style={styles.tableHeader}>
+            <Text style={[styles.headerText]}>UserID</Text>
+          </View>
+          {requests.map((userId) => (
+            <TouchableOpacity
+              key={userId}
+              onPress={() => handleSolicitudPress(userId)}>
+              <View style={styles.tableRow}>
+                <Text style={styles.playerName}>{userId}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
       </ScrollView>
     </ImageBackground>
   );
@@ -63,45 +66,38 @@ const styles = StyleSheet.create({
     flex: 1,
     resizeMode: 'cover',
     justifyContent: 'center',
+    alignItems: 'center',
   },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 20,
   },
-  FriendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  table: {
+    borderWidth: 1,
+    borderColor: 'white',
     borderRadius: 8,
-    width: '90%',
-    elevation: 3,
-    height: 60,
+    overflow: 'hidden',
+  },
+  tableHeader: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
   },
   headerText: {
-    color: 'white',
-    fontSize: 30,
+    fontSize: 18,
     fontWeight: 'bold',
-    textTransform: 'uppercase',
-    textShadowColor: 'black',
-    textShadowOffset: { width: 2, height: 1 },
-    textShadowRadius: 2,
-    textAlign:'center',
-    marginTop:30,
+    color: 'white',
+    textAlign: 'center',
   },
   tableRow: {
-    flex: 1,
-    justifyContent: 'center',
-    marginLeft: 10,
+    backgroundColor: '#ffffff',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#4CAF50',
   },
   playerName: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-    textShadowColor: 'black',
-    textShadowOffset: { width: 2, height: 1 },
-    textShadowRadius: 2,
+    fontSize: 16,
+    textAlign: 'center',
   },
 });

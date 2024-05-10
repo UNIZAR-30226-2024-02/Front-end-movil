@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
 
-const Partida = ({ route }) => {
+const Partida = ({ navigation, route }) => {
   const { id, token } = route.params;
   const [partidaData, setPartidaData] = useState(null);
 
@@ -28,10 +28,10 @@ const Partida = ({ route }) => {
           'Authorization': token,
         }
       });
-      
+
       if (response.status === 200) {
         Alert.alert('Success', 'Unido correctamente');
-        // Optionally, you can navigate to another screen or perform additional actions after successful joining
+        navigation.navigate('Lobby', { id, token }); // Navigate to Lobby component with partidaData and token
       } else {
         Alert.alert('Error', 'Error uniendo');
       }
@@ -42,29 +42,27 @@ const Partida = ({ route }) => {
   };
 
   return (
-    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
-      <View style={styles.container}>
-        {partidaData ? (
-          <View>
-            <Text style={styles.title}>Nombre de la partida: {partidaData.nombre}</Text>
-            <Text style={styles.subTitle}>Nombre del chat: {partidaData.chat.nombreChat}</Text>
-            <Text style={styles.subTitle}>Número máximo de jugadores: {partidaData.maxJugadores}</Text>
-            <Text style={styles.subTitle}>Jugadores:</Text>
-            <View style={styles.jugadoresContainer}>
-              {partidaData.jugadores.map(jugador => (
-                <Text key={jugador._id} style={styles.jugador}>-{jugador.usuario}</Text>
-              ))}
-            </View>
-            {/* Render other details of the partida */}
-            <TouchableOpacity style={styles.button} onPress={handleJoinPartida}>
-              <Text style={styles.buttonText}>Unirse a Partida</Text>
-            </TouchableOpacity>
+    <View style={styles.container}>
+      {partidaData ? (
+        <View>
+          <Text style={styles.title}>Nombre de la partida: {partidaData.nombre}</Text>
+          <Text style={styles.subTitle}>Nombre del chat: {partidaData.chat.nombreChat}</Text>
+          <Text style={styles.subTitle}>Número máximo de jugadores: {partidaData.maxJugadores}</Text>
+          <Text style={styles.subTitle}>Jugadores:</Text>
+          <View style={styles.jugadoresContainer}>
+            {partidaData.jugadores.map(jugador => (
+              <Text key={jugador._id} style={styles.jugador}>{jugador.usuario}</Text>
+            ))}
           </View>
-        ) : (
-          <Text>Loading...</Text>
-        )}
-      </View>
-    </ImageBackground>
+          {/* Render other details of the partida */}
+          <TouchableOpacity style={styles.button} onPress={handleJoinPartida}>
+            <Text style={styles.buttonText}>Unirse a Partida</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <Text>Loading...</Text>
+      )}
+    </View>
   );
 };
 
@@ -76,24 +74,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    marginBottom: 10,
-    color: 'white',
     fontWeight: 'bold',
-    textTransform: 'uppercase',
-    textShadowColor: 'black',
-    textShadowOffset: { width: 2, height: 1 },
-    textShadowRadius: 2,
-    textAlign:'center',
+    marginBottom: 10,
   },
   subTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 5,
-    color: 'white',
-    textTransform: 'uppercase',
-    textShadowColor: 'black',
-    textShadowOffset: { width: 2, height: 1 },
-    textShadowRadius: 2,
   },
   jugadoresContainer: {
     marginTop: 5,
@@ -101,47 +88,18 @@ const styles = StyleSheet.create({
   jugador: {
     fontSize: 16,
     marginBottom: 3,
-
-    color: 'white',
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    textShadowColor: 'black',
-    textShadowOffset: { width: 2, height: 1 },
-    textShadowRadius: 2,
-    textAlign:'center',
   },
   button: {
-    backgroundColor: '#DB4437',
+    marginTop: 20,
+    backgroundColor: '#4CAF50',
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 8,
-    width:190,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 5,
-    borderBottomColor: 'rgba(0,0,0,0.2)',
-    borderBottomWidth: 5,
-    alignSelf: 'center',
   },
   buttonText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
-    textTransform: 'uppercase',
-    textShadowColor: 'black',
-    textShadowOffset: { width: 2, height: 1 },
-    textShadowRadius: 2,
-  },
-  backgroundImage: {
-    flex: 1,
-    resizeMode: 'cover',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
 

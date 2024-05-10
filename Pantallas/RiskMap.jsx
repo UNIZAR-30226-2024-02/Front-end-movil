@@ -1,32 +1,118 @@
 import React, { useRef, useState } from 'react';
-import { View, Image, StyleSheet, TouchableOpacity, Text as Text1 } from 'react-native';
+import { View, Image, StyleSheet, TouchableOpacity, Text as Text1, Alert } from 'react-native';
+import axios from 'axios';
 import { IP } from '../config';
 import Svg, { Defs, G, Path, Circle, Use, Text as Text2 , TSpan } from "react-native-svg"
+import Risk from '../assets/Risk_game_board.svg'
 import { useEffect } from 'react';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
+import { useNavigation } from '@react-navigation/native';
+import Toast from '@proyecto26/react-native-toast';
+import io from 'socket.io-client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import Dialog from "react-native-dialog";
+
+export default function RiskMap({ naviagtion, route }) {
+  const socket = io(IP);
 
 
-export default function RiskMap() {
+  const { token, partida, whoami} = route.params;
+  
+  const [thisPartida, setThisPartida] = useState(partida);
+  //const [partida, setPartida] = useState(null);
+  const [idPartida, setIdPartida] = useState(route.params.partida._id);
+  const [mapa, setMapa] = useState(null);
+
+  //Pruebas para cambiar el color
+  const [colorTest, setColorTest] = useState(["#ff0", "#cc6"]);
+
+  const [state, setState] = useState({
+    message: '',
+  });
+
+  const [numterritoriosTropas, setnumterritoriosTropas] = useState(0);
+  const [visible, setVisible] = useState(false);
+
+  const [isOk, setOkState] = useState("No");
+
+  const [ataquePerpetrado, setAtaquePerpetrado] = useState(null);
+
+  const [myColor,setMyColor]=useState('');
+  const [eliminado,setEliminado]=useState(false);
+  const [eloGanado,setEloGanado]=useState({});
+  const [puntosGanados,setPuntosGanados]=useState({});
+
+  const skinTropasMap = new Map();
+
+
   useEffect(() => {
-    onLoad();
+    //COMENTADO PARA PRUEBAS SIN VENIR DEL LOBBY
+    console.log(partida)
+    //setIdPartida(partida._id);
+    onLoad()
   }, []);
 
-  const eventListener = (key, event) => {
-    console.log(key);
 
+  /*
+  *
+  *  Esto el svg, en react native no puedes meter directamente un svg, por lo que se tiene que hacer un componente que lo renderize
+  *  Lo meto aqui para que el acceso a los datos sea mas facil.
+  * 
+  *  Los territorios no he logrado identificarlos de ninguna otra manera mas que por el nombre y a pelo como esta aqui
+  *  Es un coñazo, pero es lo que hay
+  * 
+  */
+
+  //Listener de los eventos del svg, De momento o hace nada
+  //Esta funcion habra que quitarla
+  const eventListener = (key,color, event) => {
+    console.log(key);
+    const nextCounters = colorTest.map((c, i) => {
+      if (i === key) {
+        // This one changed
+        return color;
+
+      } else {
+        // The rest haven't changed
+        return c;
+      }
+    });
+    setColorTest(nextCounters);
   }
 
+  //Esta fundion sirve para buscar el numero de tropas en un territorio y represetarlo en el svg
   const findTropas = (key) => {
-    let tropa = tropasTest.find(tropa => tropa.terrainId === key);
+    let tropa = territoriosTropas.find(tropa => tropa.terrainId === key);
     if (tropa) {
-      return tropa.numTropas;
+      return tropa.numTropas.toString();
     }
     else
       return "";
       
   }
+
+  const findColor = (key) => {
+    let tropa = territoriosTropas.find(tropa => tropa.terrainId === key);
+    if (tropa) {
+      // find the user in partidadata and get his color
+      let user = thisPartida.jugadores.find(jugador => jugador.usuario === tropa.user);
+      console.log(user.color); // TODO: terminar y borrar cuando tengamos todos los colores
+      switch (user.color) {
+        case "verde":
+          return "#0f0";
+        case "rojo":
+          return "#f00";
+      }
+    }
+    else
+      return "";
+      
+  }
+
   const MapSVGComponent = (props) => (
-  <Svg
+    false ? <Risk/> :
+      <Svg
     xmlns="http://www.w3.org/2000/svg"
     xmlnsXlink="http://www.w3.org/1999/xlink"
     viewBox="182 114 720 405"
@@ -37,62 +123,90 @@ export default function RiskMap() {
         <Path
         id="b"
         //ALASKA
-          fill="#ff0"
+          fill={colorTest[0]} 
           d="M254 242c-1-1 0 0-1-2 0-2-1-2-2-3 0 0-1 0-1-2 1-1 1-1 1-2l-3-3v-2c0-1 0-2-1-2-2-1-3 1-4-1 0-2 0-1-2-1-1 0-2 0-2-1-1-1-1-2-2-2s-2 0-3-1c0-1-1-2-2-2s-1 0-2 1c-2 0 2 1-1 2s-4 1-5 0c0 0-3 1-2 0 0-2 0-2 1-3 1 0 2 0 2-1-1 0-1-1-3 0-3 0-4 0-5 1s-1 2-1 3c0 0 1 0-2 1-3 2-1 0-4 2-3 3-2 3-4 4-3 0-1 0-3 2-2 1-1 2-3 2s-1 3-3 1-3-1-1-2c1-1 1-1 2-1s1 0 2-1c1-2 1-2 2-3 2 0 2 2 3 0 0-3 0-3 1-4s3-2 1-3c-2 0-2 0-3 1-2 0-2 1-4 1-1-1-2-1-2-1v-3s1-1-1-1c-2-1-2 1-2-1 0-1 1-1 0-2s-1-1-2-1c-1 1-3 2-2 0s2-2 3-3c0-1 1-3 1-4 1-1-1-1 1-2 1-1 1-1 3-1s1 0 2 1c2 0 2 1 3 0l2-2 1-1c0-1 1-2-1-1-1 0-1 0-2 1-2 0-2 1-3 0-1-2-1-3-1-3v-1c0-2-1-5 2-6s5 0 6 0c0 1-1 1 0 2 2 0 2 0 3-1 0-1 1-1 0-2-1 0-1 0-2-1v-3l-2-2c0-1-2-3 0-4 3 0 5-1 5-1s2-3 4-2c2 0 4 0 6-2 2-1 4 0 4 0l3 1s2 3 4 2 2 2 5 2c3 1 5 1 8 2 0 0 1 0 1 1-1 1-2 31-2 31l8 1v2c1 1 1 2 2 4 2 2 1 8 1 8l2 3s1 1 2 1v4c0 2-2 1-2 1-1 1-2 3-2 4s-2 1-2 1Z"
-          onPress={eventListener.bind(this, "Alaska")}/>
-          <Text2
-            x="223" y="210" text-anchor="middle" fill="black">{findTropas("ALASKA")}
-          </Text2>
+          onPress={stateMachine.bind(this, 0, "ALASKA")}/>
+        <Circle
+          fill={findColor("ALASKA")}
+          cx="223" cy="210" r="10"
+        />
+        <Text2
+          x="223" y="210" text-anchor="middle" fill="black">{findTropas("ALASKA")}
+        </Text2>
         <Path
         //ALBERTA
           fill="#cc6"
           d="M253 214v2c1 1 1 2 2 4 2 2 1 8 1 8l2 3s1 1 2 1v4c0 2-2 1-2 1-1 1-2 3-2 4s-2 1-2 1c1 1 2 1 2 3 1 3 1 2 1 3 1 1 2 1 2 3 1 2 1 1 2 3 1 3 0 4 0 6 1 3 2 2 3 3v1h48l4-48-63-2Z"
-            onPress={eventListener.bind(this, "Alberta")}
+            onPress={stateMachine.bind(this, 1, "ALBERTA")}
+        />
+        <Circle
+          fill={findColor("ALBERTA")}
+          cx="280" cy="250" r="10"
         />
         <Text2
-            x="278" y="255" text-anchor="middle" fill="black">{findTropas("ALBERTA")}
-          </Text2>
+          x="280" y="250" text-anchor="middle" fill="black">{findTropas("ALBERTA")}
+        </Text2>
         <Path
         //America Central
           fill="#ff3"
           d="M264 319s0 3 1 3h8l4 2s1 2 2 2h10c0 1 3 4 4 4s1 0 2 1c0 0 1 1 2 1h5v4c0 1-1 2-1 4-1 1-2 3-2 3 0 1 2 3 2 3-1 2-1 5 0 6v2l2 3s2 3 5 2c3 0 1 0 4-1 2-1 1 1 3-1 1-3 0-3 1-3 2-1 1-1 3-1 1 1 0 1 2 1s3-3 2 0v4c-1 1 0 0-1 2l-2 2c-1 0-1 0-1 1 0 2 0 2-1 3-1 0-2 0-2 1 0 2 0 2 1 3 1 0 2 0 2 1 1 2 1 3 1 3 0 1 0 3-1 3s-2 0-2 2c0 1 1 3 0 3 0 0-2-1-2 0v3l-1 1v2c0 1-1 2 0 2 2 0 2 1 3 0h2c0-1 1-2 2-2l2 1s1 1 1 2c-1 1 0 1 0 2 0 2 0 3-1 3v2c-1 0 0 0-1 1v1c-1 0 0 0-1-1 0 0 0-1-1-2s-1-1-2-1c-2-1-2-2-3-1-1 0 0 1-1 0-2-1-2-1-3-2v-1c-1-1-2 0-2-2 0-1 1-1 0-2 0-1-1-1-1-2v-4l-1-2v-2l-1-1-1-1c0-1-1-3-1-4-1-1-2-2-6-4-4-1-4-2-7-2-4-1-5-2-5-3 0-2 0-2-1-3-1 0-2 0-1-1 0-1 1-1 1-2 1-1 1-2 1-3 0 0 0-1-1-1-1-1-4-3-4-3s1-1-2 0c-4 0-4 2-5 1s1-5 0-6c-2-1-1 0-2-1-1-2 0-3-1-5 0-1 0 1-1-4-1-4 1-3-1-6-2-2-5-2-5-4v-6Z"
-            onPress={eventListener.bind(this, "America Central")}
+          onPress={stateMachine.bind(this, 2, "AMERICA CENTRAL")}
+        />
+        <Circle
+          fill={findColor("ALBERTA")}
+          cx="286" cy="355" r="10"
         />
         <Text2
-            x="286" y="355" text-anchor="middle" fill="black">{findTropas("AMERICA CENTRAL")}
-          </Text2>
+          x="286" y="355" text-anchor="middle" fill="black">{findTropas("AMERICA CENTRAL")}
+        </Text2>
         <Path
         //ESTADOS UNIDOS DEL ESTE
           fill="#cc3"
           d="M326 264h6c1 0 0 5 0 5s4-2 6-1c3 1 5-3 6-1 0 3 1 4 2 5 0 1 1 2 2 5s1 5 0 7c0 1-2 3-1 4 2 0 3 2 4 3s5-3 5-4-1-2 0-2c1-1 3 0 3-1 1-1 2-2 3-2s4-1 4-1l2-1s10-1 11-2c2-1 2 0 2 0s-1-4 0-5c0 0 1 0 2-1 0-1 1-1 2 0 1 0 5 2 4 4 0 2-1 5 0 5 2 1 3 0 3 1s1 2 1 2c1 1 3 0 3 0 0-1-1 1-2 2 0 1-1 2-1 2-3 1-3 4-4 3 0-1-1-1-1-3 1-2 2-1 2-3-1-1 0-2-1-2s0 0-2 1c-1 0-1-1-3 1-1 2-1 1-2 2-1 0-1 1-1 2l-2 2v2c0 1 1 3 1 3l-1 2c-1 1-1-1-5 3-3 4-2 4-4 5s-2 1-2 2c0 0-2 1-1 2s0 1 1 2c1 0 2-1 2 1s-1 3-3 4c-2 2-5 6-7 6-3 1-4 2-4 3s0 3-1 3c-2 0-1 0-1 3s0 4 1 5 1 1 1 3v4s1 0-1 1-4 2-4 0c-1-2-3-1-3-3 0-1 1-5 1-5s-2 0-2-1c-1-1-1-4-2-4 0-1-1-1-2-1-1 1-3 2-4 1 0 0 1 1-2 0-4-1-6-2-7-2h-6s-6 1-7 1-6 2-7 3c-2 1-2 3-3 3l-2 1s-2 2-2 3-1 3-2 3c0 1-1 0 0 2 0 0-2-2-2-3 0 0 1-2 2-3 0-2 1-3 1-4v-4s-2-4-1-5c0-1-2-1-2-1v-3h3c1-1 2-1 2-1l1-6c0-1 1-4 1-5s4-2 4-2c1 0 2 1 2 0 1-2 0-5 1-6 0-1 0-1 1-1 0-1 11-1 11-1 1-1 0-37 1-37Z"
-            onPress={eventListener.bind(this, "Estados Unidos del Este")}
+          onPress={stateMachine.bind(this, 3, "ESTADOS UNIDOS ESTE")}
+        />
+        <Circle
+          fill={findColor("ESTADOS UNIDOS ESTE")}
+          cx="335" cy="326" r="10"
         />
         <Text2
-            x="335" y="326" text-anchor="middle" fill="black">{findTropas("ESTADOS UNIDOS ESTE")}
-          </Text2>
+          x="335" y="326" text-anchor="middle" fill="black">{findTropas("ESTADOS UNIDOS ESTE")}
+        </Text2>
         <Path
         //Groenlandia
           fill="#cc0"
           d="M434 219s0 4-1 6c0 2-1 1-1 3-1 2 0 3-1 5-1 1-1-1-1 2 0 4 0 5-1 5-1 1 0 2-1 2-2 0-2 1-3 0 0-2 1-2-1-2-1-1-2 1-3-1 0-1 1-2 0-2-2-1 1 3-3-2s-4-8-4-8-1-1-1-2 1-4 0-5c-1-2-2-5-1-6s3 0 3-2 0-2 1-3c0-1 0-1-1-2-1 0 0 1-2 0-1 0-1-1-2-1 0 0 1 1-1 0s-3-1-1-2c2 0 3-1 4 0 0 0 1 1 0-1 0-1-4-2-4-4v-2c0-1 0-2-1-3s-1-1-1-2c0-2 0-2-1-3s-1 0-2-1c-1-2-1-2-2-2s-1 0-2-1-1-2-2-2c-2 1-3 1-3 2-1 0 0 1-2 1h-4s-1-2-3-1c-2 0-2 1-2 0-1-1-2-1-2-2 0 0-2 0 0-1 1-2 0-2 2-2h3c1-1 2-1 1-1 0 0 0-1-1-1-2 0-3 0-3-1s-1-2 0-2c2 0 3 1 4 0s1-1 2-1c1 1 3 1 3 0s2-1 1-1c-2-1-3-1-2-2 0 0 1 0 1-1-1-1-2-2 0-2 3 0 4 1 4 0 1-2-1-3 1-3 3 0 5-1 5-2s0-1 2-1c2 1 2 2 3 0 1-1 0-1 2-1 2 1 2 1 3 0 1 0-1-1 2 0 2 0 1 1 2-1 0-2-2-2 0-2 3-1 3 0 4-2 1-1 0-1 2-1 2-1 2 0 1-2-1-1-3-2 0-2 2 0 4 0 4-1 0 0 0 1 1 0 2 0 2 0 3-2 0-1 0-1 1 0 1 0 0 1 2 0s1-1 3-1h5c2 0 1 1 2 1h3c2 0 2 0 3 1 1 0 1 1 3 1s3-1 3 0c1 2 0 2 2 2 3 1 4 0 2 1-1 1-4 1-3 2s0 1-2 1c-2 1-6 1-3 2 3 0 5-1 6 0 0 1-1 1 2 1s2-1 4-1c3 1 3 2 3 0 1-2-1-3 2-2s2 1 4 0 2-3 3-1c0 2 0 3-1 4-2 0-2-1-2 1-1 2-1 2-2 3s-2 0-2 2c1 2 1 2 0 3 0 2-1 3 0 4s1 0 2 1c1 2 1 2 0 3 0 2-1 1-1 3 0 3 0 4 1 3 0 0 1-2 1 0 0 1 0 2-1 3-2 1-2 0-2 1s1 2 0 3 0 2-2 1c-1-2-2-3-3-2s-2 0-1 1c1 2 2 1 2 2 0 0 0 1 1 2 0 0 0 1 1 1 1-1 1 0 1 1v2l1 1c-1 1-1 1-2 1-1 1-1 2-1 2-1 0-2 0-2-1s0-3-1-3c-1-1-2-3-2-1v3c-1 0-2-1-1 1l2 1s2 1 1 2c0 0 0 1-2 1-1 0-1-2-2 0l-3 3-1-1s-1-2-1-1 0 1-1 3-1 3-2 3-2-1-2 0c-1 1 0 1-1 2s-2 1-3 1c0 0 1-2-1 0-1 2 0 2-2 3h-8c-1 1-1 2-1 2Z"
-            onPress={eventListener.bind(this, "Groenlandia")}
+          onPress={stateMachine.bind(this, 4, "GROENLANDIA")}
+        />
+        <Circle
+          fill={findColor("GROENLANDIA")}
+          cx="430" cy="200" r="10"
         />
         <Text2
-            x="430" y="200" text-anchor="middle" fill="black">{findTropas("GROENLANDIA")}
-          </Text2>
+          x="430" y="200" text-anchor="middle" fill="black">{findTropas("GROENLANDIA")}
+        </Text2>
         <Path
         //TERRITORIOS DEL NOROESTE
           fill="#996"
           d="M334 217c1-3 9-11 9-11s3 0 5-1c1-1-2-4-2-4l1-2 2 1s1 2 3 2 1-2 2-3c2 0 3-4 3-4s3 2 6-1 1-2 0-3c-1-2 1-3 1-3h-2s1-1 0-4c-2-2-2 2-4 3-1 1-1 2-5 1-3-1 0-2 0-4 0-1-4 1-5-1s-2 1-1-1c0-2-1-5-2-6s3-7 3-7 3 1 3-1c0-3 2-3 2-4s-4 0-4 0l-1 2s-4-3-4 0c0 4-1 4-3 8s-1 7-1 7 2 0 2 2c-1 3-5 2-5 2l-1-4h-2s-1 4 0 6c0 1-8 0-10-2s-5 2-7 3-4 0-6-1c-2 0-1 3-6 3-4-1-2-7-3-4-1 2-6-2-8-4s-7-2-7-2v-2h-6s-3 2-5 1c-2 0-1 2-1 2s-3 1-6 1c-3-1-3 1-4 2-2 1-7-2-10-3s-5 1-8 0c0 0-2 32-2 33 1 0 83 3 87 2 4 0 2 1 2 1Z"
-            onPress={eventListener.bind(this, "Territorios del Noroeste")}
+          onPress={stateMachine.bind(this, 5, "TERRITORIOS DEL NOROESTE")}
+        />
+        <Circle
+          fill={findColor("TERRITORIOS DEL NOROESTE")}
+          cx="300" cy="205" r="10"
         />
         <Text2
-            x="300" y="205" text-anchor="middle" fill="black">{findTropas("TERRITORIOS DEL NOROESTE")}
-          </Text2>
+          x="300" y="205" text-anchor="middle" fill="black">{findTropas("TERRITORIOS DEL NOROESTE")}
+        </Text2>
         <Path
         //ONTARIO
           fill="#ff6"
           d="M333 219c-1 3-2 9-2 9l2 2s2 2 3 4c2 2 3 5 6 5 3-1 4 2 4 2l2-1s2-2 3-1c0 1 2 2 2 2s2-2 4-2 0 2 0 2l-4 2s1 2 2 2 2 4 1 5c-2 1 0 3 0 3l1 2 2 1v3c-1 2-1 19-1 19s1-2 2-2c0 0 2 1 2 2 1 0 1-2 1-2 1-1 1 0 2 0 1 1 0 0 1 0 2 0 2 3 2 4l-2 1s-3 1-4 1-2 1-3 2c0 1-2 0-3 1-1 0 0 1 0 2s-4 5-5 4-2-3-4-3c-1-1 1-3 1-4 1-2 1-4 0-7s-2-4-2-5c-1-1-2-2-2-5-1-2-3 2-6 1-2-1-6 1-6 1s1-5 0-5h-20v-3c0-2 4-45 4-45h18l-1 3Z"
-            onPress={eventListener.bind(this, "Ontario")}
+          onPress={stateMachine.bind(this, 6, "ONTARIO")}
+        />
+        <Circle
+          fill={findColor("ONTARIO")}
+          cx="320" cy="245" r="10"
         />
         <Text2
             x="320" y="245" text-anchor="middle" fill="black">{findTropas("ONTARIO")}
@@ -101,219 +215,327 @@ export default function RiskMap() {
         //QUEBEC
           fill="#990"
           d="M359 259s1-4 2-5 2-6 2-7c-1-1-2-1-1-3 1-1 0-4 2-3 2 0 4 0 4-1v-2c0-2 1-2 2-2 0 0 1 0 0-2v-3c-1-2-1-1-1-3-1-1-1-4 0-4 2 0 0-2 1-3 2 0 4 0 3-2 0-2-3-6-1-6s4 1 4 1h7s-1 2 1 3c2 0 2 1 3 1 0 1 1 2 1 2v2c0 1 1 2 0 2 0 1-1 1-1 2s1 3 1 3 1 1 2 1c1-1 1-2 2-2 2-1 2 1 3-1s1-2 1-3c0 0 2-2 3-1 1 0-1 5 0 6 1 2 3 0 3 0v3c1 0 0 1 0 2 1 1 1 1 1 2s1 1 1 1 1-1 2 0c0 2 0 3 1 3s2 2 2 2l1 2 3-2 2 1s-4 2-3 4c1 1 5-3 5 0 0 2-1 5-2 5s-2 1-2 1c0 1-2 2-3 2-1 1 0 2-2 2h-4s0 1-1 2v2c-1 0 2 0-2 1s-5 1-5 1h-3s0-1-2-1-3 2-3 2h-2l-2 2s-1 0-1 2c0 1 2 3 3 2 0-1 2-5 4-5s4 1 4 4c-1 3-1 2-1 3 1 2 2 3 1 4 0 1-1 1 1 2 1 1 2 3 3 1 0-2 1-3 2-2 0 0 2-1 1 2-1 2-1 2-2 3s-1-1-3 2c0 0-2 1-3 0 0 0-1-1-1-2s-1 0-3-1c-1 0 0-3 0-5 1-2-3-4-4-4-1-1-2-1-2 0-1 1-2 1-2 1-1 1 0 5 0 5s0-1-2 0c-1 1-11 2-11 2 0-1 0-4-2-4-1 0 0 1-1 0-1 0-1-1-2 0 0 0 0 2-1 2 0-1-2-2-2-2-1 0-2 2-2 2s0-17 1-19Z"
-            onPress={eventListener.bind(this, "Quebec")}
+            onPress={stateMachine.bind(this, 7, "Quebec")}
+        />
+        <Circle
+          fill={findColor("QUEBEC")}
+          cx="370" cy="250" r="10"
         />
         <Text2
-            x="370" y="250" text-anchor="middle" fill="black">{findTropas("QUEBEC")}
-          </Text2>
+          x="370" y="250" text-anchor="middle" fill="black">{findTropas("QUEBEC")}
+        </Text2>
         <Path
         //ESTADOS UNIDOS DEL OESTE
           fill="#993"
           d="M326 264c-1 0 0 36-1 37 0 0-11 0-11 1-1 0-1 0-1 1-1 1 0 4-1 6 0 1-1 0-2 0 0 0-4 1-4 2s-1 4-1 5l-1 6s-1 0-2 1h-3v3s2 0 2 1c-1 1 1 5 1 5h-5c-1 0-2-1-2-1-1-1-1-1-2-1s-4-3-4-4h-10c-1 0-2-2-2-2l-4-2h-8c-1 0-1-3-1-3-1-2-1-2-1-4s-3-5-4-7c-2-2-2-8-2-9 1-1 0-6 1-9 1-2 1-5 2-8 0-2-1-2 1-5 1-4 1-2 2-5 0-3 1-1 1-4 0-2 1-4 0-5 0 0-1 1 0 1s58 1 62 0Z"
-            onPress={eventListener.bind(this, "Estados Unidos del Oeste")}
+            onPress={stateMachine.bind(this, 8, "ESTADOS UNIDOS OESTE")}
+        />
+        <Circle
+          fill={findColor("ESTADOS UNIDOS OESTE")}
+          cx="280" cy="300" r="10"
         />
         <Text2
-            x="280" y="300" text-anchor="middle" fill="black">{findTropas("ESTADOS UNIDOS OESTE")}
-          </Text2>
+          x="280" y="300" text-anchor="middle" fill="black">{findTropas("ESTADOS UNIDOS OESTE")}
+        </Text2>
         <Path
         //Argentina
           fill="#c03"
           d="M396 495c0 2 0 3-1 3 0 0-1 1-2 3 0 2-3 3-3 3s-2 1-2 2 5 1 5 1c0 1-1 5 0 5 0 1 4-1 4 0 1 1 0 5 0 5s3 2 4 2c-2 0-5 2-4 3 0 0 1 1 0 1-2 0-2 0-3 1h-3c-2 0-2 1-3 1h-2c-1 0-1 0-1 1v1c1 0 3 1 3 1v2c0 1 0 1 1 1v1s-1 2-2 3c0 0-1 1-3 1h-2c-1 1-1 1-3 1h-3c-1 1-2 1-2 1l1 1c0 1 1 1 0 2 0 2-1 2-2 3v1h-3s0-1-1 1c0 1 1 2 1 2s-1 2-1 3 1 2 0 2v1c-1 1 0 1-1 2l-1 1c-1 1-2 1-2 1v2s-1 0 0 1 1 0 1 2c-1 1 0 1 0 1s1-1 1 3c0 3-1 4-1 4s-1 0 0 1v3c-1 1-1 0-2 2s0 4 1 5c0 1 1 1 1 2s-1 1 0 2c0 1 2 2 2 3v2c1 0 1 1 1 1v5c1-1 0-1 1-2h3l1-1c1 1 1 0 2 2 0 1 0 1 1 1 1 1 2 1 3 1s1-1 2 0c0 1 1 1 0 2h-3l-2 1c-1 0-1 1-2 1s0 1-2 0h-2c-1-1-2-1-2-2v-1l-3-2h-4l-1-1h-2v-2h-2v-1s-1 0-2-1c0 0-1 0-2-1l-1-1-2-2c-1 0-1 0-1-1 0 0-1 0-1-1-1-1 0-1-1-2s-1 0-2-1c0-1 1-2 0-3v-1c-1 0-1 0-1-1s0-2-1-2c0-1-1-1-1-2v-3c0-2 0-2-1-3l-1-1c0-2-1-2-1-3 1-1 1-1 1-2l1-1v-2c0-1-1 0 0-3s1-3 1-4c0 0 1-1 0-2v-2c0-1 1-1 0-2v-1s1 0 0 0c-1-1-1-1-1-2v-10c1-1 1-1 1-2s1-2 0-3v-2c0-1 1-1 1-2v-1c0-1-1 0 0-2 0-3 1-5 1-6v-2c-1 0-1-3-1-4v-2c1-1 1-1 1-2-1 0 0 0 0-1v-4c1-2 1-1 1-3 0-1-2-3-1-4 0-2 1-1 1-3-1-2-1-4 0-5v-6c1-3-1-5-1-5s2-2 3-2 1 2 0 3c0 1 1 2 2 3l3 3c0 1 1 2 2 3 0 1 0 2 1 3 2 1 2 0 3-1v-4c0-2 2 0 2 0s1 2 2 2c0 1 2 1 2 0 1-1 2-1 2-1 1 0 2 1 3 1 2 0 2 0 4 1 1 1 0 2 1 3 2 1 2 0 3 0 0 1 0 2 1 3 2 1 5 0 7 0 1 1 0 2 0 3s0 3-1 3c-1 1-2 2-1 4 0 1 3 0 4-1 2 0 2 0 4-2 1-1 5-3 5-3Z"
-            onPress={eventListener.bind(this, "Argentina")}
+            onPress={stateMachine.bind(this, 9, "ARGENTINA")}
         />
+        <Text2
+            x="350" y="540" text-anchor="middle" fill="black">{findTropas("ARGENTINA")}
+          </Text2>
         <Path
         //BRASIL
         name="Brasil"
           fill="#c36"
           d="m404 403-5 5c-1 1-1 3-2 3s-9 1-9 1 1 2 0 2h-12l-1-5s-2 1-2-1v-4s-3 1-4 2c-2 0-3 3-5 2-1 0-2-2-2 0 0 1 0 5-1 6-1 0-1-1-2 0s-4 2-4 1c-1-1-2-1-2-1-1-1-2-1-2-1-1 0-1-1-2 0l-3 3c0 1-1 3-1 4s2 1 2 3c0 1-1 2-2 2-1 1-6 2-6 2s-4 0-4 1 0 4-1 5-3 1-3 2c-1 1-3 1-2 3 1 1 2 2 3 2s3 0 3 1 3 1 5 2c1 1 5-1 4 1 0 2-4 3-4 4s0 4 3 4c2 0 5-2 7-2s3 0 4-1c0 0 1-2 2-2s3 1 4 2c1 2 1 3 2 3 2 0 1 1 2 1 2 1 3 0 4 1s1 3 2 3c2 0 4-1 5 0 0 1 1 3 2 4v2c0 1 2 1 3 2s1 1 2 3c0 2 1 2 2 3 0 2 2 5 1 6 0 1-1 3 1 4 1 0 2 1 3 2 1 2 1 1 2 2 1 0 1 2 1 5 1 2 4 3 4 5s0 3-1 3c0 0-1 1-2 3 0 2-3 3-3 3s-2 1-2 2 5 1 5 1c0 1-1 5 0 5 0 1 4-1 4 0 1 1 0 5 0 5s3 2 4 2c1-1 0-1 0-1 1-1 1-1 1-2 1-1 1-1 1-2 0 0 0-1 1-1 0-1 1-1 1-2v-2c0-1 2-2 3-2 2-1 1-2 2-3 0-2-1-1-1-2v-3c0-2 0-1 1-1 0-1 0-4 2-7 1-3 12-4 13-4 0 0 3-1 4-2l2-2c1 0 1-1 1-2s0-1 1-1c1-1 0-1 1-2s0-2 0-3c1 0 2-1 3-1s0-2 1-2c1-1 0-4 0-5 0-2 0-2 1-3 0-1-1-3-1-3l1-2s-1-2 0-3c0-1 1-1 2-2 2-1 1-4 1-4v-1s2-1 4-1 2-3 3-4c2-2 1-3 1-5 0 1 0 0-1-2v-3c0-2-1-2-2-3s-3-1-3-1l-3-3c-1 0-4-2-6-2-2-1-2-1-3-2s-1 0-2 0c0 0-1 1-2 0h-2c-1 0-2-1-3-1 0-1 0-1-1-2h-3c0-1-1-1-2-1h-2c-1 0-3-1-3-1-1 0-3 1-4 1s-2-2-3-2c-2-1 1 0 3-3 1-2-1-3-2-4 0-1 0-2-1-4l-1-3Z"
-          onPress={eventListener.bind(this, "Brasil")}
+          onPress={stateMachine.bind(this, 10, "BRASIL")}
         />
+        <Text2
+            x="400" y="450" text-anchor="middle" fill="black">{findTropas("BRASIL")}
+          </Text2>
         <Path
         //Venezuela
           fill="#f06"
           d="M317 414c2-1 1-3 1-4v-3c0-1 0-2 1-3 2-1 2-3 2-3l1-1v-2l1-2s1-1 1-2v-4l3-1s0 1 1 0c1 0 2-1 2-1l3-1 2-2 2-1h1c1 0 3-1 3-1l1-1c1 0 1-1 2-1l4-1s1 1 1 3c0 1 0 2 1 1h2c1 0 1-2 2-1s1 1 2 1h2l5 2h2c1-1 4-1 4-1s1 1 2 1c0 1 3 2 4 4 1 1 3 2 3 3 0 0 1 1 2 1 0 0 0 1 1 1h2v1c1 1 2 0 2 1 1 1 0 2 1 2h1l2-1s0-1 1 0 1 1 2 1 0 1 2 1c2 1 4 1 5 1 0 0 0-2 2 0 2 1 3 2 3 2l-5 5c-1 1-1 3-2 3s-9 1-9 1 1 2 0 2h-12l-1-5s-2 1-2-1v-4s-3 1-4 2c-2 0-3 3-5 2-1 0-2-2-2 0 0 1 0 5-1 6-1 0-1-1-2 0s-4 2-4 1c-1-1-2-1-2-1-1-1-2-1-2-1-1 0-1-1-2 0l-3 3c0 1-1 3-1 4s2 1 2 3c0 1-1 2-2 2-1 1-6 2-6 2s0-2-1-2c0-1-1-1-2-1-1-1-2-2-3-2h-4c0-1-1-2-3-2-1 0-2 1-3 0-1-2-3-4-4-5 0 0-3 0-2-1Z"
-            onPress={eventListener.bind(this, "Venezuela")}
+            onPress={stateMachine.bind(this, 11, "VENEZUELA")}
         />
+        <Text2
+            x="345" y="405" text-anchor="middle" fill="black">{findTropas("VENEZUELA")}
+          </Text2>
         <Path
         //PERU
           fill="red"
           d="M347 472c1 0 1 2 0 3 0 1 1 2 2 3l3 3c0 1 1 2 2 3 0 1 0 2 1 3 2 1 2 0 3-1v-4c0-2 2 0 2 0s1 2 2 2c0 1 2 1 2 0 1-1 2-1 2-1 1 0 2 1 3 1 2 0 2 0 4 1 1 1 0 2 1 3 2 1 2 0 3 0 0 1 0 2 1 3 2 1 5 0 7 0 1 1 0 2 0 3s0 3-1 3c-1 1-2 2-1 4 0 1 3 0 4-1 2 0 2 0 4-2 1-1 5-3 5-3 0-2-3-3-4-5 0-3 0-5-1-5-1-1-1 0-2-2-1-1-2-2-3-2-2-1-1-3-1-4 1-1-1-4-1-6-1-1-2-1-2-3-1-2-1-2-2-3s-3-1-3-2v-2c-1-1-2-3-2-4-1-1-3 0-5 0-1 0-1-2-2-3s-2 0-4-1c-1 0 0-1-2-1-1 0-1-1-2-3-1-1-3-2-4-2s-2 2-2 2c-1 1-2 1-4 1s-5 2-7 2c-3 0-3-3-3-4s4-2 4-4c1-2-3 0-4-1-2-1-5-1-5-2s-2-1-3-1-2-1-3-2c-1-2 1-2 2-3 0-1 2-1 3-2s1-4 1-5 4-1 4-1 0-2-1-2c0-1-1-1-2-1-1-1-2-2-3-2h-4c0-1-1-2-3-2-1 0-2 1-3 0-1-2-3-4-4-5 0 0-3 0-2-1-2 2-2 4-3 6 0 2-1 3-2 5 0 2 1 1 2 3 0 2-1 1-1 3v5s1 2 1 3c1 0 3 3 3 3s-1 1 0 3c0 2 1 2 2 3 0 1 2 3 3 3 1 1 2 3 3 3 2 1 1 3 1 4-1 1 1 3 1 4 1 1 1 0 2 1 0 1 2 2 2 2 1 1 2 1 2 1l2 2c1 0 2 0 3 1 1 0 2 3 3 3 0 0 2 1 3 2 1 0 2-2 3-2Z"
-            onPress={eventListener.bind(this, "Peru")}
+            onPress={stateMachine.bind(this, 12, "PERU")}
         />
+        <Text2
+            x="345" y="465" text-anchor="middle" fill="black">{findTropas("PERU")}
+          </Text2>
         <Path
         //GRAN Bretana
           fill="#33f"
           d="M466 294h-2c-1 0-1 0-2 1-1 0-2 0-3 1-1 0-2 1-2 1l-1 1h-3c-1 0 0-1-1-2 0 0-4 1-2 0 1-1 2 0 1-1s-2-1-1-1h2c0-1-1 0 0-1 1-2 1-2 2-3 1 0 0-2 1-1h2v-1h-3l-2-2c-1 0-2 1-1 0l1-2s-2-1-1-2c0 0 1 0 1-1s-2-1 0-2l2-2c1-1 1-1 2 0 0 0 0 1 1 0l2-2s-1 0 1-1 0-2 3-1h3c1 0 1-2 1 0 1 1 0 1 2 2 1 0 2 0 2 1l-1 1c1 1 1 1 1 2s0 1-1 2c-1 0-1-1-2 1-1 1-2 0-2 0h-1c0 1 0 2-1 1s-3-1-3-1v1c0 1 1 3 1 3s1 2 1 3c-1 1-3 1-1 1 2 1 1 0 1 1s0 2 1 2 2 1 2 1Zm12-11v-4c0-1-1-2-1-2 0-1-1-2-1-2-1-1-1-1-2-1l-1 1c-1 0-1 0-1-1-1 0-1-1-1-2s0 0 1-1l1-1v-3h-2v-1c-1-1-1 0-2 0-1-1 0-1 0-1 0-1 0-1-1-2 0-1 0 0-1 0l-1-1v-1l-1-1c0-1 1-1 1-1l2-2-1-1v-1h-3c-1-1 0-1 1-2 0 0 0-1 1-2 1 0 1 0 2-1 1 0 1 0 1-1s1-2 1-2c0-1 1-2 1-3s2 1 5 0 3 0 3 0 1 3-1 4c-3 1-1 5-1 5s1-1 2-1h1c1 0 1 0 2-1s1 1 1 1c0 1 1 3 1 3s-1 1-1 2v1h-1c-1 1 0 1 0 2-1 0-1 0-2 1v1c-1 1-1 1-2 1-1 1 0 1 0 2s1-1 3-1h2c1 0 1 0 1 1 1 0 0 1 1 1 0 1 0 1 1 1v3s1 3 2 4c2 1 1 1 2 1 0 1 2 4 2 4 0 1 0 1 1 3 0 1 0 1-1 2v3l2-1c2-1 1 0 2-1h2c1 0 1 1 2 2s0 1 1 1c0 1 0 1-1 2v1c-1 1 0 1-1 2h-2c-1 0 0 1-1 1v3s1 0 1 1c1 0 1 0 0 1 0 1-1 1-2 1-1 1-1 0-2 0s-1 0-3 1c-1 1-1 0-2 0h-2c-2 0-2 0-3 1s-1 0-1 0c-1 0-1-1-1-1-1-1-1-1-2 0 0 0-1 2-2 2-1 1-1 0-2 0h-1l-2 2c-1 1-1 0-2 1-1 0-1 0-1-1v-1c1 0 2-2 2-2l2-2c2 0 1 0 1-1 1-2 1-2 2-2 0 0 1-1 0-2-1 0-2 0-3-1-1 0-2 0-2-1l2-2c0-1 0-1 1-1l1-1c1 0 1 0 1-1v-2s1-1 0-2h-1l-1-1v-3s1 0 2 1c1 0 2 2 2 2s1 0 0 0Z"
-            onPress={eventListener.bind(this, "Gran Bretana")}
+            onPress={stateMachine.bind(this, 13, "GRAN BRETANA")}
         />
+        <Text2
+            x="455" y="310" text-anchor="middle" fill="black">{findTropas("GRAN BRETANA")}
+          </Text2>
         <Path
         //ISLANDIA
           fill="#36c"
           d="M474 212s2 2 2 1c1-1-1-2 1-1 1 1 1 1 2 1 0 1 3-1 2 1s-2 2-1 2 0 0 1 1 1 2 2 1l1-4s4 0 4 1c-1 2-1 2 0 1 2-1 1-3 3-2 1 1 1 2 2 1 0-1-1-2 0-2 2 0 2 2 3 0s0-3 1-2c1 0 1 0 2-1 1 0 1-1 2 0 1 0 1 1 1 1h2c1 1 0-1 0 1 1 2 1 3 2 3 0-1 1-1 1 0 0 2-2 2 0 2 1 0 2 0 2 1s1 2 1 2v1c0 1-1 1 0 2v1c-1 1-2 1-3 1 0 0-1 1-1 2 0 0 1 0-1 1-1 2 0 2-1 2s-2 1-2 1h-3l-1-1s0-1-1-1v2c-1 0-2-2-2-1s1 3 1 3 0 1-1 1c0 1 0 1-2 2-2 0-2 0-3 1-1 0-1 1-2 0-2-1-7-3-7-3-1 0-2 1-3 0-2 0-3 1-3 0-1-1-1 1 0-1 0-2 2-3 2-3v-1s0-1-1-1l-1-1c0-1 0-1-1-1s-2 1-3 0-1-1-1-2c1 0 1-1 2-1s1 1 2 0c0-2 1-2 1-2s-1-1-2-1c-1 1 0 2-1 0s-2-2-2-2-1 0 0-1l2-2c0-1-1-2 0-3s1 0 1 0h1Z"
-            onPress={eventListener.bind(this, "Islandia")}
+            onPress={stateMachine.bind(this, 14, "ISLANDIA")}
         />
+        <Text2
+            x="480" y="210"  text-anchor="middle" fill="none" >{findTropas("ISLANDIA")}
+          </Text2>
         <Path
         //EuropaNorte
           fill="#33c"
           d="M563 263h1c1 1 1 2 2 3l3 1h3v1s0 3 1 4v9c0 1 2 3 2 3l1 1c0 1-1 2-1 2v2c0 1-1 1-1 1-1 1-1 2-1 2 0 1-1 1-1 1-2 2-2 5-5 5-1 0-2 1-3 1v2l3 2-1 1-1 1c-1 0-1 1-1 1 0 1-1 1-2 2s-2 4-2 4v3s1 1 1 2-1 2-1 2h-9v-4l-1-1c0-1 0-2 1-2v-2c1-1 0-2-1-2l-2-1s0 1-1 1c-1 1-1 1-2 1s-5 1-5 1v2s-2 2-2 3c-1 0-2 1-3 1h-2c-1 0-1 0-2 1-1 0-2 1-3 1s-2-2-2-3h-1s-1 1-2 1c-1 1-1 1-2 1s-1-1-1-1-1 0-1-1c-1 0-1-1-1-2 0 0-1 0-1-1v-1l-1-1c-1 0-1-1-2-3l-2-2-1-3-1-1c0-1 1-3 2-3 0 0 1 0 1-2v-2c1 0 2 0 2-1 1-1 0-2 0-2 0-1-1-1 1-1 2-1 3 0 3-1 1-1 1-1 1-2s1-1 1-2c1-1 0-1 1-2 0 0 0-4 1-4 0 0 0 1 1 0 0-1 0-2 1-3 0-1 0-1 1-1 1-1 1 0 1-1 1-1-1-1 1-2l2-1c0-1 1-1 1-2v-6c1-1 1-1 0-1s-1 1-1 0v-2c-1-1-1-2-1-2s-1 0 0-1c0-1 1-2 1-2l1-1c1 0 1 1 1 0 1-1 0-1 1-1h2l-1 1v1s1 1 1 2c1 2 1 2 1 3l-1 3s0 1 1 2 1 1 2 1h7l1-1h5c0-1 0 0 1-1 1 0 2-1 2-1h2c1 0 2-1 3 0h2c1 0 1 1 2 0Z"
-            onPress={eventListener.bind(this, "EuropaNorte")}
+            onPress={stateMachine.bind(this, 15, "EUROPA NORTE")}
         />
+        <Text2
+            x="540" y="290"  text-anchor="middle" fill="none" >{findTropas("EUROPA NORTE")}
+          </Text2>
         <Path
         //Escandinavia
           fill="#3cf"
           d="M579 237c-1-1-2-1-2-2-1 0-1-1-2-1h-2c-1 0-2-1-3-1-1 1 0 1-1 1-1 1-3 1-4 1h-2c-2 0-3 1-3 0-1-2-1-1-1-3 0-1 1-2 1-3s0-2 1-3c0-1 1-2 1-2 1-1 1-2 1-2v-4h-2c-1-1-1-1-2 0s-2 1-2 2v3c-1 1-1 1-1 2v1c-1 1-1 1-2 1-1 1-2 0-2 2v2c1 1 1 1 1 2s1 1 1 3v2s1 1 1 2c-1 1-1 3-1 3-1 1-1 2-2 2 0 1 0 1-1 2s-1 1-2 1c-1 1-1 2-1 2v2s1 2 0 2c-1 1-2 1-2 2-1 1 0 2-1 3s-1 1-2 1c-2 0-2 0-3-1 0-1-1-2-2-2h-1s0-1-1-1c0 0-1 1-1 0v-6l-2-3 1-1-1-2h-1s-1 0-1 1v1c-1 1-2 2-3 2-1 1-2 1-2 1s0 1-1 0c-1 0 0 0-1-1s-1-2-1-3l-1-1-1-1c-1 0-1-1-1-2v-3c1-2 0-3 0-3l-1-1v-1c-1-1-2-2-2-3 1-1 0-2 2-3 1 0 1 2 1-1 0-2-1-1 1-3l1-2s1 0 2 1c0 2 0 3 1 2 0-1 1-2 1-3l2-2s-2-2 0-2 2 1 2 0c1-1 1-1 2-1 1-1 1 0 2-1 0-2 0-2 1-2 1-1 1-1 1-3 0-1 0-1 1-3 2-2 2-2 2-3 1-2 1-2 1-3 1 0 2 0 2-1 1 0 1-1 1-1l1-2s-2-1 0-1c1-1 1-1 3-2h2s1 2 1 0c0-1 0-1 1-2s1 0 2 0h1s1 1 2 0c0-1-2-2 0-3s3 0 3-1c1 0 0-1 1-1 1-1 1 0 2-1 2 0 2-1 2-1h2c0 1-1 1 1 1s5-2 6-1c1 0 0 2 1 2s2-1 3-1c0 1 0 1 1 1 0 0 1 4 0 5 0 0 1 4 0 4-1 1-1 6-1 9s1 7 1 9 1 5 1 5v2c0 2 1 3 1 3h1c0 1 0 2-1 2v3c-1 1-1 1-1 2v3c0 1 1 3 0 3Z"
-            onPress={eventListener.bind(this, "Escandinavia")}
+            onPress={stateMachine.bind(this, 16, "ESCANDINAVIA")}
         />
+        <Text2
+            x="530" y="230"  text-anchor="middle" fill="none" >{findTropas("ESCANDINAVIA")}
+          </Text2>
         <Path
         //EuropaSur
           fill="#39f"
           d="M567 303v-1l1-1s2 0 3 1v3c1 1 1 1 2 1h2s0 1 1 2c0 1 0 2 1 2v4c0 1-1 1-1 1v2l1 1v4c0 1 1 1 1 2-1 0 2 2 2 2l-1 1c1 1 1 2 1 2 0 1 0 1-1 1 0 1-1 1-1 2s1 1 1 2c-1 1-1 1-1 2-1 0-1 1-1 2-1 1 0 1-1 1-1 1-1 1-1 2v1c-1 1-1 1-1 2-1 0-1 0-2 1v1c-1 1-1 0-1 1-1 1 0 1 0 2s1 1 0 2l-2 2s0-1-1 1c0 1 1 1 0 1-1 1-1 1-2 1h-3c0 1-1 1 0 2l1 1 1 1c1 1 1 1 1 2v1s1 2 0 2c0 0-1 0-1 1v1c1 1 0 1 1 2l1 1c1 1 2 1 1 1 0 1-1 1-2 1 0 0-1 0-1-1l-1-1h-1c0 1 2 1 0 1-3 0-2 1-3 0s0-1-1-1h-1c-1-1-1-1-1-2s1-1 0-3v-2c-1-1 0-1 0-2s-1-1-1-1v-2c-1-1-1-1-1-2 0-2 0-2-1-2 0 0 0 1-1 0s0-1-1-2c-1 0-1 1-1 0-1-2-1-1-1-3v-2c0-1 1-1 0-2l-1-1c-1 0-1 1-2-1-1-1-1-2-2-2s-1 1-1 0c-1-1 0-1-1-1-1-1 0-1-1-1-2 0-2-1-3-1-1 1-1 1-1 2v1c0 1 0 2 1 2 0 0 0-1 0 0 0 2 0 3 2 2 1-1 2-1 2-1v2c1 1 0 2 1 3 1 0 1 0 2 1h1c0 1 0 2 1 3 0 1 1 0 1 1-1 1-1 2-1 2-1 0-2 1-3 0 0-1-1-1-1-1s1-1-1-1c-1 0-1 1-2 1s-1-1-1 0l2 2s1 0 1 1c-1 1 0 1-1 2 0 1 0 1-1 2v2c-1 1-1 2-2 2s-1 0-1 1c-1 1-1 1-1 2h-3c0 1 1 1-1 1l-1-1h-2v-2c-1 1-1 2-2 1 0-2 0-2-1-2v-1c-1-1-1-1 0-2s1-1 2-1h1c1 0 1 1 1 1 1 0 3-1 3 0v1c1-2 1-2 2-3 0-1 1-2 2-2v-2c-1-1-2 0-2-2s1-2 0-3c0-1 0 0-1-1-1 0-1-1-1-1-1-1-2-1-3-2 0 0 0 1-1-1-1-1-1-1-2-1 0 0 0 1-1 0 0-1 0-1-1-1 0-1 0 0-1-1-1 0-1 0-1-1v-2c-1-1-2-1-2-1h-4s3 0 1-2c-2-1-2-3-2-3 1 0 2-1 2-2s1-2 0-2c0-1-2-2-2-2l-1-1c0-1 1-2 1-2s1 1 1-1v-3c0-1-1-2 0-2 1-1 1-2 2-2 0-1 0-1 1-1s1 0 2-1c1 0 2-1 2-1h1c0 1 1 3 2 3s2-1 3-1c1-1 1-1 2-1h2c1 0 2-1 3-1 0-1 2-3 2-3v-2s4-1 5-1 1 0 2-1c1 0 1-1 1-1l2 1c1 0 2 1 1 2v2c-1 0-1 1-1 2l1 1v4h9s1-1 1-2-1-2-1-2v-3s1-3 2-4 2-1 2-2c0 0 0-1 1-1l1-1 1-1Z"
-            onPress={eventListener.bind(this, "EuropaSur")}
+            onPress={stateMachine.bind(this, 17, "EUROPA SUR")}
         />
+        <Text2
+            x="550" y="350"  text-anchor="middle" fill="none" >{findTropas("EUROPA SUR")}
+          </Text2>
         <Path
         //RUsia
           fill="#36f"
           d="M580 188c-1 0-2-1-2-1s1 4 0 5c0 0 1 4 0 4-1 1-1 6-1 9s1 7 1 9 1 5 1 5v2c0 2 1 3 1 3h1c0 1 0 2-1 2v3c-1 1-1 1-1 2v3c0 1 1 3 0 3-1-1 1 0 1 0 1 1-1 1-2 2h-3c-1 0-1-1-2 0h-6c-1 1-1 2-1 3s1 0 1 2c0 1 1 1 1 1 0 1 1 1 1 1s2 1 2 2v3c0 1-1 1-2 0-2 0-1 0-2-2 0-2 0-1-1-1-1-1-1 0-1 1l-2 2v3c0 1-1 1-1 2-1 0 0 1 0 2 1 1 1 2 1 2 1 0 1 1 1 2l-1 1h1s1 1 1 2l1 1 3 1h3v1s0 3 1 4v9c0 1 2 3 2 3l1 1c0 1-1 2-1 2v2c0 1-1 1-1 1-1 1-1 2-1 2 0 1-1 1-1 1-1 0-3 4-3 4 0 1-2 1-2 1-1 0-2 1-3 1v2l3 2v-1l1-1s2 0 3 1v3c1 1 1 1 2 1h2s0 1 1 2c0 1 0 2 1 2v4c0 1-1 1-1 1v2l1 1v4c0 1 1 1 1 2-1 0 2 2 2 2l1-1s1 0 2-1v-1s0-2 1-3h2c2-1 1 0 2 0h2c1 1 1 1 1 2v3c1 0 1 1 1 1 0 1 1 1 2 2 1 0 0 0 2 1 1 1 0-1 1-2 0-1 1-1 1-1 1 0 1-1 2-1v-1c1-1 0-2 0-2 0-1-1 0-1 0-1 0-2-1-2-2-1 0-1-1-1-1s1-1 2-1c1-1 1-1 2-1h2c0-1 1-1 2-1h4s0-1 1-1c0-1 1 0 1 0v1l-2 2c-1 1-1 0-2 1-2 0-1 0-1 1s-1 1-1 1v2h1v2c0 1 1 0 2 0 0 1-1 1-1 2s2 2 2 2c1 1 1 1 1 2 1 1 1 0 1 0 1-1 1-1 2-1h1v2l1 1c1 1 1 2 2 2s0 0 1 1c0 0 1 1 2 1l1 1c1 0 1 0 1 3s1 0 1 0 0 1-1 2c0 0-1 0-1 1-1 0-1 1-1 1 0 1 0 1 2 2 1 1 1-1 1-1h4s0-1 1-1h2c1-1 1-1 2-1 0-1 1-1 2-1h1c3 0 1 0 1-1s1-1 1-1h1c1-1 1-1 1-2l-1-1s-1-1-1-2 0-1 1-1v-6c0-1 1 0 1-1 1 0 0-2 0-2h-2c-1 0-1 0-2-2-1-1 0-1 0-2-1 0-1 0-1-2 0-1-1-3-1-3h-1l-1-1v-2c1-1 0-2 0-2l-1 1s1-3 2-4v-2c0-1 1 0 2-1 1 0 1-1 1-1s1-1 0-3v-3c0-1-1-1-1-1l-1-1s-1 0-2-1v-4s-1-2-2-3v-3c0-1 0-1 1-2 0-1 1-2 2-2s0-2 0-2 1-3 2-3l3-1c3 0 1 0 2-1s2-1 2-1h2c1 0 3-1 3-1l2-1c1-1 2-1 2-1l1 1h1s2 1 3 1h2c1 0 1 0 2-2 1-1 1-1 1-3 0-1 3-1 4-1l2-2c1 0 0-1 0-3v-3c-1-1-1-2-1-3 0 0 1-1 2-3 1-1 0-2 0-3s-2-1-2-1l-3-2-1-1s-1-1 0-3c0-2 1-2 1-3 1-2 1-3 1-4s-2-1-2-1v-9c0-1 0-4-1-4 0-1 1-3 1-3s-1-2-1-3c-1-1 1-4 1-4l2-5 1-2v-4c1-1 1-4 1-4s-1-7-2-7c0-1-1-1-1-2-1-1-2 0-3 0s-2-1-3-1h-3c-1-1-2 0-3 1 0 1 0 1-1 3-1 1-2 0-3 1-1 0-1-1-2-1-1-1-2 0-3 0s-1 0-3-1c-1-1-1-1-3 1s-2 1-3 1-2 1-2 1l-3 3s-3 1-4 2 0 1-2 2c-1 1-1 0-1-1s0-1 1-2c0-2 0-1-1-1s-1-1-2-2c0-1 0-1-1-2-1 0-2 1-3 1h-2c-1 0 0 1 0 2l1 1v4c0 1 1 1 1 1 1 1 1 1 1 2s-1 0-2 0-2 1-3 2h-2c-1 0-1 1-2 2-2 2-2 1-3 1s-1-1-2-1c-2-1-1 0-2 0s0 1 1 2c0 1 1 2 1 2s0 1-2 2c-1 2-1 0-2 0h-2c-1 0 0 0 0-1v-2c0-1-1-1-1-1v-2c-1 0-1-1-2-1h-2s0-1-1-1l-2-2c-1 0 0-1 0-1 0-1 2-1 3-1s4 1 6 1h4c1 0 3-1 5-1 1 0 2-1 3-2v-2c0-1-1-1-1-2-1-1-1-1-4-3-4-3-4-1-5-1s-1-1-2-1h-8c-1 0-1-1-2-1h-2c-1-1-1-1-2-1-1-1 0 0-1 0Z"
-            onPress={eventListener.bind(this, "Rusia")}
+            onPress={stateMachine.bind(this, 18, "RUSIA")}
         />
+        <Text2
+            x="595" y="270"  text-anchor="middle" fill="none" >{findTropas("RUSIA")}
+          </Text2>
         <Path
         //EuropaOccidental
           fill="#39c"
           d="M521 317c-1 0-1 0-1 1-1 0-1 1-2 2-1 0 0 1 0 2v3c0 2-1 1-1 1s-1 1-1 2l1 1s2 1 2 2c1 0 0 1 0 2s-1 2-2 2c0 0 0 2 2 3 2 2 1 2 1 2h-2v1c-1 1-1 1-2 1-1 1 0 1-1 1h-1c0-1 0-1-1-1s-1 0-1-1c1-1 1-1 0-1s-1 1-2 0h-2l-2 3v2s-1 0-1 1 1 1 0 2c-1 0-1 1-1 1-1 0-1 0-1 1-1 0-1 0-1 1v1c0 1 1 1 1 1v2l-1 1v2c1 1 1 2 1 2l1 1s0 1 1 2c0 1 1 1 0 2s-3 1-4 3-1 4-2 5 0 1-1 1-2-2-3 0c0 1-1 2-2 2s-1-1-1 1v2s0 1-1 1h-2c-1 0-1 0-1-1-1 0-1-1-1-1-1-1-1-1-2-1s-1 0-1-1c-1-1-1-1-2-1 0 0 0 1-1 0s-1-2-2-2l-1 1s0 1-1 0h-3c-1 0-1 1-2 0-1 0-2 0-2-1s1-1 0-2c0 0 0-1-1-1 0-1 0-1-1-1h-2c0-1-1 0 0-1v-2c1-1 1-1 1-3 1-1 1-1 1-3 1-1 1-1 1-2s0-1 1-2v-2c0-1 1-1 0-1 0-1-2-2-2-3-1 0-1 0-1-1 0-2-1-1-1-2v-2c0-1-1-1-1-2 0 0 0-1 1-1 0-1 1 0 2-1s1-1 1-2 1-1 1-1h1c1 1 1 1 1 2 0 0-1 0 1 1h5c1 0 1-1 1-1h3c1 0 1 1 1 0 1 0 1 1 2 0 0 0 1 0 1-1 1-1 0-1 1-2s2-1 3-1-1-2-2-2c0 0-1 1-1 0 0 0 0-1 1-2 0-1 1-1 1-1s0-1-1-2c0 0 2-1 1-2-1 0-2-1-2-1-1 0-1 1-2 0v-3c-1 0-1 0-2-1s0-1-1-2-2-1-3-1-1 1-1 0c0-2 0-2 1-3 1 0 3-1 4-1s0-1 2 0h2c1 0 2 1 2 1s1-2 1-3c1 0 1 0 1-1s1-1 2-2c1 0 2 1 2 1s-2 1 0 1c1-1-1-3 2-2 3 0 4 2 4 0s0-2 1-3c0-1 0-1 1-2 2 0 1-2 3-3h2c1 0 1 0 2-1l1 1 1 3 2 2c1 2 1 3 2 3l1 1v1c0 1 1 1 1 1 0 1 0 2 1 2 0 1 1 1 1 1l1 1Z"
-            onPress={eventListener.bind(this, "EuropaOccidental")}
+            onPress={stateMachine.bind(this, 19, "EUROPA OCCIDENTAL")}
         />
+        <Text2
+            x="480" y="360"  text-anchor="middle" fill="none" >{findTropas("EUROPA OCCIDENTAL")}
+          </Text2>
         <Path
         //Congo
           fill="#f93"
           d="M595 514c-1 1-1 0-2-3 0-3-1-10-1-11 1-1 3 1 4 0v-7c0-2 2-1 4-1 1-1 2-2 2-4 1-1 1-1 2-1s1-2 1-3c1-1 2-2 2-4 0-1-2-2-4-3-2 0-2 1-5 1-3-1-4-1-5-1s-1-2-2-2c-1-1-2 2-2 2s-1-1-3-4c-1-3-3-4-3-4-1 0-1-3-1-4s-2-1-3-2c0-1 0-2-1-2s-2 0-2-3c0 0-1-3-1-4 0 0-3 3-3 4 0 0 1 2-2 3-2 1-3 1-5 2-1 0-2 2-2 2-1 1-3 1-3 1-1 1-2 1-3 2 0 1-1-1-1 2v4s2-2 2 1c-1 4-2 5-1 6 0 2 1 2-1 3-1 1-2 0-2 0s-1-2-2-1c-2 0-2 1-4 0h-3l-2 1c-1 0-1-1-2-2-1 0-1 2-1 2 0 1 1 2 0 2 0 1-1 2-1 3-1 1-4 2-3 3 1 2 8 7 9 10l2 2c0 1 3-1 3-1 1 1 3 2 4 3 1 0 5-1 6 0l1 1v4c1 1 3 2 3 1 1-2 8-2 8-1 1 1 0 3 1 4s2 1 2 2-2 2-1 4c0 1 2 2 3 1 2 0 2 1 3 2h7c0 1 1 2 2 2 0 1 1 3 2 2s2-5 1-6c-2 0-2 0-2-2 0-1 0-4 1-4l1-1s4 0 3-1Z"
-            onPress={eventListener.bind(this, "Congo")}
+            onPress={stateMachine.bind(this, 20, "CONGO")}
         />
+        <Text2
+            x="560" y="495"  text-anchor="middle" fill="none" >{findTropas("CONGO")}
+          </Text2>
         <Path
         //Africa Oriental
           fill="#c60"
           d="M575 454s-1-2-2-3 0-3 0-4 0-1 1-2v-1l1-2v-2c0-1 0-1-1-1s0 0 1-1 0-2 1-3c0-1-1-5-1-6 0 0 2-1 3-1 0 0 0-5 2-5 1-1 29 1 29-1v1c0 1 1 1 1 1s2 1 2 2c1 1 1 0 1 1 0 0 0 3 1 4 0 2 0 1 1 2s1 0 1 2 1 2 2 4c1 1 0 0 0 2 1 1 1 2 1 3 1 1 1 1 2 1v1c0 2 3 2 4 4l2 2c0 1 0 1-1 3s0 2 1 3c0 1 4 1 4 1s3 0 4-1l1-1c1-1 4 0 7-1 2 0 6-3 7 0 2 2-4 13-6 18s-8 10-12 14c-4 3-7 8-7 8 0 1-1 2-2 2l-2 2c-1 1-1 1-3 2-1 1-1 2-1 3v2c-1 1 0 3 0 4v3s0 1 1 1c2 1 1 6 1 6s-2 2-3 2-2 1-2 1-1 0-2 1c-2 0-3 0-4 1-1 2 0 2 1 5 1 2-1 1-1 2v4c0 1-1 2-2 2 0 1-2-1-3-2-1-2 0-4 1-5 0-2-2-4-2-5v-3c1-1 1 0 0-2 0-2-1-2-2-3 0 0-1-2-2-2s-1-1-1-2-2-1-2-1c-1 1-1 0-2-3 0-3-1-10-1-11 1-1 3 1 4 0v-7c0-2 2-1 4-1 1-1 2-2 2-4 1-1 1-1 2-1s1-2 1-3c1-1 2-2 2-4 0-1-2-2-4-3-2 0-2 1-5 1-3-1-4-1-5-1s-1-2-2-2c-1-1-2 2-2 2s-1-1-3-4c-1-3-3-4-3-4-1 0-1-3-1-4s-2-1-3-2c0-1 0-2-1-2s-2 0-2-3c-1-2-1-4-1-4Z"
-            onPress={eventListener.bind(this, "AfricaOriental")}
+            onPress={stateMachine.bind(this, 21, "AFRICA ORIENTAL")}
         />
+        <Text2
+            x="590" y="465"  text-anchor="middle" fill="none" >{findTropas("AFRICA ORIENTAL")}
+          </Text2>
         <Path
         //Egipto
           fill="#f90"
           d="M575 429c0-1-4 0-5 0l-1-1s-1-3-1-4-3 1-4 0v-2c0-2-2-1-3-1s-2-1-3-2c-1 0-2 1-3 1-2 0-2 0-2-1-1-1-2 0-4 0s-1-1-2-2-2 0-4-1c-2 0-1-1-1-2-1-1-2-1-2-1v-7c0-1 0-3-2-4-1 0 0-2 0-2v-2c0-1 1-2 2-2s1-1 1-1l-2-4c0-1 2-1 2-1v-1s1 0 2-1c2-1 1-3 1-3h3c2 1 2 1 3 2s1 2 3 2c2 1 3 1 4 1s4-1 4-1c1-1 3-1 9-1s6 3 7 3c2-1 3 0 4 0s3 1 4 1 3 1 3 1c1 0 6 2 7 2l2-2 1 1h1c1 0 1-1 1-1l2-1 2 4s-1 3-1 4v2c-1 1-1 0-2 0l-3-3c-1-1 0 3 0 3s3 4 7 10 0 3 1 4c1 2 2 2 2 4 1 3 0 1 1 3v-1c0 2-28 0-29 1-2 0-2 5-2 5-1 0-3 1-3 1Z"
-            onPress={eventListener.bind(this, "Egipto")}
+            onPress={stateMachine.bind(this, 22, "EGIPTO")}
         />
+        <Text2
+            x="570" y="420"  text-anchor="middle" fill="none" >{findTropas("EGIPTO")}
+          </Text2>
         <Path
         //Madagasgar
           fill="#c63"
           d="M659 534c1 1 1 0 1 3 0 2 1 5-1 3-1-2-1-3-1-1v3s1 2 0 2h-2v2l-1 1-1 3s2 0 1 2c-1 1-1 2-1 2v2c-1 3-1 4-1 4s1 0 0 1c-2 2-2 3-2 4-1 0 0 1-1 2l-2 2-1 1v2c0 1-1 1-1 1v1c0 1 0 2-1 2-1 1 0 1-2 2-1 1-1 0-1 2s0 2-1 2-10 1-11 0c-2 0 1-7-1-8s-3-6-2-6l1-1 2-2c0-1 1-1 1-1s-1-3 0-3v-2s0-2 1-2c1-1-1-2 1-2 1-1 2 0 2-1s-1-1-2-1c0 0-1 0-1-2 0-1 0 0-1-1 0-2-1-1 0-3 2-1 2 0 2-2 0-1-1-2 1-2 1 0 2 0 4-1h2c3 0 3 1 4 0s2-1 2-2 0-2 1-2c2-1 2 0 3-1 0-1 1-2 1-3s-1-1 0-1c2 0 2 0 3-1v-2c1-2 0-2 1-3 1 0 3-2 3-2s0-1 1 1 0 2 1 3 1 0 1 1v3l-2 1Z"
-            onPress={eventListener.bind(this, "Madagascar")}
+            onPress={stateMachine.bind(this, 23, "MADAGASCAR")}
         />
+        <Text2
+            x="650" y="562"  text-anchor="middle" fill="none" >{findTropas("MADAGASCAR")}
+          </Text2>
         <Path
         //Africa Norte
           fill="#f60"
           d="M544 385c-1-1-1-1-1-2-1-1-1-2-2-2-1-1-1 1-2-1 0-2 0-4-1-4l-2-2-2-2-2-1h-8l-2 2c-1 0-4 2-4 2h-4s0 1-1 2-3 2-4 1h-2c-2 0-3 2-4 2-1-1-2 0-3 0-1 1 0 1-2 1h-8c-1 0-2 1-2 1v5l-3 4s0 2-1 5l-2 4-1 4-2 1c0 1 1 2 0 2 0 1-1 0-2 2 0 1-1 2-1 3 0 0 1 1 0 2s-2 1-2 3-1 4 0 5 1 2 1 4v3c0 2 1 2 1 3 0 2-1 3-1 5s-1 2-1 4-3 3-1 4c2 2 2 3 2 5 1 1 5 1 5 4s4 3 4 4c0 2-1 4 2 5 3 2 3 3 4 4 0 0 3 1 4 2 0 0 1 2 2 2 0 1 1 2 3 2s2 0 6-1h11c1-1 1-2 2-3h10c1 1 1 0 2 2s-1 4 3 4c5 0 8-1 9 0 0 1-2 3-2 4 1 2 1 2 1 3 1 1 1 2 2 2l2-1h3c2 1 2 0 4 0 1-1 2 1 2 1s1 1 2 0c2-1 1-1 1-3-1-1 0-2 1-6 0-3-2-1-2-1v-4c0-3 1-1 1-2 1-1 2-1 3-2 0 0 2 0 3-1 0 0 1-2 2-2 2-1 3-1 5-2 3-1 2-3 2-3 0-1 3-4 3-4s-1-2-2-3 0-3 0-4 0-1 1-2v-1l1-2v-2c0-1 0-1-1-1s0 0 1-1 0-2 1-3c0-1-1-5-1-6s-4 0-5 0l-1-1s-1-3-1-4-3 1-4 0v-2c0-2-2-1-3-1s-2-1-3-2c-1 0-2 1-3 1-2 0-2 0-2-1-1-1-2 0-4 0s-1-1-2-2-2 0-4-1c-2 0-1-1-1-2-1-1-2-1-2-1v-7c0-1 0-3-2-4-1 0 0-2 0-2v-2c0-1 1-2 2-2s1-1 1-1l-2-4c0-1 2-1 2-1v-1s1 0 2-1c2-1 1-3 1-3Z"
-            onPress={eventListener.bind(this, "AfricaNorte")}
+            onPress={stateMachine.bind(this, 24, "AFRICA NORTE")}
         />
+        <Text2
+            x="510" y="440"  text-anchor="middle" fill="none" >{findTropas("AFRICA NORTE")}
+          </Text2>
         <Path
         //Sudafrica
           fill="#f63"
           d="M547 504c0 1 3-1 3-1 1 1 3 2 4 3 1 0 5-1 6 0l1 1v4c1 1 3 2 3 1 1-2 8-2 8-1 1 1 0 3 1 4s2 1 2 2-2 2-1 4c0 1 2 2 3 1 2 0 2 1 3 2h7c0 1 1 2 2 2 0 1 1 3 2 2s2-5 1-6c-2 0-2 0-2-2 0-1 0-4 1-4l1-1s4 0 3-1c0 0 2 0 2 1s0 2 1 2 2 2 2 2c1 1 2 1 2 3 1 2 1 1 0 2v3c0 1 2 3 2 5-1 1-2 3-1 5 1 1 3 3 3 2 1 0 2-1 2-2v-4c0-1 2 0 1-2-1-3-2-3-1-5 1-1 2-1 4-1 1-1 2-1 2-1s1-1 2-1 3-2 3-2 3-1 2 0c0 1 1 4 1 4v2c1 1 0 1 1 2 0 1-1 2-1 2v3c0 1 0 3-1 4 0 0-1 0-1 1-1 0-1 1-2 2s-1 1-1 2c-1 2-1 1-2 3l-1 1c-2 0-2 1-3 1 0 0-2 2-2 6-1 5 0 6 0 7s-3 4-3 5-1 1-2 1c-1 1-1 3-1 4 0 0 0 3-2 4-1 1 0 1 0 2 1 0 1 1 1 2-1 2-2 1-3 2-1 0-3 3-3 4 1 1 2 1 2 1s-2 2-4 3c-1 2 1 2 1 3s-1 0-2 0c0 0-1 0-1 1-1 1-2 1-5 1-4 1-1 2-3 3s-2 1-7 1-3 1-4 1c-1 1-1 1-2 1s-2 0-3 1l-1 1-1-1c0-1-1-1-2-1s-1 0-2-1 0-2 0-2c0-1-1-3-1-4v-8c-1 0-2-1-2-3v-3c0-1-1 0-1-1-1 0-1-1-2-2v-5c0-1 0-1-1-2 0-1-1-3-1-4-1-1-1-2-1-3s0-1 1-2c0 0-1-1-1-2l-3-3-1-1c0-1-1-2-2-3s0-1 0-2v-3c-1-1-2-3-2-3v-3c1-1 1-1 1-2v-2c0-1 0-1 1-2 0-1 1-1 1-2 0-2 1-3 1-3 0-1 1-1 1-2 1-1 0-1 0-2v-2c0-1-2-4-3-5 0-1 2-3 4-5 2-3-4-8-4-9Z"
-            onPress={eventListener.bind(this, "Sudafrica")}
+            onPress={stateMachine.bind(this, 25, "SUDAFRICA")}
         />
+        <Text2
+            x="570" y="580"  text-anchor="middle" fill="none" >{findTropas("SUDAFRICA")}
+          </Text2>
         <Path
         //Afganistan
           fill="#3c0"
           d="M707 296c-1 0-1-2-2-2l-1-1v-3l-2-1h-3c-1 0-3 0-4-1 0 0 0-1-1 0h-3l-2-1s-1 0-1-1c-1 0-1-2-2-2 0-1-1-2-1-2-1 0-1-1-2-2 0 0-1 0-2-1 0 0-1 0-1-1 0 0 0-1-1-1h-1s0-2-1-2c0-1-1-2-2-2s-1 0-2-1v-1s-2-1-2-2l-1-1-1-2h-2l-2-1v1c-1 0-1 0-2 1-1 0-4 0-4 1 0 2 0 2-1 3-1 2-1 2-2 2h-2c-1 0-2-1-2-1h-2l-1-1s-1 0-1 1c-1 0-3 1-3 1s-2 1-3 1h-1c-1 0-2 0-3 1 0 1 1 1-2 1-2 1-2 1-3 1s-2 3-2 3 1 2 0 2-1 1-2 2c0 1-1 1-1 2 1 1 0 2 1 3 0 1 1 3 1 3s1 0 0 1v3c1 1 2 1 2 1l1 1s1 0 1 1 1 2 1 3c0 0 1 2 1 1 1 0 2-1 2-2s0-2 1-2h2c1-1 1-1 2-1s1 0 1 1c1 1 0 0 1 2v4c0 2 0 2-1 2-1 1-3 2-3 3v2c0 2 0 3 1 3 1 1 1 0 1 2 0 1-1 1 0 1h3s2 0 1 2c0 1-1 0 0 2 0 1 0 0 1 2 0 2-1 2 0 2s2 1 2 1l1 2v2s-2-1-2 0c0 2 1 2 1 2s2 0 2 1v3c0 1 1 1 1 2v2c1 1 2 1 3 1 0 0 1-2 2-2h2c0 1 1 1 2 1 0 0 1 0 1 1 1 1 1 1 2 1v2c0 1 1 1 2 1h2c1 0 2 2 2 2 0 1 1 1 1 1s3 0 3-1c1-1 3-3 3-4 0 0 0-2 1-2 0 0 2-1 3 0 1 0 2 0 3-1 0-1 0-4 2-4 1 0 2-1 3 0s4 3 4 3 3 0 5-1c1-1 2-3 2-4v-2c0-1-1-4-1-4s0-1-1-1-2-2-2-2v-3s0-4 1-4l2-1h3c1-1 1-5 2-6 0-1 0-2 1-2s2 0 2-2c0-1 0-5-1-6s-1-2-1-3l1-1v-2Z"
-            onPress={eventListener.bind(this, "Afganistan")}
+            onPress={stateMachine.bind(this, 26, "AFGANISTAN")}
         />
+        <Text2
+            x="670" y="330"  text-anchor="middle" fill="none" >{findTropas("AFGANISTAN")}
+          </Text2>
         <Path
         //China
           fill="#3f0"
           d="M802 324c-1 0 0 0 0 1v1c0 1 1 1 1 1 1 0 0 1 0 2s0 1 1 1 1 0 1 2c0 1 1 0 2 0l1 1c0 1 0 1-2 1-1 1 2 1 3 2 1 0 1 2 1 3-1 1 0 1 1 3 1 1 0 2-1 4-1 3 1 2 2 2s1 4 0 5c-1 2 0 2 0 4s0 2-1 4c0 2 0 1-1 2v4c0 2-1 2-3 2-1 0 0 0 0 1s-1 1-2 2 0 1-1 2c0 2 0 1-1 2l-2 2v3c0 1-1 0-1 0-1 0-2 0-2 1-1 1-2 1-3 3-2 1 0 0 0 1 1 1-1 1-1 2-1 0-1 1-2 2s-2-2-4-3l-1-2c1 0-1-2-1-2-1 0-1-1-1-1 0-1-1-1-1-1v-2l-1-1h-2l-1-2h-1c-1 1-1 1-1 2-1 0-2 1-2 1s1 1 0 1h-3c-1 0-1 1-1 2 0 0 0 2-1 2s-3 0-3-1c-1-1-2-3-3-3-1 1-2-1-2-2l-1-1s-1 0-1-1 0-2-1-3c0 0-1 0-1-1-1 0-1-1-2-1h-1c0 1-1 2-1 2l-1 1h-1l-3-7h-10s-1 2-2 2l-1-2v-4c-1 0-3-1-3-1-1 0-1 2-2 2 0 0-4-2-4-3s1-1-1-1c-1 0 0 1-2 1-2-1-2-1-3-1 0-1-1-2-2-2s-3-1-3-1c0-1-1-1-1-1 0-1 0-2-1-3l-2 1c-1 1-2 0-2-1s1-2 1-2c1 0 2-1 2-1v-7c-1-1-1-4-1-4v-1c0-1 1-1 1-1h-6l-2-1v-3s0-1-1-1l-1 2v1c-2 1-3 0-3 0v-2c0-1-1-4-1-4s0-1-1-1-2-2-2-2v-3s0-4 1-4l2-1h3c1-1 1-5 2-6 0-1 0-2 1-2s2 0 2-2c0-1 0-5-1-6s-1-2-1-3l1-1v-2c1 1 1 0 2 0 2 0 1-1 1-2v-1c-1-1 0-1 0-2 0 0 2-1 2-2v-4h4c1-1 0-5 0-5h2c0 1 1 1 1 1 1 0 1 0 2 1 0 2 1 1 2 1 2 0 3-1 4-2 1 0 1 1 2 2 0 1 0 1 1 2 1 0 1 1 2 2v2c0 1-1 1-2 3-1 1 1 0 2 1l1 1c1 0 1-1 2-1 1-1 0 1 1 1 0 0 1 1 2 1l1 2c1 0 2 6 2 6h1v2s2 1 2 2v1c0 1 2 1 2 1v2s0 1 1 1h3c1 0 1 0 1 1v1c0 1 1 1 1 1h1c0 1 1 1 2 1v2s0 1 1 1 9-1 9-1v1h2c0 1 1 0 2 1h4s0 1 1 2l2-1s0-1 1 0c0 0 0-2 1-2h2s3-1 3 0v2c1 0 2 1 2 1 1 0 2-1 2-1 1 0 1-1 2-1 1 1 2 1 2 1s1 0 2 1h2s3 0 4 1 2 1 3 1Z"
-            onPress={eventListener.bind(this, "China")}
+            onPress={stateMachine.bind(this, 27, "CHINA")}
         />
+        <Text2
+            x="750" y="355"  text-anchor="middle" stroke="green" fill="black" >{findTropas("CHINA")}
+          </Text2>
         <Path
         //INDIA
           fill="#090"
           d="M701 335c0 1-1 3-2 4-2 1-5 1-5 1s-3-2-4-3-2 0-3 0c-2 0-2 3-2 4-1 1-2 1-3 1-1-1-3 0-3 0-1 0-1 2-1 2 0 1-2 3-3 4 0 1-3 2-3 1v3s0 1-1 8c0 3 1 1 2 3v2c0 1 1 3 2 4v2c0 1 1 2 2 3s1 3 0 4 1 1 1 3c1 1 2 5 2 6l2-2c1 0 3 0 3 1 1 1 0 3 1 4l2 1h2c1 0 1-1 1 1v2c1 1 3 1 3 1s2 0 1 1-2 1-2 2-1 1 0 1 1 0 1 1l1 1c1 1 0 1 2 1 1 1 2 0 2 0v-1s1-2 2 0c1 1 0 1 0 3s-1 4-1 5v6c0 2 2 1 2 2 0 2-1 2 0 3 1 0 2 2 2 3v2c0 1 0 2 1 3 1 0 2 0 2 2 0 1 1 3 1 3s1 1 1 2l1 1c0 1 1 0 2 5s2 2 3 6 2 5 3 5 2 0 2-1 0-1 1-1c1-1 1-1 1-2s-1-1-1-2c1 0 0-2 1-2 2 0 3-1 3-1l-1-1v-3c1-3 1-4 1-6 0-3-1-2 0-5s2-1 2-4c0-2 1-4 1-6 0-1 1 0 1-2 0-1-1-2 0-3s2-2 2-3v-3l1-2s2 0 1-1v-4c1-1 2-4 3-3l2 1 2-2v-2s0-2 1-2h3s-1-4 0-4 2 0 2-1 1-2 1-2c1 0 1-3 1-3h2s0-4 1-5 2-3 2-3l-3-7h-10s-1 2-2 2l-1-2v-4c-1 0-3-1-3-1-1 0-1 2-2 2 0 0-4-2-4-3s1-1-1-1c-1 0 0 1-2 1-2-1-2-1-3-1 0-1-1-2-2-2s-3-1-3-1c0-1-1-1-1-1 0-1 0-2-1-3l-2 1c-1 1-2 0-2-1s1-2 1-2c1 0 2-1 2-1v-7c-1-1-1-4-1-4v-1c0-1 1-1 1-1h-6l-2-1v-3s0-1-1-1l-1 2v1c-2 1-3 0-3 0Z"
-            onPress={eventListener.bind(this, "India")}
+            onPress={stateMachine.bind(this, 28, "INDIA")}
         />
+        <Text2
+            x="700" y="390"  text-anchor="middle" fill="none" >{findTropas("INDIA")}
+          </Text2>
         <Path
         //IRKUTSK
           fill="#3f6"
           d="M807 271v1s-1 1-2 1c-1-1-2-1-2-2s-1-1-1-1-2 0-2-1c0 0 0-1-1-2v-2h-2v-1c-1-1-1-2-1-2l-1-1c-1 0-2 1-2 0v-4s-1 0-1-1c0 0 0-1-1-1s-1 0-2 1l-1 1h-4l-1-1h-1c0 1 1 1 0 2v1c-1 0-2 0-2 1l1 1v1c1 0 1 0 1 1s0 2-1 2l-1 1v1c0 1-1 1 0 2 0 0 0 1 1 1v2c0 1 0 1-1 2 0 0-1 1-1 2-1 0 0 1-1 0-1 0-1-1-1-1v-1c-1-1-1-2-1-2s-2-1-2 0c-1 0 0 1-1 1l-1 1c0 1-1 2-2 1h-3c-1 1-2 2-2 1-1 0-2 0-2-1h-5c-1 0-2-1-3-1s-3-1-4-1-1 0-2 1c0 0-1-1-1 0 0 0 0 1-1 1h-2c0-1-1-1-1-1s0-1-1 0h-1l-1-1-1-1-2 1h-1c-2 0-1 0-2-1-1 0 0-1-1-3-1-1-1 1-1 1s-1 0-2-2c0-2 1-1 1-3v-3c0-2 1-1 1-1v-4c0-3-1-1-2-3-1-1 0-1 0-2 1 0 1-1 2-2 1-2 1-1 3-2 2 0 1-2 3-3 2 0 1 0 2 1s2 0 3-1c2 0 2-1 4 0 2 0 1 0 2 1 0 2 1 2 3-1 2-2 0-8-1-11-1-4 3-11 3-11s5-2 6-2c1-1 1-1 2-3 0-2 0-5 2-5 1 0 1 2 1 2 0 1 1 0 3 1 1 0 0-1 0-2v-1c0-1 12 0 12 0v3s2 3 1 5c0 2-1 8 0 9 0 1 0 4 1 5s1 1 1 2c1 1 4 2 5 3 1 2 0 2 1 3 1 0 2 2 2 3s0 3 1 3c1-1 2-2 3-2 0 0 1-1 2 0h5s1 1 1 2 0 1 1 1c2 0 2 0 2 2 1 2 2 2 2 2v3s-1 1-1 2c1 2 1 3 1 4-1 0-2 2-2 3v5Z"
-            onPress={eventListener.bind(this, "Irkutsk")}
+            onPress={stateMachine.bind(this, 29, "IRKUTSK")}
         />
+        <Text2
+            x="750" y="270"  text-anchor="middle" fill="none" >{findTropas("IRKUTSK")}
+          </Text2>
         <Path
         //JAPON
           fill="#0f6"
           d="M829 335v-5c-1 0-1-1-2 0-1 0-3-1-3-1s0-1 2-2c2-2 3-2 3-2l-1-1s-2 0-1-1 1-2 2-3 3-6 4-8c2-2 4-2 4-2l2-5s-1-3 1-5c3-1 3 1 4-2s3-3 3-4 1-1 0-3c0-2-2-3-2-3v-4c0-2-1-4 1-4 1-1-2-4-2-4s1-1 0-2c-1 0-1-1-1-2v-3s1-2 2-2c0 0 1 0 1-1 0-2-1-5-1-5s-4-5-4-6c-1 0-1 0 0-1 0-1 4 4 6 4 3 1 5 0 5 0l2-1h5s2 0 2 2 3 2 2 3c-2 2-1 3-3 3-1 0-1-1-2-1 0 0-1 0-1 2s1 2 0 4c-1 1-1 2-2 2h-6c-1 1-2-1-2 1 0 1 0 2 1 2s1 0 1 1-2 2-1 2c1 1 2 0 2 1h3v1s1 0 2 1c1 0 2-1 2 0s1 2 1 2v1c1 1 1 2 1 3s-1 3-1 3-1 1-1 3c1 1 1 0 1 1 1 2 1 3 1 4s-1 1 1 2c1 1 1 2 1 2s1 0 1 1v3h-3l-1 1c0 2-1 2-1 2s0 2-1 2-1 0-2 1h-2c0 1 0 2-1 2 0 0-1-2-2 1 0 2 2 3 0 3-2 1-3 1-3 1s0 2-1 1c-1 0-2-1-2-2s-1-2-1-2l-2 2s0 1-2 1c-1 0-2-2-2 0 1 2 1 3 2 4 0 1 1 0 1 1-1 1 0 1-1 2s-2 1-3 1h-2c-1 0-2 7-2 7l-1 1h-1Z"
-            onPress={eventListener.bind(this, "Japon")}
+            onPress={stateMachine.bind(this, 30, "JAPON")}
         />
+        <Text2
+            x="860" y="310"  text-anchor="middle" fill="none" >{findTropas("JAPON")}
+          </Text2>
         <Path
         //KAMCHATKA
           fill="#0c6"
           d="M818 289c1-1 1 0 2-2 0-2 0-2 1-3 0 0 2-3 2-4 0-2-1-2-1-3 1-2 1-2 1-4s0-2 1-4v-4c0-1-1-2-1-3v-6l-2-2v-1c-1-1-1-1-1-2s-1 1-1-3c1-3 1-4 1-4s-1-4-3-4-3 1-3-1-1-2-3-2c-1-1-2 0-2-1h-4c-2-1-2 0-2-1s0-2 1-5c2-2 2-3 2-4 1-2-1-1 1-3 3-2 2-3 5-3 2 0 3 0 4-1 2-1 1-2 3-1s2 2 3 1c2-1 2-2 3-2l3 2h1c1 0 2 2 3 0s0-2 0-3c-1 0-2 2-2-1 1-3 1-4 1-5-1-1-3-5 0-3 3 3 2 3 3 4 2 0 1 0 1 3 1 2 5 1 4 4 0 3 0 4-1 6 0 1-1 0-1 5s1 14 5 18c5 4 6 5 7 3 0-2 1-2 0-4 0-2-1-3 0-5 1-1 1-2 1-3s1-2 1-3c-1-1 0-3-1-4v-4c0-1-1-2-2-3 0-1-1-3-2-4 0-1 0-2 1-4 1-1-1-2 2-2s2 1 4 1c1-1 3 0 3-2 1-1 1-1 1-2 1-2 2-1 3-3 1-1-1-2 2-4 2-2 4-3 4-3 1-1 2-1 1-2s-1-2-2-3c-2-1-2-2-3-2s-2 0-1-1c1 0 2-1 3-1s1 1 2 0c2-1 2-1 3 0 1 0 1 0 1 1 1 2 0 1 2 2 2 2 4 2 4 2 1 0 0 1 2 0l2-2c1-2 2-2 1-4 0-1-1-2-1-3l-1-2s0-1-1-1h-3c0-1 0-2-1-2s-2-1-2 0c-1 1-2 2-2 1-1 0-2-1-2-1v-2l-2-2-2-1s-3-3-4-3-3 0-3-1 2-1-1-1c-3-1-4 0-5-2-1-1 1-2-2-2-2 0-3 1-5 0-3-1-3-2-4-1s0 1-1 2c-2 1-1 2-3 2s-2 1-3 0c-1 0-1-1-3-1h-2c-2 0-1 1-3 0l-4-2c-2-1-2-1-3-1s-5-1-6 0c0 0-1 2-1 3s1 3-1 3h-1c-1 0-1 0-1 1-1 0-1 0-1 1-1 1-1 2-2 2 0 0-2 0-2 1-1 0 0 0-1 3 0 3 0 7 1 8h4s1 1 1 2v3c0 1-1 1-1 2v3c-1 0-2 1-2 1h-3s0-1-1-1h-3c-1 0 0 1-1 0-1-2 0-3-1-4 0 0-4 0-5 1 0 2-2 3-2 3s-1-2-2 1-3 5-3 5 1 3 0 4l-3 3v3s2 3 1 5c0 2-1 8 0 9 0 1 0 4 1 5s1 1 1 2c1 1 4 2 5 3 1 2 0 2 1 3 1 0 2 2 2 3s0 3 1 3c1-1 2-2 3-2 0 0 1-1 2 0h5s1 1 1 2 0 1 1 1c2 0 2 0 2 2 1 2 2 2 2 2v3s-1 1-1 2c1 2 1 3 1 4-1 0-2 2-2 3v8c0 1-4 1-2 3s2 4 4 4 3 3 3 4c1 1 1 2 3 2 1 0 1 2 2 2h1Z"
-            onPress={eventListener.bind(this, "Kamchatka")}
+            onPress={stateMachine.bind(this, 31, "KAMCHATKA")}
         />
+        <Text2
+            x="820" y="210"  text-anchor="middle" fill="none" >{findTropas("KAMCHATKA")}
+          </Text2>
         <Path
         //ORIENTE MEDIO
           fill="#0f0"
           d="M652 343c0 1 1 1-1 1l-2 2s1 1-2 1c-3-1-3-1-4-2-2 0-1 1-3 0-1-1-1-1-1-2-1-1-3-2-3-2s-1 0-1 1 2 1-1 1h-1c-1 0-2 0-2 1-1 0-1 0-2 1h-2c-1 0-1 1-1 1h-4s0 2-1 1c-2-1-2-1-2-2 0 0 0-1 1-1 0 0-1-2-3-1-1 0-3 0-3 1 0 0-1 1-2 1 0 1-2 1-3 0 0-1-1-2-4-3-2-1-4-2-5-1s0 1-2 1c-2-1-4-1-4-1-1 0-2 0-2 1 0 0 0 1-1 1s-2 1-2 1c-1 0-1 1-3 1s-4 0-5-1c-1 0-2-1-2-2l-1-1h-2l-1 1c-1 1-1 1-1 2-1 0-1 0-2 1v1c-1 1-1 0-1 1-1 1 0 1 0 2s1 1 0 2c0 0 1 2 1 3 1 1 2 1 1 2-1 0-2 0-2 1s2 4 3 5 0 4 1 5c2 1 3 2 4 2s2-2 3-1c0 2-1 4 0 4s3 1 3 1c0-1-1-3 0-3 1-1 0-3 3-2 2 1 2 2 4 2h4c1 0 2 1 2 0 1-1 1-2 2-2s3-1 4 1c0 1-1 2-1 3s1 1 1 7 1 9 0 10c-1 0-2 2-2 3 1 1 2 4 2 6 1 2 1 3 1 4 1 1-1 1 1 3 1 1 4 2 4 4 0 1 2 1 3 3 1 1 2 4 2 6 1 2 2-1 3 2 0 3 3 2 3 4 1 2 3 4 4 5 1 0 4 1 4 3-1 1 2 3 2 4v4s0 1 1 2 1 1 2 3c0 1 1 1 1 1s10-1 13-2 7-3 7-4 0 0 2-1c1 0 2-2 2-2l2-2s0-2 1-1c1 0 3 1 3 0s-1 0 2-5 4-7 3-8c0-1 0-1 1-2 1 0 2-3 2-3l-1-2 1-2s1-4 0-5c-1 0-1-1-1-2 0-2-1-3-1-3s0 1-2 0c-1 0-3-2-3-2s-2 1-2 0 1-3 0-2c-1 0-2 0-3 1 0 1 1 2-2 2s-4 1-5 0c-1-2-1-2-1-3 0-2 1-1-1-2-1-1-2-1-2-2v-1s-2 0-2-1c-1-1 1-2-1-4l-2-2c0-1-1-2-1-2s-1 0-1-1c1-1 1-1 2-1 2 0 2-1 3-1 1-1 0-1 2-1 1-1 1-2 1 0 1 1 1 2 1 4v4c1 1 1 2 1 2 0 1 1 2 1 2h1c1 0 1-1 1 0s0 1 1 1c0 1 0 1 1 1s1-1 2-1 1 1 1 1 2 0 2-1-1-2 0-3c0 0 1-2 2 0 1 3 0 3 1 4 0 1 1 1 2 1s1 0 2-1 2-1 2-1-1-2 0-2c2-1 3-2 3-2l1-1 1-1h3s-1-5-2-6c0-2-2-2-1-3s1-3 0-4-2-2-2-3v-2c-1-1-2-3-2-4v-2c-1-2-2 0-2-3 1-7 1-8 1-8v-3s-1 0-1-1c0 0-1-2-2-2h-2c-1 0-2 0-2-1v-2c-1 0-1 0-2-1 0-1-1-1-1-1-1 0-2 0-2-1h-2c-1 0-2 2-2 2-1 0-2 0-3-1h-1v2Z"
-            onPress={eventListener.bind(this, "Oriente Medio")}
+            onPress={stateMachine.bind(this, 32, "ORIENTE MEDIO")}
         />
+        <Text2
+            x="620" y="400"  text-anchor="middle" fill="none" >{findTropas("ORIENTE MEDIO")}
+          </Text2>
         <Path
         //MONGOLIA
           fill="#096"
           d="m737 273 1 1c0 1 1 2 0 4-1 1-2 3-1 5s3 2 3 4c0 1-1 0-1 2v4c0 1-1 2-1 2l1 2c1 0 2 6 2 6h1v2s2 1 2 2v1c0 1 2 1 2 1v2s0 1 1 1h3c1 0 1 0 1 1v1c0 1 1 1 1 1h1c0 1 1 1 2 1v2s0 1 1 1 9-1 9-1v1h2c0 1 1 0 2 1h4s0 1 1 2l2-1s0-1 1 0c0 0 0-2 1-2h2s3-1 3 0v2c1 0 2 1 2 1 1 0 2-1 2-1 1 0 1-1 2-1 1 1 2 1 2 1s1 0 2 1h2s3 0 4 1c0 0 2 1 3 1 1-1 1 0 2-1 1-2 0-1 2-3 1-2 3-2 1-2-3 0-2 0-3-1-1 0 0-1-2-1-1 1-1 1-2 0 0 0 1-1-1-1s-1 1-2 0c-2-1-2 0-2-1s0-2 1-2c1-1 1 0 2-1 0 0 1 0 1-1s1-1 1-2c1-1 1-3 1-3 1 0 1 0 2 2 0 2-1 2 1 2 1 1 2 1 3 1 1-1 0 0 1 1l2 2c1 0 1 2 1 2h4s-1-1 0 1 1 2 1 4-1 3 0 3c1 1 2 1 2 1s3-2 3-4c0-1 1-1 1-2s-1 0 0-1v-3s0-1-1-1l-1-1c0-2 1-2 0-2s-2-1-2-2 0-1-1-1l-1-1c-2-1-2-1-3-2-1 0-1-1-1-1 0-1 0-2 1-2 0-1 1 1 1-2 0-2-1-2 0-4 1-3 1-3 2-4 0-1 0 0 2-2h-1c-1 0-1-2-2-2-2 0-2-1-3-2 0-1-1-4-3-4s-2-2-4-4 2-2 2-3v-2s-1 1-2 1c-1-1-2-1-2-2s-1-1-1-1-2 0-2-1c0 0 0-1-1-2v-2h-2v-1c-1-1-1-2-1-2l-1-1c-1 0-2 1-2 0v-4s-1 0-1-1c0 0 0-1-1-1s-1 0-2 1l-1 1h-4l-1-1h-1c0 1 1 1 0 2v1c-1 0-2 0-2 1l1 1v1c1 0 1 0 1 1s0 2-1 2l-1 1v1c0 1-1 1 0 2 0 0 0 1 1 1v2c0 1 0 1-1 2 0 0-1 1-1 2-1 0 0 1-1 0-1 0-1-1-1-1v-1c-1-1-1-2-1-2s-2-1-2 0c-1 0 0 1-1 1l-1 1c0 1-1 2-2 1h-3c-1 1-2 2-2 1-1 0-2 0-2-1h-5c-1 0-2-1-3-1s-3-1-4-1-1 0-2 1c0 0-1-1-1 0 0 0 0 1-1 1h-2c0-1-1-1-1-1s0-1-1 0h-1l-1-1-1-1-2 1h-1Z"
-            onPress={eventListener.bind(this, "Mongolia")}
+            onPress={stateMachine.bind(this, 33, "MONGOLIA")}
         />
+        <Text2
+            x="755" y="310"  text-anchor="middle" fill="none" >{findTropas("MONGOLIA")}
+          </Text2>
         <Path
         //SUDESTE ASIATICO
           fill="#3c6"
           d="M788 388c-2-1 0-2-3-3-4 0-4 9-3 10 0 1 1 2 3 2 2-1 2 0 2 2 1 2 0 4 0 4s1 0 2-1c1 0 3 1 4 4 1 4 1 4 2 6s1 3 2 6c0 2-1 6-1 7 0 2-4 6-4 7s-3 3-3 4-2-1-2-1-1-3-1-4l-2-2 1-2s-2-1-3-1-1-1-1-1l-2-1s0-1-1-1c-2 0-1 0-2 1 0 1 0 1-2 2-1 2 1 1 2 2 1 2 1 1 1 3s0 3 2 8c1 4 1 1 1 1s1 1 1 2c0 2-1 2-1 2h-4c-1-1 0-1-3-4-2-3-2-4-3-4-1-1 0-2 0-3 0-2 0-3-1-4s-1-2-1-4c-1-1 0-3 0-4 0-2-1-2-1-4l-1-2s-4-3-5-2-2-2-2-2-3 1-4 0c0-2-6-8-7-10 0-2 0-4-1-4s-2-3-2-3l-1-2c-1-3 0-4 0-4 1 0 2 0 2-1s1-2 1-2c1 0 1-3 1-3h2s0-4 1-5 2-3 2-3h1l1-1s1-1 1-2h1c1 0 1 1 2 1 0 1 1 1 1 1 1 1 1 2 1 3s1 1 1 1l1 1c0 1 1 3 2 2 1 0 2 2 3 3 0 1 2 1 3 1s1-2 1-2c0-1 0-2 1-2h3c1 0 0-1 0-1s1-1 2-1c0-1 0-1 1-2h1l1 2h2l1 1v2s1 0 1 1c0 0 0 1 1 1 0 0 2 2 1 2l1 3Z"
-            onPress={eventListener.bind(this, "Sudeste Asiático")}
+            onPress={stateMachine.bind(this, 34, "SUDESTE ASIATICO")}
         />
+        <Text2
+            x="745" y="415"  text-anchor="middle" fill="none" >{findTropas("SUDESTE ASIATICO")}
+          </Text2>
         <Path
         //SIBERIA
           fill="#0c0"
           d="M683 193c1 2 2 1 3 0s0 0 0-2c0-1 0-1-1-2s0 0-2 0h-5c-2 0-1-1-1-2v-2l-2-2v-4c0-1 0 0-1-1v-1l1-1h2l1 1h2l3 3c2 2 1 0 2 0h1s-2-1-2-2c0 0 1-1 1-2 0 0 0-2-1-2 0-1-1-1-1-2-1 0-1-2-1-2s-1 0 0-3c1-2 1 1 1 1h1l1 2 2-1c1 0 2 2 2 2h3c1 0 2-1 2-2s-2 0-2 0l-3-1s-4-1-5-2 0-2 0-2l2-2s1-1 2-1h3s1-3 1-4c0-2 3-1 3-1s1 0 2-1c0 0 2-2 5-4 4-2 4-1 5-1h4c0-1 2-2 2-2 1 0 3-1 3-1 0 1 1 2 1 3 0 0 1-1 3-2s1-1 2-2 1-1 3-1c1 1 0 2 0 3 1 1 2 2 4 3 1 1 4-4 4-1 1 2 4 3 4 4l-3 3-2 2v2c0 1 0 0-2 1l-2 2c0 1-1 1-2 1s0 1-1 2c0 1 1 1 1 1s1-1 2-1c0-1 3-2 3-2 1-1 3-2 4-3 1-2 3-1 4-1 1-1 2 0 2 0s1 0 2-1c1 0 4-1 5-1 0 0 2 0 3 1l3 3 2-1v3c0 1 0 2 1 3s1 1 2 1v5c0 1-1 1-1 1-1 1-1 2-1 3 0 2-1 1-1 3-1 1 0 1 0 2 1 1 1 2 1 3 0 2 0 1-1 1s-1 1-3 1c-1 0-2 1-3 0 0-1-1-1-3-1-3 0-1 1-1 2s-1 1-3 1c-1 1-1 1-1 2 0 2 2 3 3 3l2 2s1 0 3 1c1 2 0 2-1 3s0 4 1 5c1 0 1 1 2 4 0 3 1 3 1 3s1 1 1 4 1 6 1 6-4 7-3 11c1 3 3 9 1 11-2 3-3 3-3 1-1-1 0-1-2-1-2-1-2 0-4 0-1 1-2 2-3 1s0-1-2-1c-2 1-1 3-3 3-2 1-2 0-3 2-1 1-1 2-2 2 0 1-1 1 0 2 1 2 2 0 2 3v4s-1-1-1 1v3c0 2-1 1-1 3 1 2 2 2 2 2s0-2 1-1c1 2 0 3 1 3 1 1 0 1 2 1l1 1c0 1 1 2 0 4-1 1-2 3-1 5s3 2 3 4c0 1-1 0-1 2v4s-1 1-1 2c-1 0-2-1-2-1-1 0 0-2-1-1-1 0-1 1-2 1l-1-1c-1-1-3 0-2-1 1-2 2-2 2-3v-2c-1-1-1-2-2-2-1-1-1-1-1-2-1-1-1-2-2-2-1 1-2 2-4 2-1 0-2 1-2-1-1-1-1-1-2-1 0 0-1 0-1-1 1-1 1 0 1-2 0-1 0-4-1-5s-1-1-1-2v-1c-1 0-2-2-3-3 0-1-1-1-1-1-1 0-2-2-2-2s-4 0-3-1v-2c0-1 1-3 0-4 0-1-1-2-2-2s-2 0-2 1c-1 1-2 1-2 1s-1 0-1-1c0 0 0-3 1-4 1-2 1 0 1 0 1-1 1-3 1-3 0-1 0-2 1-3s2-1 2-2c1-1 1-1 1-2-1 0-2-1-2-2s1-1 0-2-1-1-1-2c0 0 1 0 0-1-2-1-2 0-2-2v-3c1-1 0-3 0-4-1 0-1-1-2-1v-2c-1 0-2-1-2-2l-1-1c0-1-1-2-2-2l-2-1c-1-1-1-2 0-2v-3c-1-1-1-2-1-3 0-2 0-2-1-2h-2v-3l-2-4-1-1c-1-1-2-1-2-1-1-1-1-1-1-2-1-1-1-3-1-3Z"
-            onPress={eventListener.bind(this, "Siberia")}
+            onPress={stateMachine.bind(this, 35, "SIBERIA")}
         />
+        <Text2
+            x="710" y="220"  text-anchor="middle" fill="none" >{findTropas("SIBERIA")}
+          </Text2>
         <Path
         //URAL
           fill="#390"
           d="M665 265c1 0 0-1 0-3v-3c0-1-1-2-1-3 0 0 2-1 2-3 1-1 0-2 0-3s-2-1-2-1l-3-2-1-1v-3c0-2 1-2 2-3v-4c0-1-1-1-1-1v-9c0-1-1-3-2-4 0-1 1-3 1-3s-1-2-1-3 1-4 1-4l2-5 1-2s0-4 1-4v-4s-1-7-2-7l1-3-1-1v-2l-3-1 1-3s1-2 2-2c0 0-2-2-2-3v-1c1 0 1-1 1-2l-1-1 1-3 3 1 1 1c1 1 2 0 2 0 1 0 0 1 1 2 1 2 1 0 2 0 1 1 1 2 1 2 0 1-1 2-1 3l-2 2c-1 1 2 2 2 2s0 1 1 2c0 1 0 0 1 1 1 0 0 1 0 2 0 0 1 1 1 2 1 1 0 1 1 3 1 1 2-1 2-1s0 1 1 2c0 1 2 1 2 1l2-2 1-1c1 0 0 0 1 2s0 3 1 4c0 1 0 1 1 2 0 0 1 0 2 1l1 1 2 4v3h2c1 0 1 0 1 2 0 1 0 2 1 3v3c-1 0-1 1 0 2l2 1c1 0 2 1 2 2l1 1c0 1 1 2 2 2v2c1 0 1 1 2 1 0 1 1 3 0 4v3c0 2 0 1 2 2 1 1 0 1 0 1 0 1 0 1 1 2s0 1 0 2 1 2 2 2c0 1 0 1-1 2 0 1-1 1-2 2s-1 2-1 3c0 0 0 2-1 3 0 0 0-2-1 0-1 1-1 4-1 4 0 1 1 1 1 1s1 0 2-1c0-1 1-1 2-1s2 1 2 2c1 1 0 3 0 4v2c-1 1 3 1 3 1s1 2 2 2c0 0 1 0 1 1 1 1 2 3 3 3v1c0 1 0 1 1 2s1 4 1 5c0 2 0 1-1 2h-2s1 4 0 5h-4v4c0 1-2 2-2 2 0 1-1 1 0 2v1c0 1 1 2-1 2-1 0-1 1-2 0-1 0-1-2-2-2l-1-1v-3l-2-1h-3c-1 0-3 0-4-1 0 0 0-1-1 0h-3l-2-1s-1 0-1-1c-1 0-1-2-2-2 0-1-1-2-1-2-1 0-1-1-2-2 0 0-1 0-2-1 0 0-1 0-1-1 0 0 0-1-1-1h-1s0-2-1-2c0-1-1-2-2-2s-1 0-2-1v-1s-2-1-2-2l-1-1-1-2h-2l-2-1Z"
-            onPress={eventListener.bind(this, "Ural")}
+            onPress={stateMachine.bind(this, 36, "URAL")}
         />
+        <Text2
+            x="670" y="249"  text-anchor="middle" fill="none" >{findTropas("URAL")}
+          </Text2>
         <Path
         //YAKUTSK
           fill="#396"
           d="M810 170c-1-1 0-1-1-2-2-1-3-1-4-1-1-1-1-1-1-2 1-2 3-2 0-2-2-1-2-2-3-2-2 0-2 0-3 1h-1v1c-1 0-1 0-2-1s0-1-1-1h-2c-2 1-2 1-4 1-1 0-3 2-3 2h-1c-1 0 0-1-2 1-2 1-1 1-3 1-1 0 0-1-2 0s-2 0-2 1-1 2-1 2v-2c-1-1-1-1-1-2s-5-2-6-4c-1-1-1-1-1-3 0-1-3-2-4-2 0 0-1 2-2 2-1 1-1 2-2 3-1 0-2 1-2 1v3c0 1 0 2 1 3s1 1 2 1v5c0 1-1 1-1 1-1 1-1 2-1 3 0 2-1 1-1 3-1 1 0 1 0 2 1 1 1 2 1 3 0 2 0 1-1 1s-1 1-3 1c-1 0-2 1-3 0 0-1-1-1-3-1-3 0-1 1-1 2s-1 1-3 1c-1 1-1 1-1 2 0 2 2 3 3 3l2 2s1 0 3 1c1 2 0 2-1 3s0 4 1 5c1 0 1 1 2 4 0 3 1 3 1 3s1 1 1 4 1 6 1 6 5-2 6-2c1-1 1-1 2-3 0-2 0-5 2-5 1 0 1 2 1 2 0 1 1 0 3 1 1 0 0-1 0-2v-1c0-1 12 0 12 0l3-3c1-1 0-4 0-4s2-2 3-5 2-1 2-1 2-1 2-3c1-1 5-1 5-1 1 1 0 2 1 4 1 1 0 0 1 0h3c1 0 1 1 1 1h3s1-1 2-1v-3c0-1 1-1 1-2v-3c0-1-1-2-1-2h-4c-1-1-1-5-1-8 1-3 0-3 1-3 0-1 2-1 2-1 1 0 1-1 2-2 0-1 0-1 1-1 0-1 1-1 2-1 2 0 1-2 1-3l-1-1Z"
-            onPress={eventListener.bind(this, "Yakutsk")}
+            onPress={stateMachine.bind(this, 37, "YAKUTSK")}
         />
+        <Text2
+            x="760" y="205"  text-anchor="middle" fill="none" >{findTropas("YAKUTSK")}
+          </Text2>
         <Path
         //AUSTRALIA ORIENTAL
           fill="#93f"
           d="M825 511v-1c1-2 0-4 1-5 1-2 1-2 3-2l2-2c0-1 1-1 2-1s2 1 3 0 0-2 1-1h2c1 1 2 1 5 1 2-1 3-2 3-1 0 2 0 2 1 2s1 0 0 1c0 1 0 0-1 2-2 2-3 2-3 4v2s0 2 1 2 1 0 3-1c2 0 3 0 3 2 0 1 1 4 2 4 1 1 1 1 3 1 2-1 3 0 3-1v-4c0-1-2 1 1-2 2-4 2-2 2-6-1-3-2-3-1-6l1-2s2 0 2 2c0 3 1 5 1 6s1 5 1 5 1 1 2 1c0-1 1-1 1-2s1-3 1-2 1 1 1 2v3c1 2 2 3 2 3v9c0 2 0 2 1 2l1 1c1 0 1-1 2 0 0 1 0 1 2 1 1 1 2 0 2 0s1 1 1 2-1 2 0 3c0 2 0 2 1 2h1s1 1 1 3v2l1 1s1 1 1 2c1 1 2 1 2 1v2l1 1c1 2 1 2 1 3s1 2 1 3v4c-1 2 0-1-1 2v5c0 1 0 1-1 3v3s-1 2-2 2-3-1-3 0 0 2 1 2 1-1 1 1c0 1 0 1-1 2s-1 1-2 1c-2 1-1 0-2 2-1 3 0 3-1 4-1 0-1 0-1 1-1 2-1 2-1 3v2s-2 1-2 3c0 1 1 1 1 2-1 1 0 1-2 1h-2l-3 1s0-1-1-1c-1 1-1 1-1 2-1 1-1 1-2 1-1 1 0 1-1 2 0 1 0 1-1 1-1-1-2 0-2-1 0-2 0-2-2-2-1-1-2-1-2-1v1c-1 1 0 2-2 2-1 1-1 1-2 0v-7c1-1 0-1-1-2 0-1 1-43 1-43 0-1-30 0-30 0v-38Z"
-            onPress={eventListener.bind(this, "Australia Oriental")}
+            onPress={stateMachine.bind(this, 38, "AUSTRALIA ORIENTAL")}
         />
+        <Text2
+            x="860" y="580"  text-anchor="middle" fill="none" >{findTropas("AUSTRALIA ORIENTAL")}
+          </Text2>
         <Path
         //NUEVA GUINEA
           fill="#c3f"
           d="M825 457s1-3 2-3c1-1 0-1 0-3 0-1-1-2 0-2 2-1 2 0 4-1 1 0 3-1 3-1l2 2h3c2 0 3 1 4 3s0 3 3 4c3 2 5 3 7 3 1 1 3 2 2 3 0 2 2 2 0 3 0 0 5 2 6 4 1 1 2 2 1 3-2 1-3 0-3 1s1 2 1 3c1 1 2 2 2 4 0 1 0 2 1 3 2 1 2 1 2 2v2s-1 1-3 1-3-1-3-1c-1 0-3-1-3-1s-1-4-5-5c-3-1-3-2-3-1s1 2 0 3h-3c-1 0 3 2-2 2-4 0-5-2-7-1s-7-4-7-4-3 1-3-1c0-1-1-1 0-3 1-1 1-1 1-2v-4c0-1 1-2 0-2-1-1-2-1-2-2-1-1-1-2-1-2-1 0 0 1-2 1-1 0-2 1-4-1-1-2-1-2-3-2-3 0-8 4-4 0 4-3 5-3 5-3s-4 0-4-2c0-1-1-3-2-4-1 0-2 0-1-2 0-1 1-5 4-5 4 0 5 1 6 2 1 0 3-1 3 0v5s1 1 2 3l1 1Z"
-            onPress={eventListener.bind(this, "Nueva Guinea")}
+            onPress={stateMachine.bind(this, 39, "NUEVA GUINEA")}
         />
+        <Text2
+            x="850" y="470"  text-anchor="middle" fill="none" >{findTropas("NUEVA GUINEA")}
+          </Text2>
         <Path
         //INDONESIA
           fill="#63c"
           d="M771 513c1 1 0 2 2 2s3-1 4-1c2 1 1 1 2 1 2 0 3-1 4-1h3s2 1 3 1h5c0 1 2 2 3 1s1-1 1-2 0-2-1-2c0-1 0-1-2-1s-3-1-3-1c-1 0-2-1-3-1 0-1-3-2-4-2h-5c-2 0-2 0-4 1-1 1-2 1-3 2s-1 0-1 1l-1 2Zm23-8c1-2 0-2 0-3 0-2 1-1 1-2 1-1 1-3 2-1s1 3 2 4 2 2 3 1 3-2 2-4c-2-1-2 0-2-3-1-3-1-4-2-4 0 0-1 1-1-1 0-1-1-3 0-4 2 0 3 1 4 0 1-2 2-3 0-3h-3c-1 0-2 0-2-1s-1-1 1-1h3c2 0 3-1 4-2 0 0 1-2 2-3l1-1c0-1-1-1-1-2h-3c0 1-1 2-2 3h-6c-1 1-2 1-2 2-1 0-2 1-2 2v4s-1 2-1 3c-1 0 0 2-1 3v2c0 1-1 1 0 2 0 1 1 1 0 2 0 1-1 1 0 2 0 1 1 1 1 2v3c0 1 2 0 2 0Zm-10-7s-1-1 1-3c3-2 3-2 3-4s0-2-1-3-2-2-1-3c1-2 1-2 3-3 1 0 3-2 3-3v-3c0-1-1-3-2-4v-4c0-1 1-1 2-2 2-1 2-1 2-3s0-4-1-5c-1 0-1 0-2-1-2 0-2-1-4-2-2-2-3-2-4-1 0 1 1-2 0 2-1 3-1 3-1 4-1 1-3 1-3 2 0 2 1 2-1 5-2 2-6 6-8 6-3 1-5 1-5 2s1 2 1 3-2 2-2 3c1 0 1 0 2 1v4l3 3s-2 3-1 3l2 2c1 2 2 3 4 3 1 0 2 1 3 1 1 1 2 0 3 0s4 1 4 0Zm-24-17 1-1v6c1 0 0 1 0 2s1 3 1 3l1 1 2 1v1c1 1 2 1 2 1v2c0 1-1 2 0 2h3c1 0 0 1 1 2 0 1 1 1 1 2v3c-1 1 0 1-1 2s-2 1-2 1c-1 0-1 0-2 1 0 1 2 2 0 2-3-1-3 0-3-1-1-1 1-2-1-3-2 0 0 2-3-1-3-4-3-1-4-4 0-4-1-4-3-7-1-2-2-4-3-4s-2 1-3-1v-2c0-2 0-2-1-4-1-1-1-1-2-3 0-2 0-1-2-4s-3-3-5-5c-2-1-2-1-2-3s-1-4 0-5c1 0 1-1 3 0 1 1 1 2 2 2h2c1 0 1-1 2 1 1 1 2 1 2 3l2 2c0 1 1 1 1 1 1-1 2-2 2-1s0 1 1 1c0 1 1-1 1 1 0 3-1 4 0 3l2-2 1 1c0 1 0 3 1 3 1 1 2 1 2 1h1Z"
-            onPress={eventListener.bind(this, "Indonesia")}
-        />
+            onPress={stateMachine.bind(this, 40, "INDONESIA")}>
+        </Path>
+        <Text2
+            x="755" y="470"  text-anchor="middle" fill="none" >{findTropas("INDONESIA")}
+        </Text2>
+
         <Path
         //AUSTRALIA OCCIDENTAL
           fill="#c3c"
           d="M855 601v-7c1-1 0-1-1-2 0-1 1-43 1-43 0-1-30 0-30 0v-38l-3-1-2-2c-1 0-2 2-2 3-1 0-3 1-3 1s-1 2-1 3c0 2-2 0-4 1s0 1-1 3c0 1 0 0-2 0-1 0 0 1-2 2-1 1-1 0-2 2-2 1-1 1-1 3-1 1-1 0-3 1-1 1-2 3-3 4s-2 0-4 0h-3c-1 0-1 1-2 2s-1 2-3 3c-1 1 0 0-2 1-2 0-1 0-3 1s0 2-1 3c0 1 0 1-1 3 0 1 0 1 1 3 0 1 2 0 2 0s-1 2 0 3c0 1-1 0-2 0-2 0-1 0-1 2v1l-1 1c-1 1 0 1 0 2 0 2 1 2 1 3 1 2 1 1 2 3s0 2 0 4 0 1 1 4c0 2 1 1 1 1l2 2s0 1 1 2c0 2-1 2-1 3v3c0 2-1 1-2 2s0 1-1 2c0 2 0 1 1 2s2 1 3 2c2 3 5 2 8 0 2-1 1-1 2-1 1-1 1-1 2-1l2-2c1-1 0 0 2-1 1 0 1-1 3-2h4c2 0 1 0 1 1 1 1 2 1 2 1 1 0 2 0 3-1 1 0 0-1 0-2v-2c1-1 2-2 3-2s3 0 3-1c1-1 1 0 3 0l2-2c1-1 1-1 3-1h3c2 0 2 1 3 1s2 1 3 2c1 0 0 0 0 2 0 1 0 1 2 4 1 2 2 2 2 2s1-1 2-3 1 0 3-1c1-1 0-1 1-3 0-3 1-1 2-1s0 2 0 4l-2 2-2 2c-1 2-1 1-1 3 1 1 2-1 3-2s1-1 2-1v4c0 1 0 1 1 1 1 1 1 2 0 3v3c1 1 2 3 3 4s1 0 1 1c1 0 1 1 2 1Z"
-            onPress={eventListener.bind(this, "Australia Occidental")}
+            onPress={stateMachine.bind(this, 1, "AUSTRALIA OCCIDENTAL")}
         />
+        <Text2
+            x="790" y="550"  text-anchor="middle" fill="none" >{findTropas("AUSTRALIA OCCIDENTAL")}
+        </Text2>
       </G>
     </Defs>
     <Circle r={99999} fill="#fff" />
@@ -351,30 +573,53 @@ export default function RiskMap() {
   </Svg>
   )
 
-    const svgRef = useRef();
-
     // Atributos generales
-    let nombrePartida = '';
-    let ganador = null;
+    const [nombrePartida,setNombrePartida]=useState('');
+    cosnt [this.ganador,setGanador]=useState(null);
     let turno= 0;
-    let jugadores = [];
-    let cartas= [];
-    let descartes= [];
-    let mapa = [];
+    const [jugadores, setJugadores] = useState([]);
+    const [cartas, setCartas] = useState(null);
+    const [descartes,setDescartes]=useState(null);
+    //let mapa = [];
     let colores = ['verde', 'rojo', 'azul', 'amarillo', 'rosa', 'morado'];
-    let turnoJugador = '';
-    let numJugadores = 3; // stub
-    let partida= {}; // para inicializarlo
-    let fase = 0; // Colocar- -> 0; Atacar -> 1; Maniobrar -> 2; Robar -> 3; Fin -> 4;
+    const [turnoJugador, setTurnoJugador] = useState('');
+    const [numJugadores,setNumJugadores]=useState(3);// stub
+    //let fase = 0; // Colocar- -> 0; Atacar -> 1; Maniobrar -> 2; Robar -> 3; Fin -> 4;
     // Atributos especfícios (míos, del jugador que juega en este cliente)
     const [numTropas, setNumTropas] = useState(1000);
+    const [paused,setPaused]=useState(null);
     //let numTropas = 1000;
-    const [tropasTest, setTropasTest] = useState([{terrainId: '', numTropas: 0, user: ''}]);
+    const [territoriosTropas, setterritoriosTropas] = useState([{terrainId: '', numTropas: 0, user: ''}]);
+    let territoriosTropasAux = [{terrainId: '', numTropas: 0, user: ''}]; // stub
     let tropas = [{terrainId: '', numTropas: 0, user: ''}];
-    let whoami= '';
+    let ocupado = false;
+
+    const [dialogBool, setDialogBool] = useState(false);
+    const[dialog, setDialog] = useState(null);
+    const [fase, setFase] = useState(0);// Colocar- -> 0; Atacar -> 1; Maniobrar -> 2; Robar -> 3; Fin -> 4;
+    let seguir = false;
+    useEffect(() => {
+      console.log(dialog);
+      switch(dialog){
+        case 'colocar':
+          setDialog(null);
+          setDialogBool(false);
+          colocarTropasCorrectas();
+          break;
+        case 'seleccionar':
+          setDialog(null);
+          setDialogBool(false);
+          seleccionarTropasCorrectas();
+        break;
+      }
+    }, [dialogBool]);
+
     let colorMap =  {}; // no parece necesario
     let text= '';
     let tropasPuestas = 0;
+    let recolocacion = false;
+
+    const [textoFase, setTextoFase] = useState('Falta implementar el cambiar este texto(FASE)');
     /*
     // FASES PARTIDA
     const Colocar = 0;
@@ -383,505 +628,626 @@ export default function RiskMap() {
     const Robar = 3;
     const Fin = 4; // No se usa
     */
-    let svgDoc = null;
     let eventoCancelado = false;
     // Ataque
-    let ataqueOrigen = '';
-    let ataqueDestino = '';
-    let ataqueTropas = 0; 
+    const [ataqueTropas, setAtaqueTropas] = useState(0);
+    const [ataqueOrigen, setAtaqueOrigen] = useState('');
+    const [ataqueDestino, setAtaqueDestino] = useState('');
     let avatarAMostrar = '';
-    
-  // Define event handlers for touch events
-  const handleLowRiskPress = () => {
-    // Handle touch event for low-risk zone
-    console.log('Low risk zone pressed');
-  };
 
-  const handleMediumRiskPress = () => {
-    // Handle touch event for medium-risk zone
-    console.log('Medium risk zone pressed');
-  };
 
-  const handleHighRiskPress = () => {
-    // Handle touch event for high-risk zone
-    console.log('High risk zone pressed');
-  };
-
-  const stateMachine = (path, svgDoc, e) => {
-    let regionId = path.id;
-    console.log(`Se ha hecho clic en la región con ID: ${regionId}`)
-
-  }
-
-  const clickMapListen = (e) => {
-    doc= e.nativeEvent.target;
-    console.log('Click en el mapa:', doc);
-  }
-
-  cartasStub =() => {
-    cartas = [
-      // NA
-      {territorio: "ALASKA", estrellas: 1},
-      {territorio: "ALBERTA", estrellas: 2},
-      {territorio: "AMERICA CENTRAL", estrellas: 1},
-      {territorio: "ESTADOS UNIDOS ESTE", estrellas: 2},
-      {territorio: "GROENLANDIA", estrellas: 1},
-      {territorio: "TERRITORIOS DEL NOROESTE", estrellas: 2},
-      {territorio: "ONTARIO", estrellas: 1},
-      {territorio: "QUEBEC", estrellas: 2},
-      {territorio: "ESTADOS UNIDOS OESTE", estrellas: 1},
-      // SA
-      {territorio: "ARGENTINA", estrellas: 1},
-      {territorio: "BRASIL", estrellas: 2},
-      {territorio: "PERU", estrellas: 1},
-      {territorio: "VENEZUELA", estrellas: 2},
-      // EU
-      {territorio: "GRAN BRETANA", estrellas: 1},
-      {territorio: "ISLANDIA", estrellas: 2},
-      {territorio: "EUROPA NORTE", estrellas: 1},
-      {territorio: "ESCANDINAVIA", estrellas: 1},
-      {territorio: "EUROPA SUR", estrellas: 2},
-      {territorio: "RUSIA", estrellas: 1},
-      {territorio: "EUROPA OCCIDENTAL", estrellas: 1},
-      // AF
-      {territorio: "CONGO", estrellas: 1},
-      {territorio: "AFRICA ORIENTAL", estrellas: 2},
-      {territorio: "EGIPTO", estrellas: 1},
-      {territorio: "MADAGASCAR", estrellas: 1},
-      {territorio: "AFRICA NORTE", estrellas: 2},
-      {territorio: "SUDAFRICA", estrellas: 1},
-      // AS
-      {territorio: "AFGANISTAN", estrellas: 1},
-      {territorio: "CHINA", estrellas: 2},
-      {territorio: "INDIA", estrellas: 1},
-      {territorio: "IRKUTSK", estrellas: 2},
-      {territorio: "JAPON", estrellas: 1},
-      {territorio: "KAMCHATKA", estrellas: 2},
-      {territorio: "ORIENTE MEDIO", estrellas: 1},
-      {territorio: "MONGOLIA", estrellas: 2},
-      {territorio: "SUDESTE ASIATICO", estrellas: 1},
-      {territorio: "SIBERIA", estrellas: 2},
-      {territorio: "URAL", estrellas: 1},
-      {territorio: "YAKUTSK", estrellas: 2},
-      // OC
-      {territorio: "AUSTRALIA ORIENTAL", estrellas: 1},
-      {territorio: "AUSTRALIA OCCIDENTAL", estrellas: 2},
-      {territorio: "INDONESIA", estrellas: 1},
-      {territorio: "NUEVA GUINEA", estrellas: 2}
-    ];
-  }
-
-  mapaStub = () =>{
-    const Alaska  ={ nombre: "ALASKA", frontera: ["ALBERTA", "TERRITORIOS DEL NOROESTE", "KAMCHATKA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Alberta = { nombre: "ALBERTA", frontera: ["ALASKA", "ESTADOS UNIDOS OESTE" , "ONTARIO", "TERRITORIOS DEL NOROESTE"], tropas: Math.floor(Math.random() * 2) + 1};
-    const AmericaCentral = { nombre: "AMERICA CENTRAL", frontera: ["ESTADOS UNIDOS ESTE", "ESTADOS UNIDOS OESTE", "VENEZUELA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const EstadosUnidosEste = { nombre: "ESTADOS UNIDOS ESTE", frontera: ["ALBERTA", "AMERICA CENTRAL", "ESTADOS UNIDOS OESTE", "ONTARIO"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Groenlandia = { nombre: "GROENLANDIA", frontera: ["TERRITORIOS DEL NOROESTE", "ONTARIO", "QUEBEC", "ISLANDIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const TerritoriosDelNoroeste = { nombre: "TERRITORIOS DEL NOROESTE", frontera: ["ALASKA", "ALBERTA", "ONTARIO", "GROENLANDIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Ontario = { nombre: "ONTARIO", frontera: ["TERRITORIOS DEL NOROESTE", "ALASKA", "QUEBEC", "GROENLANDIA", "ESTADOS UNIDOS OESTE", "ESTADOS UNIDOS ESTE"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Quebec = { nombre: "QUEBEC", frontera: ["ONTARIO", "ESTADOS UNIDOS ESTE", "GROENLANDIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const EstadosUnidosOeste = { nombre: "ESTADOS UNIDOS OESTE", frontera: ["ESTADOS UNIDOS ESTE", "ONTARIO", "QUEBEC", "AMERICA CENTRAL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Argentina = { nombre: "ARGENTINA", frontera: ["PERU", "BRASIL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Brasil = { nombre: "BRASIL", frontera: ["ARGENTINA", "VENEZUELA", "PERU", "AFRICA NORTE"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Peru = { nombre: "PERU", frontera: ["ARGENTINA", "VENEZUELA", "BRASIL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Venezuela = { nombre: "VENEZUELA ", frontera: ["AMERICA CENTRAL", "PERU", "BRASIL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const GranBretana = { nombre: "GRAN BRETANA", frontera: ["EUROPA OCCIDENTAL", "EUROPA NORTE", "ESCANDINAVIA", "ISLANDIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Islandia = { nombre: "ISLANDIA", frontera: ["GRAN BRETANA", "GROENLANDIA", "ESCANDINAVIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const EuropaNorte = { nombre: "EUROPA NORTE", frontera: ["EUROPA SUR", "EUROPA OCCIDENTAL", "RUSIA", "GRAN BRETANA", "ESCANDINAVIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Escandinavia = { nombre: "ESCANDINAVIA", frontera: ["RUSIA", "EUROPA NORTE", "GRAN BRETANA", "ISLANDIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const EuropaSur = { nombre: "EUROPA SUR", frontera: ["EUROPA OCCIDENTAL", "EUROPA NORTE", "RUSIA", "AFRICA NORTE", "EGIPTO"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Rusia = { nombre: "RUSIA", frontera: ["ESCANDINAVIA", "EUROPA NORTE", "EUROPA SUR", "URAL", "AFGANISTAN", "ORIENTE MEDIO"], tropas: Math.floor(Math.random() * 2) + 1};
-    const EuropaOccidental = { nombre: "EUROPA OCCIDENTAL", frontera: ["EUROPA NORTE", "EUROPA SUR", "AFRICA NORTE", "GRAN BRETANA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Congo = { nombre: "CONGO", frontera: ["AFRICA ORIENTAL", "SUDAFRICA", "AFRICA NORTE"], tropas: Math.floor(Math.random() * 2) + 1};
-    const AfricaOriental = { nombre: "AFRICA ORIENTAL", frontera: ["EGIPTO", "AFRICA NORTE", "CONGO", "SUDAFRICA", "MADAGASCAR"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Egipto = { nombre: "EGIPTO", frontera: ["AFRICA NORTE", "AFRICA ORIENTAL", "EUROPA SUR"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Madagascar = { nombre: "MADAGASCAR", frontera: ["AFRICA ORIENTAL", "SUDAFRICA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const AfricaNorte = { nombre: "AFRICA NORTE", frontera: ["EGIPTO", "BRASIL", "AFRICA ORIENTAL", "CONGO"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Sudafrica = { nombre: "SUDAFRICA", frontera: ["MADAGASCAR", "CONGO", "AFRICA ORIENTAL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Afganistan = { nombre: "AFGANISTAN", frontera: ["RUSIA", "URAL", "INDIA", "ORIENTE MEDIO", "CHINA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const China = { nombre: "CHINA", frontera: ["INDIA", "SUDESTE ASIATIOCO", "MONGOLIA", "SIBERIA", "URAL", "AFGANISTAN"], tropas: Math.floor(Math.random() * 2) + 1};
-    const India = { nombre: "INDIA", frontera: ["CHINA", "ORIENTE MEDIO", "AFGANISTAN", "SUDESTE ASIATICO"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Irkutsk = { nombre: "IRKUTSK", frontera: ["YAKUTSK", "SIBERIA", "MONGOLIA", "KAMCHATKA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Japon = { nombre: "JAPON", frontera: ["KAMCHATKA", "MONGOLIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Kamchatka = { nombre: "KAMCHATKA", frontera: ["ALASKA", "YAKUTSK", "IRKUTSK", "MONGOLIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const OrienteMedio = { nombre: "ORIENTE MEDIO", frontera: ["RUSIA", "AFGANISTAN", "INDIA", "EGIPTO"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Mongolia = { nombre: "MONGOLIA", frontera: ["IRKUTSK", "CHINA", "JAPON", "SIBERIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const SudesteAsiatico = { nombre: "SUDESTE ASIATICO", frontera: ["CHINA", "INDIA", "INDONESIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Siberia = { nombre: "SIBERIA", frontera: ["IRKUTSK", "YAKUTSK", "MONGOLIA", "CHINA", "URAL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Ural = { nombre: "URAL", frontera: ["SIBERIA", "RUSIA", "AFGANISTAN"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Yakutsk = { nombre: "YAKUTSK", frontera: ["IRKUTSK", "KAMCHATKA", "SIBERIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const Indonesia = { nombre: "INDONESIA", frontera: ["SUDESTE ASIATICO", "NUEVA GUINEA", "AUSTRALIA OCCIDENTAL"], tropas: Math.floor(Math.random() * 2) + 1};
-    const NuevaGuinea = { nombre: "NUEVA GUINEA", frontera: ["AUSTRALIA OCCIDENTAL", "AUSTRALIA ORIENTAL", "INDONESIA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const AustraliaOccidental = { nombre: "AUSTRALIA OCCIDENTAL", frontera: ["AUSTRALIA ORIENTAL", "INDONESIA", "NUEVA GUINEA"], tropas: Math.floor(Math.random() * 2) + 1};
-    const AustraliaOriental = { nombre: "AUSTRALIA ORIENTAL", frontera: ["AUSTRALIA OCCIDENTAL", "NUEVA GUINEA"], tropas: Math.floor(Math.random() * 2) + 1};
-
-    const NATerritorios = [
-      Alaska, Alberta, AmericaCentral, EstadosUnidosEste,
-      Groenlandia, TerritoriosDelNoroeste, Ontario, Quebec, EstadosUnidosOeste
-    ];
-
-    const SATerritorios = [
-      Argentina, Brasil, Peru, Venezuela
-    ];
-
-    const EUTerritorios = [
-      GranBretana, Islandia, EuropaNorte, Escandinavia,
-      EuropaSur, Rusia, EuropaOccidental
-    ];
-
-    const AFTerritorios = [
-      Congo, AfricaOriental, Egipto, Madagascar,
-      AfricaNorte, Sudafrica
-    ];
-
-    const ASTerritorios = [
-      Afganistan, China, India, Irkutsk, Japon,
-      Kamchatka, OrienteMedio, Mongolia, SudesteAsiatico,
-      Siberia, Ural, Yakutsk
-    ];
-
-    const OCTerritorios = [
-      Indonesia, NuevaGuinea, AustraliaOccidental, AustraliaOriental
-    ];
-
-    // Create continents
-    const NA = {
-      territorios: NATerritorios,
-      valor: 5
-    }
-
-    const SA = {
-      territorios: SATerritorios,
-      valor: 2
-    }
-
-    const EU = {
-      territorios: EUTerritorios,
-      valor: 5
-    }
-
-    const AF = {
-      territorios: AFTerritorios,
-      valor: 3
-    }
-
-    const AS = {
-      territorios: ASTerritorios,
-      valor: 7
-    }
-
-    const OC = {
-      territorios: OCTerritorios,
-      valor: 2
-    }
-
-    const Mapa = [NA, SA, EU, AF, AS, OC];
-    mapa = Mapa;
-    // Shuffle function
-    let shuffle = (array) => {
-      let currentIndex = array.length, temporaryValue, randomIndex;
-
-      // While there remain elements to shuffle...
-      while (0 !== currentIndex) {
-
-        // Pick a remaining element...
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-
-        // And swap it with the current element.
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-      }
-
-      return array;
-    };
-    // Flatten the Mapa array to get an array of all Territorio objects
-    let allTerritories = mapa.flatMap(continente => continente.territorios);
-
-    // Shuffle the territories
-    let shuffledTerritories = shuffle(allTerritories);
-
-    // Distribute the territories among the players
-    jugadores.forEach((jugador, i) => {
-      jugador.territorios = shuffledTerritories
-        .filter((_, index) => index % jugadores.length === i)
-        .slice(0, Math.floor(shuffledTerritories.length / jugadores.length)) 
-        .map(territorio => territorio.nombre); // Store only the territory name
+  const waitForTropasPuestas = async () => {
+    return new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+        if (numterritoriosTropas !== 0  || isOk === 'Cancelled') {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 1);
     });
-
-    //console.log(jugadores);
   }
 
-  distribuirPiezas = () => {
+
+  const ResolverAtaque= async (partidaId, ataqueOrigen, ataqueDestino, tropasPuestas) => {
+    const token = await AsyncStorage.getItem('token');
+    let header;
+    console.log(token);
+    if (!token) {
+      // redirect the user to the login page if token does not exist
+      navigation.navigate('Login');
+      header=null;
+    }
+
+    header=await AsyncStorage.getItem('username');// hasta aqui no es seguro
+
+    if (!headers) {
+      return null;
+    }
+
+    try {
+      const response = await axios.put(IP+'/partida/atacarTerritorio', {
+        idPartida: partidaId,
+        territorioAtacante: ataqueOrigen,
+        territorioDefensor: ataqueDestino,
+        numTropas: ataqueDestino
+      }, {
+        headers: {
+          'Authorization': `${token}`
+        }
+      });
+  
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  const inicializacionPartida= async (partida) => {
+    //console.log('Previa',  partida)
+    //console.log('nueva: ', response.partida)
+    //partida = response.partida; // cojo la partida 
+    setJugadores(partida.jugadores); // cojo sus jugadores, ya vienen con su color
+    
+    // busco mi color y de paso relleno las skins
+    /*for(let jugador of response.partida.jugadores){
+      if(jugador.usuario === whoami){
+        setMyColor(jugador.color);
+        if(jugador.abandonado){
+          Toast.error('Has sido eliminado');
+          setEliminado(true);
+          console.log(eliminado)
+          console.log("Has perdido")
+          //this.router.navigate(['/menu']);
+        }*/
+      for (let i = 0; i < partida.jugadores.length; i++) {
+        partida.jugadores[i].color = colores[i];
+        if(partida.jugador[i].abandonado){
+          Toast.error('Has sido eliminado');
+          setEliminado(true);
+          console.log(eliminado)
+          console.log("Has perdido")
+          navigation.navigate(['Lobby']);
+        }
+      };
+      setEloGanado(partida.jugador[i].eloGanado);
+      setPuntosGanados(partida.jugador[i].dineroGanado);
+      //}
+      /*ObtenerSetFichas(jugador.usuario).then(response => {    
+        console.log('response', response);
+        if(response.idSkin !== 'defaultFichas')
+          skinTropasMap.set(jugador.usuario, '_' + response.idSkin);
+        else 
+          skinTropasMap.set(jugador.usuario, '');
+        //this.cdr.detectChanges();
+        
+        this.limpiarTropas();
+
+        this.distribuirPiezas();
+      });*/ //en movil no hace falta
+      //console.log(this.skinTropasMap)
+    //}
+    let auxTurno = false;
+    if(turno !== partida.turno)
+      auxTurno = true
+    turno = partida.turno;
+    cambiarTurno(); //implementar
+
+    setTurnoJugador(partida.jugadores[response.partida.turno % numJugadores].usuario);
+    console.log('Turno jugador:', turnoJugador)
+    setNombrePartida(partida.nombre);
+    setNumJugadores(partida.jugadores.length);
+    setMapa(partida.mapa);
+    setCartas(partida.cartas);
+    setDescartes(partida.descartes);
+    setGanador(partida.ganador);
+    setFase(partida.fase);
+
+    if(partida.jugadores[turno % numJugadores].usuario === whoami){
+      setNumTropas(partida.auxColocar);
+      if(auxTurno) Toast.info('¡Es tu turno!');
+    }
+    /*setPaused(response.partida.paused);
+    
+    //this.turnoJugador = partida.jugadores[partida.turno % this.numJugadores].usuario;
+    getAvatar(this.turnoJugador);
+
+    // Si tenemos ganador... avisar
+    if(ganador === null){
+      mostrarGanador();
+    }
+    if(fase !== undefined) updateText(fase);*/
+  }
+
+  useEffect(() => {
+    if(turnoJugador === whoami){
+      switch(fase){
+        case 0:
+          console.log('Fase colocación', whoami, turnoJugador);
+          if(turnoJugador === whoami){
+            setTextoFase('Fase colocación: Coloca una tropa en un país libre');
+          }
+          else 
+            setTextoFase('Espera tu turno');
+            
+          break;
+        case 1:
+          setTextoFase('Fase ataque: Mueve las tropas de un país tuyo a uno enemigo contiguo');
+          break;
+        case 2:
+          setTextoFase('Fase maniobra: Mueve las tropas de un país tuyo a otro tuyo');
+          break;
+        case 3:
+          setTextoFase('Fase robo: Roba una carta');
+
+          break;
+      }
+    } else {
+      setTextoFase('Espera tu turno');
+      setNumTropas(0);
+    }
+  }, [fase, turnoJugador]);
+
+  //maquina de estados de la partida
+  const stateMachine = async (path , territoriname , e) =>   {
+    const targetId = path;
+    console.log(`Clic en la región con ID: ${targetId}`);
+    console.log(`Clic en la región : ${territoriname}`);
+    if(recolocacion) return;
+    if (turnoJugador !== whoami) {
+      Alert.alert('No es tu turno');
+      console.log('No es tu turno');
+      return;
+    } 
+    if(ocupado){ console.log("espere"); return};
+    switch(fase){
+      case 0: // colocación
+        if (turnoJugador === whoami && !ocupado) {
+          tropasPuestas=0;
+          eventoCancelado = false;
+          colocarTropas(territoriname, whoami, false, false);
+          //La emision al socket se hace en la funcion anterior
+        } else {
+          if(!this.ocupado) Alert.alert('No es tu turno');
+        }
+        break;
+      case 1: // ataque
+        // antes de atacar, selecciono las tropas q quiero utilizar para atacar
+        if (ataqueTropas === 0) {
+          console.log('Seleccionar tropas para atacar');
+          setAtaqueTropas(0);
+          setAtaqueDestino('');
+          setAtaqueOrigen('');
+          const numTroops = await seleccionarTropas(e, svgDoc, whoami, true);
+          console.log(ataqueTropas, ataqueOrigen, ataqueDestino, numTroops);
+          console.log(`Player has selected ${numTroops} troops`);
+          console.log(recolocacion);
+          tropasPuestas = 0;
+          colocarTropas(e, svgDoc, 50, 50, whoami, false, true, -numTroops); // las quito del mapa
+          setNumTropas(numTropas-numTroops); // tampoco las tengo colocables, las tengo seleccionadas así que las quito de ahí
+          //cdr.detectChanges();    //QUE ES CDR?Actualizar estado mapa//no hace falta en movil
+          
+        } else {
+          
+          // una vez seleccionadas las tropas me tocará elegir un territorio enemigo
+          const enemyTerritoryId = await seleccionarTerritorioEnemigo(e, svgDoc, whoami);
+          console.log(`Player has selected enemy territory ${enemyTerritoryId}`);
+          setAtaqueDestino(enemyTerritoryId);
+          console.log("Info:", partida._id, ataqueOrigen, ataqueDestino, tropasPuestas);
+          let usuarioObjetivo = jugadores.find(jugador => jugador.territorios.includes(enemyTerritoryId));
+          ResolverAtaque(partida._id, ataqueOrigen, ataqueDestino, -tropasPuestas).then(  
+            async response => {
+              console.log(response);
+              Toast.success('¡Ataque realizado con éxito!');
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              Toast.info('Tus dados: ' + response.dadosAtacante + ' Dados defensor: ' + response.dadosDefensor);
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              Toast.info('Tus bajas: ' + response.resultadoBatalla.tropasPerdidasAtacante + ' Bajas defensor: ' + response.resultadoBatalla.tropasPerdidasDefensor);
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              if(response.conquistado){
+                Toast.success('¡Territorio conquistado!');
+
+              } else {
+                Alert.alert('¡No has conquistado el territorio!');
+                
+              }
+              inicializacionPartida(partida); // actualizo el estado de la partida
+              await new Promise(resolve => setTimeout(resolve, 1000)); // espero un rato
+              
+              //limpiarTropas();  en movil no cambiamos skins
+              
+              //Pinto el mapa
+              //distribuirPiezas(); en movil no cambiamos skins
+              setAtaqueDestino('');
+              setAtaqueOrigen('');
+              setAtaqueTropas(0);
+              // update the state of every client
+              socket.emit('actualizarEstado', partida._id);
+              // and notify the defense player 
+              
+              socket.emit('ataco', {userOrigen: whoami, userDestino: usuarioObjetivo?.usuario ?? '', 
+                               dadosAtacante: response.dadosAtacante, dadosDefensor: response.dadosDefensor, 
+                               tropasPerdidasAtacante: response.resultadoBatalla.tropasPerdidasAtacante,
+                               tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
+                               conquistado: response.conquistado, territorioOrigen: ataqueOrigen, 
+                               territorioDestino: enemyTerritoryId});
+              setAtaquePerpetrado({userOrigen: whoami, userDestino: usuarioObjetivo?.usuario ?? '', 
+                                      dadosAtacante: response.dadosAtacante, dadosDefensor: response.dadosDefensor, 
+                                      tropasPerdidasAtacante: response.resultadoBatalla.tropasPerdidasAtacante,
+                                      tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
+                                      conquistado: response.conquistado, territorioOrigen: ataqueOrigen, 
+                                      territorioDestino: enemyTerritoryId});
+            },
+            error => {
+              Alert.alert('¡ERROR FATAL!');
+              setFase(0);
+              setFase(1);
+              setAtaqueDestino('');
+              setAtaqueOrigen('');
+              setAtaqueTropas(0);
+            }
+          );
+        }
+
+        break
+      /*case 2: // maniobra -> reutilizo las variables de ataque jeje
+        if (this.ataqueTropas === 0) {
+          this.ataqueTropas = 0;
+          this.ataqueDestino = ''
+          this.ataqueOrigen = ''
+          const numTroops = await this.seleccionarTropas(e, svgDoc, this.whoami, false)
+          console.log(`Player has selected ${numTroops} troops`)
+          this.colocarTropas(e, svgDoc, 50, 50, this.whoami, false, true, -numTroops) // las quito del mapa
+          this.numTropas -= numTroops // tampoco las tengo colocables, las tengo seleccionadas así que las quito de ahí
+          this.cdr.detectChanges()
+        } else {
+          // una vez seleccionadas las tropas me tocará elegir un territorio enemigo
+          const enemyTerritoryId = await this.seleccionarTerritorioAmigo(e, svgDoc, this.whoami)
+          console.log(`Player has selected friendly territory ${enemyTerritoryId}`)
+          this.ataqueDestino = enemyTerritoryId
+          // TODO AVISAR AL BACK END, ESPERAR RESPUESTA Y ACTUALIZAR EL ESTADO DE LA PARTIDA
+          //this.partida._id, this.whoami, targetId, this.tropasPuestas
+          //atacarTerritorio(this.partida._id, this.whoami, this.ataqueOrigen, this.ataqueDestino, this.ataqueTropas)
+          // esto recibe el back end
+          console.log(this.partida._id, this.whoami, this.ataqueOrigen, this.ataqueDestino, this.ataqueTropas)
+          // dependiendo del resultado de la llamada al back, se actualizará el estado de la partida y permitirá continuar
+          await new Promise(resolve => setTimeout(resolve, 5000)) // falseo llamada al back
+          const territorios = this.mapa.flatMap(continent => continent.territorios)
+          const destinoTropas = await territorios.find(territorio => territorio.nombre === this.ataqueDestino)
+          if (destinoTropas)
+            destinoTropas.tropas += this.ataqueTropas // seguramente esto te lo dé el back? tampoco está mal hacerlo localmente
+          this.colocarTropas(e, svgDoc, 50, 50, this.whoami, false, true, this.ataqueTropas) // las pongo
+          console.log(destinoTropas)
+          // TODO ACTUALIZAR ESTADO ETC -> de momento no lo hago, es trivial
+          this.ataqueDestino = ''
+          this.ataqueOrigen = ''
+          this.ataqueTropas = 0
+        }
+        break
+      case 3: // robo 
+        //this.final(e, svgDoc, imgWidth, imgHeight);
+        break
+      case 4: // fin
+        //this.final(e, svgDoc, imgWidth, imgHeight);
+        break*/
+    }
+    //this.colocarTropas(e, svgDoc, imgWidth, imgHeight, this.whoami);
+    //this.cdr.detectChanges()
+  }
+  
+  //Pone todas las tropas en 0
+  const limpiarTropas = () => {
+    let tropas = territoriosTropas;
+    for(let i = 0; i < tropas.length; i++){
+      tropas[i].numTropas = 0;
+    }
+    setterritoriosTropas(tropas);
+  }
+
+  //Esto pinta el mapa con las piezas de cada territorio pero creo que no hace fala aqui en movil
+  const distribuirPiezas = () => {
     //console.log("Continentes", mapa)
     //console.log("Jugadores", jugadores)
+    let mapa = partida.mapa;
+    setMapa(mapa);
+    //console.log(mapa[0].territorios);
     for(let continente of mapa){
       for(let territorio of continente.territorios){
+        //console.log(territorio)
         // Find the player who owns this territory
         let jugador = partida.jugadores.find(jugador => jugador.territorios.includes(territorio.nombre));
         //console.log(jugador)
   
         // If a player was found, get their color
         let color = jugador ? jugador.color : undefined;
-        
-        if(color !== undefined) {
-         console.log(`The color of territory ${territorio.nombre} is ${color}, and it has ${territorio.tropas} troops.`);
-         if(jugador){
-          //console.log(jugador.usuario)
-          colocarTropas(territorio.nombre, svgDoc, 50, 50, jugador.usuario, true, false, territorio.tropas);
-         }
-         //let svgElement = this.svgDoc?.getElementById(territorio.nombre);
-         /*let event;
-         //console.log(territorio.nombre, svgElement);
-         //console.log(this.svgDoc)
-          if (svgElement && svgElement.nodeName === 'path') {
-            //console.log(' entro en el if')
-            //let bbox = ((svgElement as unknown) as SVGGraphicsElement).getBBox();
-            let rect = svgElement.getBoundingClientRect();
-
-            let centerX = rect.left + bbox.width / 2;
-            let centerY = rect.top + bbox.height / 2 - 70; 
-
-            // Create a fake MouseEvent
-            event = new MouseEvent('click', {
-              clientX: centerX,
-              clientY: centerY,
-            });
-             // Dispatch the event on svgElement
-            svgElement.dispatchEvent(event);
-            //console.log(event)*/
-          }
-        /*
-         if(jugador && event && this.svgDoc){
-          this.colocarTropas(event, this.svgDoc, 50, 50, jugador.usuario, true, false, territorio.tropas)
-          //console.log(jugador.usuario)
-          }
-        }*/
+        //console.log(color)
+        if(color !== undefined && jugador) {
+          //console.log(`The color of territory ${territorio.nombre} is ${color}, and it has ${territorio.tropas} troops.`);
+          colocarTropas(territorio.nombre, jugador.usuario, true, territorio.tropas);
+        }
       }
     }
+    setterritoriosTropas(territoriosTropasAux);
+  }
 
-    setNumTropas(40);
-    /*
-    // Esto es stub, luego se hará una llamada al back para obtener el número de tropas
-    switch(this.partida.jugadores.length){
-      case 2: 
-        this.numTropas = 40;
-        break;
-      case 3:
-        this.numTropas = 35;
-        break;
-      case 4:
-        this.numTropas = 30;
-        break;
-      case 5:
-        this.numTropas = 25;
-        break;
-      case 6:
-        this.numTropas = 20;
-        break;
+
+  const onLoad = async () => {
+    // Partida viene del lobby
+    //whoami = await AsyncStorage.getItem('username');
+    //console.log(idPartida);
+    /* (Al parecer getPartida es un put)
+    const response = await axios.put(`${IP}/partida/getPartida/`, { idPartida: partidaID }, { headers: { 'Authorization': token } })
+    if (response.status === 200) {
+      partida = response.data.partida;
+    } else {
+      Alert.alert('Error', 'Error cargando partida');
     }*/
-  }
-
-  const inicializarPartida = (partida) => {
-    // Inicializa los atributos de la partida
-    console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
     
-    jugadores = partida.jugadores;
-    console.log(jugadores);
-    for (let i = 0; i < jugadores.length; i++) {
-      jugadores[i].color = colores[i];
-    }
-    turno  = partida.turno;
-    nombrePartida = partida.nombre;
-    numJugadores = partida.jugadores.length;
-    mapa = partida.mapa;
-    mapaStub();
 
-    descartes = partida.descartes;
-
-    ganador = partida.ganador;
-    fase = partida.fase;
-    cartasStub();
-
-    //turnoJugador = partida.jugadores[partida.turno % this.numJugadores];
-
+    inicializarPartida(partida);
+    //console.log(partida.jugadores);
   }
 
-  const onLoad = () => {
-    //TODO fetch parida del back
-    partida = { _id: '1', maxJugadores: 3, nombre: 'Partida 1', fechaInicio: '2021-06-01T00:00:00.000Z', fechaFin: '2021-06-01T00:00:00.000Z'
-    , password: '1234', ganador: null, turno: 0, jugadores: [{usuario: "a", color: null}, {usuario: "b", color: null}], cartas: [], descartes: [], mapa: [], chat: [], fase: 0, __v: 0};
- 
-    
-      inicializarPartida(partida);
+    const [stateTropas, setStateTropas] = useState({territoriname: '', user: '', init: false});
 
-      distribuirPiezas();
-
-
-  }
-
-  const colocarTropas = (territoriname, svgDoc, imgWidth, imgHeight, user, init, select, limite) => {
+  const colocarTropas = (territoriname2, user2, init2, limite= null) => {
     // Ask the user for the number of troops
 
     let troops;
-    let duenno = jugadores.find(jugador => jugador.usuario == user);
-    //console.log("terreno: " + territoriname)
-    //console.log("duenno: " + duenno?.territorios)
-    if(!(territoriname && duenno && duenno.territorios.includes(territoriname))){
-      alert('No puedes poner tropas en territorios que no te pertenecen');
-      //this.cdr.detectChanges();
-      return;
-    }
+    let duenno = jugadores.find(jugador => jugador.usuario == user2);
 
-    if(limite)
+    if(!init2 && !recolocacion){
+      if(!(territoriname2 && duenno && duenno.territorios.includes(territoriname2))){
+        alert('No puedes poner tropas en territorios que no te pertenecen');
+        //this.cdr.detectChanges();
+      return;  
+      }
+    }
+    
+    //Si hay limite, es que no es un evento
+    if(limite){
       troops = limite.toString();
-    else 
-     troops = window.prompt('Cuántas tropas deseas añadir?');
 
-    // Check if the user clicked the Cancel button
-    if (troops === null) {
+      let numTroops = parseInt(troops);
+      let select = false;
+      if (!init2 && !recolocacion && !select && (numTroops > numTropas)) {
+        Alert.alert('¡No tienes suficientes tropas!');
+        eventoCancelado = true;
+        return;
+      }
+
+      tropasPuestas += numTroops;
+      //console.log(territoriosTropas.length);
+      const terrainInfo = territoriosTropas.find(terrain => terrain.terrainId === territoriname2);
+      //terrainInfo = {terrainId: "ALASKA", numTropas: numTroops, user: user2};
+      //console.log('terrainInfo: ', terrainInfo);
+      if (terrainInfo) {
+        terrainInfo.numTropas += numTroops;
+        terrainInfo.user = user2;
+        numTroops = terrainInfo.numTropas;
+        setterritoriosTropas(territoriosTropas);
+        if(!init2){
+          let newtropas = numTropas - numTroops;
+          setNumTropas(newtropas);
+        }
+      } else {
+        //console.log("territorio: " + territoriname2, numTroops, user2);
+        //territoriosTropas.push({terrainId: territoriname2, numTropas: numTroops, user: user2});
+        //setterritoriosTropas([...territoriosTropas, {terrainId: territoriname2, numTropas: numTroops, user: user2}]);
+        territoriosTropasAux.push({terrainId: territoriname2, numTropas: numTroops, user: user2});
+      }
+    }
+    else if(recolocacion){ 
+      troops = '0';
+    }
+    else{
+      //Preguntar por tropas
+      setStateTropas({territoriname: territoriname2, user: user2, init: init2});
+      let newState = { message: null };
+      setState(newState);
+      setDialog('colocar');
+      setVisible(true);
+      //Sigue en otra funcion por el dialog
+    }
+
+  }
+
+ 
+  const colocarTropasCorrectas = async () => {
+    
+    //console.log('me meto en colocarTropasCorrectas: ', stateTropas.territoriname);
+    if (state.message === null) {
       return;
     }
+
+    let numTroops = parseInt(state.message);
+    let select = false;
+    if (!stateTropas.init && !recolocacion && !select && (numTroops > numTropas)) {
+      Alert.alert('¡No tienes suficientes tropas!');
+      eventoCancelado = true;
+      return;
+    }
+
+    
+    let newtropas = numTropas - numTroops;
+    setNumTropas(newtropas);
+
+    tropasPuestas += numTroops;
+   
+    const terrainInfo = territoriosTropas.find(terrain => terrain.terrainId === stateTropas.territoriname);
+    if (terrainInfo) {
+      terrainInfo.numTropas += numTroops;
+      terrainInfo.user = stateTropas.user;
+      numTroops = terrainInfo.numTropas;
+      setterritoriosTropas(territoriosTropas);
+    } else {
+      //console.log("territorio: " + stateTropas.territoriname)
+      territoriosTropas.push({terrainId: stateTropas.territoriname, numTropas: numTroops, user: stateTropas.user});
+      setterritoriosTropas(territoriosTropas);
+    }
+
+    //si estoy en fase de colocacion socket emit
+    if(fase === 0){
+      /*
+      *
+      * ESTO ES LO QUE HAY EN WEB, NO TENGO NI IDEA DE COMO VAN LOS SOCKETS, MIRAR ESTO PLIS
+      * Lita
+      * 
+      */
+
+
+      //EN TEORIA, si llego hata aqui esque no he cancelado nada asi que se podra borrar este if, creo
+      //Lita
+      ocupado = true;
+      //console.log('Colocando tropas en el territorio: ', stateTropas.territoriname, ' con ', numTroops, ' tropas.');
+      const response = await axios.put(`${IP}/partida/colocarTropas`, {idPartida, territorio: stateTropas.territoriname, numTropas: tropasPuestas}, { headers: { 'Authorization': token } })
+        if (response.status === 200) {
+          console.log(response);
+          tropasPuestas = 0;
+          ocupado = false;
+          // notify to back with a socket, the back will notify every client in the game
+          socket.emit('actualizarEstado', partida._id);
+        } else {
+          Alert.alert('¡ERROR FATAL!');
+          colocarTropas(stateTropas.territoriname,stateTropas.user, stateTropas.init, tropasPuestas);
+          ocupado = false
+          numTropas += tropasPuestas;
+          tropasPuestas = 0;
+        }
+      
+      setTimeout(() => { // si no recibo respuesta del back, está caído
+        console.log("entro")
+        if(ocupado){ 
+          console.log("fatal error")
+          Alert.alert('¡ERROR FATAL!');
+          ocupado = false;
+          numTropas += tropasPuestas;
+        }
+      }, 2000);
+    }
+
+  }
+
+
+  //Funcion para seleccionar tropas que se usa en el statemachine
+  const seleccionarTropas =  (_territoriId, user2, attack2) => {
+    console.log('Seleccionar tropas');
+    
+      
+      const terrainId = _territoriId;
+      //para probar comento esto
+      /*let duenno = partida.jugadores.find(jugador => jugador.usuario == user);
+      if (!(terrainId && duenno && duenno.territorios.includes(terrainId))) {
+        Alert.alert('No puedes seleccionar tropas en territorios que no te pertenecen');
+        //this.cdr.detectChanges();
+
+        return;
+      }*/
+      //Preguntar por tropas
+      setStateTropas({territoriId: _territoriId, user: user2, attack: attack2});
+      let newState = { message: null };
+      setState(newState);
+      setDialog('seleccionar');
+      setVisible(true);
+
+      
+    
+  }
+
+  const seleccionarTropasCorrectas = async () => {
+    const troops = state.message;
 
     let numTroops = parseInt(troops);
 
-    if (!init && (numTroops > numTropas)) {
-      //this.toastr.error('¡No tienes suficientes tropas!');
-      //this.cdr.detectChanges();
-      return;
-    }
-    setNumTropas(numTropas - numTroops);
-
-    tropasPuestas += numTroops;
-    //tropasTest.push({terrainId: "ALASKA", numTropas: 3, user: "a"});
-    const terrainInfo = tropasTest.find(terrain => terrain.terrainId === territoriname);
-    //const terrainAlaska = tropasTest.find(terrain => terrain.terrainId === 'ALASKA');
-    console.log(terrainInfo)
-    if (terrainInfo) {
-      terrainInfo.numTropas += numTroops;
-      terrainInfo.user = user;
-      numTroops = terrainInfo.numTropas;
-      setTropasTest(tropasTest);
-    } else {
-      console.log("territorio: " + territoriname)
-      tropasTest.push({terrainId: territoriname, numTropas: numTroops, user});
-      setTropasTest(tropasTest);
-    }
-
-    // Get the point at which the click event occurred
-    const svgElement = svgDoc;
-    if (!svgElement) {
-      //console.error('SVG element not found');
-      return;
-    }
-    /*
     // Check if the input is a valid number
-    if (isNaN(numTroops) || (numTroops < 1 && !select)) {
-      alert('Please enter a valid number of troops.');
-      //this.cdr.detectChanges();
+    if (isNaN(numTroops) || numTroops < 1) {
+      Alert.alert('Por favor, introduce un número válido de tropas.');
+
       return;
     }
 
-    // Get the point at which the click event occurred
-    const svgElement = svgDoc.rootElement;
-    if (!svgElement) {
-      console.error('SVG element not found');
+    if (stateTropas.attack && numTroops > 3) {
+      console.log(stateTropas.attack)
+      Alert.alert('Sólo puedes seleccionar hasta 3 tropas para atacar.')
+      this.cdr.detectChanges();
+
       return;
     }
 
-    const pt = svgElement.createSVGPoint();
-    pt.x = e.clientX;
-    pt.y = e.clientY;
+    const terrainInfo = territoriosTropas.find(terrain => terrain.terrainId === stateTropas.territoriId);
+    if (terrainInfo) {
+      if (terrainInfo.numTropas < numTroops + 1) { // se debe dejar al menos una tropa y no quedarnos con tropas negativasd
+        Alert.alert('No tienes suficientes tropas en este territorio. Recuerda que debes dejar al menos una tropa.');
 
-    // Transform the point to the SVG coordinate system
-    const screenCTM = svgElement.getScreenCTM();
-    if (!screenCTM) {
-      console.error('Unable to get screen CTM');
-      return;
-    }
-
-    const svgP = pt.matrixTransform(screenCTM.inverse());
-
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('x', svgP.x.toString());
-    text.setAttribute('y', (svgP.y + imgHeight / 2).toString());
-    text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('font-size', '20');
-    text.setAttribute('fill', 'black'); 
-    text.setAttribute('stroke', 'white'); 
-    text.setAttribute('stroke-width', '1');
-    text.setAttribute('data-terrain-id', terrainId);
-    text.textContent = numTroops.toString();
-
-    // Calculate the number of each type of image to add
-    const numTanks = Math.floor(numTroops / 10);
-    let remainingTroops = numTroops % 10;
-    const numHorses = Math.floor(remainingTroops / 5);
-    remainingTroops %= 5;
-
-    // Function to create and append an image
-    const addImage = (href, index) => {
-      const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-      img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', href);
-      img.setAttribute('width', imgWidth.toString());
-      img.setAttribute('height', imgHeight.toString());
-      img.setAttribute('x', (svgP.x - imgWidth / 2 + index * imgWidth * 0.15).toString());
-      img.setAttribute('y', (svgP.y - imgHeight / 2).toString());
-      img.setAttribute('data-terrain-id', terrainId);
-      img.style.pointerEvents = 'none'; // Make the image click-through
-      svgDoc.documentElement.appendChild(img);
-    };
-
-    // Delete every image in the region clicked
-    // Delete every image and text in the region clicked
-    const elements = svgDoc.querySelectorAll(`image[data-terrain-id="${terrainId}"], text[data-terrain-id="${terrainId}"]`);
-    elements.forEach(element => {
-      if (element.parentNode) {
-        element.parentNode.removeChild(element);
+        return;
       }
-    });
+      setAtaqueTropas(ataqueTropas + numTroops)
+    } else {
+      Alert.alert('Ha ocurrido un error interno.', 'Atención');
 
-    // Add the images
-    let index = 0;
-    let jugador = this.jugadores.find(jugador => jugador.usuario === user);
-    if (!jugador) {
-      this.toastr.error('Ha ocurrido un error interno.', 'Atención');
       return;
     }
-    let color = jugador.color;
-    //console.log(color)
-    for (let i = 0; i < numTanks; i++, index++) {
-      addImage(`/assets/tanque_${color}.png`, index);
-    }
-    for (let i = 0; i < numHorses; i++, index++) {
-      addImage(`/assets/caballo_${color}.png`, index);
-    }
-    for (let i = 0; i < remainingTroops; i++, index++) {
-      addImage(`/assets/infanteria_${color}.png`, index);
-    }
-    svgDoc.documentElement.appendChild(text);*/
+
+    Alert.alert(`Has seleccionado ${numTroops} tropas.`);
+    //TODO: Mirar Esto
+    //this.ataqueOrigen = terrainId;
+
   }
 
+
+
+  //rutina de OK del boton de dialog
+  const handleOK = async () => {
+    //setnumterritoriosTropas(state.message);
+    setDialogBool(true);
+    setVisible(false);
+    console.log('me meto en handleOK: ', state.message);
+    
+  }
+
+
+  //TODO: Implementar la rutina de cancelar
+  const handleCancel = async () => {
+    setVisible(false);
+  }
 
   return (
     <View style={styles.container} >
       <View style={styles.containerleft}>
-      <ReactNativeZoomableView
-        maxZoom={3}
-        minZoom={0.8}
-        zoomStep={0.5}
-        initialZoom={1}
-        bindToBorders={false}
->
-        <MapSVGComponent />
-      </ReactNativeZoomableView>
+        <ReactNativeZoomableView
+          maxZoom={3}
+          minZoom={0.8}
+          zoomStep={0.5}
+          initialZoom={1}
+          bindToBorders={false}
+  >
+          <MapSVGComponent />
+        </ReactNativeZoomableView>
       </View>
       <View style={styles.containerRight}>
         <Text1 style={styles.zoneText}>Tropas: {numTropas}</Text1>
+        <Text1 style={styles.zoneText}>Turno del jugador: {turnoJugador}</Text1>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.botonControl}>
+            <Text1 style={styles.zoneText}>Siguiente Fase</Text1>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.botonControl}>
+            <Text1 style={styles.zoneText}>Cambiar turno</Text1>
+          </TouchableOpacity>
 
+          <Text1 style={styles.zoneText}>{textoFase}</Text1>
         </View>
+      </View>
+
+      {/*DIALOGO PARA LAS TROPAS */}
+        <Dialog.Container visible={visible} > 
+        <Dialog.Title>Cuantas Tropas quieres seleccionar</Dialog.Title>
+           <Dialog.Input label="Troop" onChangeText={(troop ) => setState({ message: troop })} 
+            ></Dialog.Input>
+          <Dialog.Button label="Cancel" onPress={handleCancel} />
+          <Dialog.Button label="OK" onPress={handleOK} />
+        </Dialog.Container>
     </View>
+    
   );
 }
 
@@ -893,12 +1259,12 @@ const styles = StyleSheet.create({
     justifyContent: 'left',
   },
   containerRight: {
-    left: 50,
-    top: 50,
+    top: 25,
+    left: 15,
     flex: 1,
-    alignItems: 'end',
+    alignItems: 'start',
     flexDirection: 'column',
-    justifyContent: 'right',
+    justifyContent: 'start',
   },
   containerleft: {
     height: 400,
@@ -909,43 +1275,21 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
   },
-  lowRiskZone: {
-    left: 50,
-    width: 100,
-    height: 100,
-    backgroundColor: 'green',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 50,
-  },
-  mediumRiskZone: {
-    position: 'absolute',
-    top: 150,
-    left: 150,
-    width: 100,
-    height: 100,
-    backgroundColor: 'yellow',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 50,
-  },
-  highRiskZone: {
-    position: 'absolute',
-    top: 250,
-    left: 250,
-    width: 100,
-    height: 100,
-    backgroundColor: 'red',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 50,
-  },
   zoneText: {
     color: 'black',
     fontWeight: 'bold',
   },
-  svgcontainer: {
-    width: 1000,
-    height: 1000,
+  buttonContainer: {
+    flexDirection: 'column',
+    justifyContent: 'space-around',
+    width: 200
+  },
+  botonControl: {
+    backgroundColor: '#007bff',
+    color: 'white',
+    padding: 10,
+    textAlign: 'center',
+    margin: 10,
+    borderRadius: 5,
   },
 });

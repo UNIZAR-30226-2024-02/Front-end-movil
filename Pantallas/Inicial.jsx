@@ -2,13 +2,15 @@ import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, ImageBackground } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome from expo/vector-icons
 import { IP } from '../config';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Inicial({ navigation, route }) {
   const { id, token } = route.params;
 
   const goToCrearPartida = () => {
     // Navigate to "Crear Partida" screen
-    navigation.navigate('Lobby', { id: id, token: token });
+    navigation.navigate('Partidas', { id: id, token: token });
   };
 
   const goToRanking = () => {
@@ -27,9 +29,20 @@ export default function Inicial({ navigation, route }) {
   };
 
 
-  const goToMap = () => {
+  const goToMap = async () => {
     // Navigate to "Perfil" screen
-    navigation.navigate('RiskMap', { token: token });
+    let id ="663ba1f8598d1be7784223ed"
+    try {
+      const response = await axios.get(`${IP}/partidas/partida/${id}`, { headers: { 'Authorization': token } })
+      let username = await AsyncStorage.getItem('username')
+      let partidaData = response.data
+      navigation.navigate('RiskMap', { token: token, partida: partidaData, whoami: username});
+  } catch (error) {
+      console.error('Error fetching partida data:', error)
+      Alert.alert('Error', 'Ha ocurrido un error al obtener los datos de la partida. Por favor, inténtalo de nuevo más tarde.')
+  }
+  //
+  //navigation.navigate('RiskMap', { token: token, partida: partidaData});
   }
 
   const goToChats = () => {
@@ -51,9 +64,9 @@ export default function Inicial({ navigation, route }) {
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage} resizeMode="stretch">
       <View style={styles.container}>
-          <TouchableOpacity style={styles.Lobbybutton} onPress={goToCrearPartida}>
+          <TouchableOpacity style={styles.Partidasbutton} onPress={goToCrearPartida}>
           <FontAwesome name="gamepad" size={24} color="white" />
-            <Text style={styles.LobbybuttonText}>Partidas</Text>
+            <Text style={styles.PartidasbuttonText}>Partidas</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.Rankingbutton} onPress={goToRanking}>
           <FontAwesome name="trophy" size={24} color="white" />
@@ -105,7 +118,7 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     justifyContent: 'center',
   },
-  Lobbybutton: {
+  Partidasbutton: {
     backgroundColor: '#DB4437',
     paddingVertical: 11,
     paddingHorizontal: 40,
@@ -132,11 +145,12 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(0,0,0,0.2)',
     borderBottomWidth: 5,
   },
-  LobbybuttonText: {
+  PartidasbuttonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
     textTransform: 'uppercase',
+    // Adding text shadow to create black outline
     textShadowColor: 'black',
     textShadowOffset: { width: 2, height: 1 },
     textShadowRadius: 2,

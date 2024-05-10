@@ -25,21 +25,19 @@ export default function SolicitudDetails({ navigation,route }) {
   };
 
   return (
-    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
-      <View style={styles.container}>
-        <View style={styles.content}>
-          <View style={styles.detailsContainer}>
-            <Text style={styles.playerName}>{solicitante}</Text>
-            <Text style={styles.playerDescription}>{solicitante} te ha mandado una solicitud de amistad.¿Deseas aceptarla?</Text>
-            <View style={styles.containerButton}>
-              <TouchableOpacity style={styles.addButton} onPress={handleConfirmaFriend}>
-                <Text style={styles.buttonText}>Confirmar Amistad</Text>
-              </TouchableOpacity>
-            </View>
+    <View style={styles.container}>
+      <View style={styles.content}>
+        <View style={styles.detailsContainer}>
+          <Text style={styles.playerName}>{solicitante}</Text>
+          <Text style={styles.playerDescription}>a</Text>
+          <View style={styles.containerButton}>
+            <TouchableOpacity style={styles.addButton} onPress={handleConfirmaFriend}>
+              <Text style={styles.buttonText}>Confirmar Amistad</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -60,66 +58,37 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   playerName: {
-    color: 'white',
-    fontSize: 30,
+    fontSize: 24,
     fontWeight: 'bold',
-    textShadowColor: 'black',
-    textShadowOffset: { width: 2, height: 1 },
-    textShadowRadius: 2,
-    textAlign:'center',
+    textAlign: 'center',
+    marginBottom: 10,
     
   },
   playerDescription: {
-    top:30,
+    top:1,
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 20,
-    paddingBottom: 130, 
-    color: 'white',
-    fontWeight: 'bold',
-    textShadowColor: 'black',
-    textShadowOffset: { width: 2, height: 1 },
-    textShadowRadius: 2,
+    paddingBottom: 150, // Add paddingTop to give space for the skin name
   },
   containerButton: {
     alignItems: 'center',
     marginBottom: 20, // Espacio adicional entre el contenido y el botón
     flexDirection: 'row',  // Alinea los elementos en fila
-    justifyContent: 'center',
+    justifyContent: 'space-between',
   },
   addButton: {
-    backgroundColor: '#DB4437',
-    paddingVertical: 11,
-    paddingHorizontal: 40,
-    borderRadius: 12,
-    marginBottom: 0,
-    marginRight: 10,
+    backgroundColor: '#27ae60',
+    paddingVertical: 15,  // Reducido el padding vertical
+    paddingHorizontal: 20,
     alignItems: 'center',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    width:250,
-    height:80,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 5,
-    borderBottomColor: 'rgba(0,0,0,0.2)',
-    borderBottomWidth: 5,
+    borderRadius: 5,
   },
   buttonText: {
-    color: 'white',
-    fontSize: 15,
+    color: '#fff',
     fontWeight: 'bold',
-    textTransform: 'uppercase',
-    // Adding text shadow to create black outline
-    textShadowColor: 'black',
-    textShadowOffset: { width: 2, height: 1 },
-    textShadowRadius: 2,
+    textAlign: 'center',
+    fontSize: 18,
   },
   friendMessage: {
     marginTop: 10,
@@ -127,10 +96,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  background: {
-    flex: 1,
-    resizeMode: 'cover',
-    justifyContent: 'center',
   },
 });
