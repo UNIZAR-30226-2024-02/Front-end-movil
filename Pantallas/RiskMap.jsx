@@ -758,6 +758,79 @@ export default function RiskMap({ naviagtion, route }) {
     if(fase !== undefined) updateText(fase);*/
   }
 
+  const seleccionarTerritorioEnemigo= async(e, terrname, user) =>{
+    return new Promise((resolve, reject) => {
+
+      let duenno = jugadores.find(jugador => jugador.usuario == user);
+
+      // Check if the territory belongs to the player (it should not)
+      if (terrname && duenno && duenno.territorios.includes(terrname)) {
+        Toast.error('No puedes atacar tu propio territorio');
+        //this.cdr.detectChanges();
+        reject('Cannot select your own territory');
+        return;
+      }
+
+      // Get the origin of the attack
+      const territorios = mapa.flatMap(continent => continent.territorios);
+      const origenAtaque = territorios.find(territorio => territorio.nombre === ataqueOrigen);
+
+      // Check if the origin of the attack exists and has a border
+      if (origenAtaque && origenAtaque.frontera) {
+        // Check if the selected territory is in the border of the origin of the attack
+        if (origenAtaque.frontera.includes(terrname)) {
+          // The selected territory is in the border of the origin of the attack, everything is ok 
+        } else {
+          // The selected territory is not in the border of the origin of the attack --> fatal error user is stupid xd
+          Toast.error('El territorio seleccionado no está en la frontera del origen del ataque');
+          //this.cdr.detectChanges();
+          reject('The selected territory is not in the border of the origin of the attack');
+          return;
+        }
+      } else {
+        // The origin of the attack does not exist or does not have a border (never should happen... )
+        Toast.error('El origen del ataque no existe o no tiene una frontera');
+        //this.cdr.detectChanges();
+        reject('The origin of the attack does not exist or does not have a border');
+        return;
+      }
+
+      // Check if the territory exists and belongs to an enemy
+      const terrainInfo = tropas.get(terrname);
+      if (terrainInfo) {
+        const enemy = jugadores.find(jugador => jugador.territorios.some(territorio => territorio == terrname));
+        if (!enemy) {
+          Toast.error('Este territorio no pertenece a ningún enemigo');
+          //this.cdr.detectChanges();
+          reject('This territory does not belong to an enemy');
+          return;
+        }
+      } else {
+        Toast.error('Ha ocurrido un error interno.', 'Atención');
+        reject('Internal error');
+        return;
+      }
+
+      Toast.success(`Has seleccionado el territorio enemigo ${terrainId}`);
+      const enemyTerritoryElement = terrname;   
+      if (enemyTerritoryElement) {
+        let isRed = true;
+        const animation = setInterval(() => {
+          enemyTerritoryElement.style.fill = isRed ? 'red' : 'yellow';
+          isRed = !isRed;
+        }, 1000);
+      
+        setTimeout(() => {
+          // Stop the animation after 5 seconds
+          clearInterval(animation);
+          // Continue with the rest of your code here
+        }, 5000);
+      }
+      //this.cdr.detectChanges();
+      resolve(terrname);
+    });
+  }
+
   useEffect(() => {
     if(turnoJugador === whoami){
       switch(fase){
@@ -817,19 +890,19 @@ export default function RiskMap({ naviagtion, route }) {
           setAtaqueTropas(0);
           setAtaqueDestino('');
           setAtaqueOrigen('');
-          const numTroops = await seleccionarTropas(e, svgDoc, whoami, true);
+          const numTroops = await seleccionarTropas(e, svgDoc, whoami, true); //FALTA CAMBIAR
           console.log(ataqueTropas, ataqueOrigen, ataqueDestino, numTroops);
           console.log(`Player has selected ${numTroops} troops`);
           console.log(recolocacion);
           tropasPuestas = 0;
-          colocarTropas(e, svgDoc, 50, 50, whoami, false, true, -numTroops); // las quito del mapa
+          colocarTropas(e, svgDoc, 50, 50, whoami, false, true, -numTroops); // FALTA CAMBIAR
           setNumTropas(numTropas-numTroops); // tampoco las tengo colocables, las tengo seleccionadas así que las quito de ahí
           //cdr.detectChanges();    //QUE ES CDR?Actualizar estado mapa//no hace falta en movil
           
         } else {
           
           // una vez seleccionadas las tropas me tocará elegir un territorio enemigo
-          const enemyTerritoryId = await seleccionarTerritorioEnemigo(e, svgDoc, whoami);
+          const enemyTerritoryId = await seleccionarTerritorioEnemigo(e, territoriname, whoami);
           console.log(`Player has selected enemy territory ${enemyTerritoryId}`);
           setAtaqueDestino(enemyTerritoryId);
           console.log("Info:", partida._id, ataqueOrigen, ataqueDestino, tropasPuestas);
