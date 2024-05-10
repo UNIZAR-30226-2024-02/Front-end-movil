@@ -69,7 +69,7 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
     useEffect(() => {
         if (gameStarted && partidaData) {
             // If a game has started and partidaData is not null, navigate to RiskMap
-            navigation.navigate('RiskMap', { token: token, partida: partidaData })
+            navigation.navigate('RiskMap', { token: token, partida: partidaData, socket: socket})
         }
     }, [gameStarted, partidaData])
 
@@ -107,6 +107,7 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
             const storedUsername = await AsyncStorage.getItem('username');
             setUsername(storedUsername);
             socket.emit('joinChat', response.data.chat._id);
+            console.log('Joining chat:', response.data._id)
             socket.emit('joinGame', { gameId: response.data._id, user: storedUsername });
             setPartidaData(response.data)
             this.partida = response.data;
@@ -143,11 +144,12 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
         axios.put(`${IP}/partida/iniciarPartida`, { idPartida: id }, { headers: { 'Authorization': token } })
         .then(response => {
             if (response.status === 200) {
+                
                 socket.emit('gameStarted', id)
                 console.log(id)
                 console.log(token)
                 console.log(partidaData)
-                navigation.navigate('RiskMap', { token: token, partida: partidaData }) //Envio token y partida a mapa
+                navigation.navigate('RiskMap', { token: token, partida: partidaData, socket: socket }) //Envio token y partida a mapa
             } else {
                 console.error('Error al empezar la partida:', response.data.message);
                 Alert.alert('Error', 'Ha ocurrido un error al empezar la partida. Por favor, inténtalo de nuevo más tarde.');

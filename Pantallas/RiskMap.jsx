@@ -12,11 +12,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Dialog from "react-native-dialog";
 
 export default function RiskMap({ naviagtion, route }) {
-  const socket = io(IP);
+  //const [socket, setSocket] = useState('')
 
   const [whoami, setWhoami] = useState(null);
 
-  const { token, partida } = route.params;
+  const { token, partida, socket } = route.params;
   
   const [thisPartida, setThisPartida] = useState(null);
   //const [partida, setPartida] = useState(null);
@@ -35,24 +35,40 @@ export default function RiskMap({ naviagtion, route }) {
 
   const [isOk, setOkState] = useState("No");
 
+  
+
   useEffect(() => {
-    socket.on('cambioEstado', async () => {
-      console.log('Partida1', partida)
-      setThisPartida(partida); // actualizo el estado de la partida
-      await new Promise(resolve => setTimeout(resolve, 1000)) // espero un rato
-
-      //limpiarTropas() // TODO
-
-      //Pinto el mapa
-      //distribuirPiezas() // TODO
-    });
+    //setSocket(io(IP))
+   
     //COMENTADO PARA PRUEBAS SIN VENIR DEL LOBBY
     console.log(partida)
     //setIdPartida(partida._id);
     setThisPartida(partida);
     onLoad();
-    return () => socket.disconnect();
+    //return () => socket.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (socket) {
+        socket.on('cambioEstado', async () => {
+          console.log('Partida1', partida)
+          const response = await axios.put(`${IP}/partida/getPartida/`, { idPartida: partida._id }, { headers: { 'Authorization': token } })
+          if (response.status === 200) {
+            //console.log('Partida1', response.data.partida)
+            inicializarPartida(response.data.partida)
+            
+          } else {
+          Alert.alert('Error', 'Error cargando partida');
+          }
+            //await new Promise(resolve => setTimeout(resolve, 1000)) // espero un rato
+
+          //limpiarTropas() // TODO
+
+          //Pinto el mapa
+          //distribuirPiezas() // TODO
+      });
+    } 
+  }, [socket])
 
   /*
   *
@@ -676,6 +692,41 @@ export default function RiskMap({ naviagtion, route }) {
     }
   }, [fase, turnoJugador]);
 
+
+  const  updateFase = async () => {
+    /*if(this.paused){
+      this.toastr.error('La partida está pausada');
+      return;
+    }*/
+    if(turnoJugador === whoami){
+      const response = await axios.put(IP+ "/partida/siguienteFase", {idPartida: thisPartida._id}, { headers: { 'Authorization': token } });
+      console.log(response);
+      if(response.status === 200){
+        let auxThisPartida = thisPartida;
+            // This will be executed when the HTTP request is successful
+            auxThisPartida.fase = response.data.fase; // cojo la fase 
+            if(auxThisPartida.turno !== response.data.turno){ // si ha cambiado el turno, lo cambio
+              auxThisPartida.turno = response.data.turno;
+              //console.log(auxThisPartida.jugadores.length);
+              setTurnoJugador(auxThisPartida.jugadores[(auxThisPartida.turno) % auxThisPartida.jugadores.length].usuario);
+              // y además aviso 
+              socket.emit('actualizarEstado', auxThisPartida._id);
+            }
+            if(auxThisPartida.fase !== undefined && auxThisPartida.fase !== null){
+              setFase(auxThisPartida.fase);
+            }
+            //eventoCancelado = true;
+      } 
+      else{
+        // This will be executed when the HTTP request fails
+        console.log('Error al actualizar la fase');
+      }
+  }
+  else{
+    //this.toastr.error('No es tu turno');
+  }
+  }
+
   //maquina de estados de la partida
   const stateMachine = async (path , territoriname , e) =>   {
     const targetId = path;
@@ -894,7 +945,6 @@ export default function RiskMap({ naviagtion, route }) {
       setNumTropas(partida.auxColocar);
       
     }
-
     console.log("MAPA:", thisPartida);
   }
 
@@ -1193,7 +1243,7 @@ export default function RiskMap({ naviagtion, route }) {
         <Text1 style={styles.zoneText}>Tropas: {numTropas}</Text1>
         <Text1 style={styles.zoneText}>Turno del jugador: {turnoJugador}</Text1>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.botonControl}>
+          <TouchableOpacity style={styles.botonControl} onPress={updateFase}>
             <Text1 style={styles.zoneText}>Siguiente Fase</Text1>
           </TouchableOpacity>
           <TouchableOpacity style={styles.botonControl}>
