@@ -812,16 +812,22 @@ export default function RiskMap({ naviagtion, route }) {
         console.log("pulsación secundaria")
         console.log("Ataque tropas: ", ataqueTropas);
         let tropasAUtilizar = ataqueTropas;
-        setAtaqueTropas(0);
-        setNewClicked(false);
         // TODO ADAPTAR ESTO
-        /*console.log('Tropas para atacar: ', ataqueTropas);
-        const enemyTerritoryId = await seleccionarTerritorioEnemigo(e, territoriname, whoami);
-          console.log(`Player has selected enemy territory ${enemyTerritoryId}`);
-          setAtaqueDestino(enemyTerritoryId);
-          console.log("Info:", partida._id, ataqueOrigen, ataqueDestino, tropasPuestas);
-          let usuarioObjetivo = jugadores.find(jugador => jugador.territorios.includes(enemyTerritoryId));
-          ResolverAtaque(partida._id, ataqueOrigen, ataqueDestino, -tropasPuestas).then(  
+        console.log('Tropas para atacar: ', tropasAUtilizar);
+        const selectEnemyTerritory = async () => {
+          try {
+              let territorioDestinoAtacar = await seleccionarTerritorioEnemigo(territorioName, whoami, false);
+              console.log(`Player has selected enemy territory ${territorioName}`);
+              setAtaqueDestino(territorioName); // hace falta? 
+              console.log('Ataque origen: ', ataqueOrigen, "ataque destino", territorioName);
+              // TODO -> LLAMAR A RESOLVER ATAQUE Y ACTUALIZAR ESTADO
+              // NO ME DA TIEMPO A TERMINIARLO PERO ES TRIVIAL
+          } catch (error) {
+              console.error('An error occurred:', error);
+          }
+        }
+          //let usuarioObjetivo = jugadores.find(jugador => jugador.territorios.includes(enemyTerritoryId));
+          /*ResolverAtaque(partida._id, ataqueOrigen, ataqueDestino, -tropasPuestas).then(  
             async response => {
               console.log(response);
               Toast.success('¡Ataque realizado con éxito!');
@@ -873,6 +879,9 @@ export default function RiskMap({ naviagtion, route }) {
               setAtaqueTropas(0);
             }
           );*/
+          selectEnemyTerritory();
+          setAtaqueTropas(0);
+          setNewClicked(false);
     }
   
   }, [ataqueTropas, newClicked]);
@@ -900,7 +909,7 @@ export default function RiskMap({ naviagtion, route }) {
             
             // llamo a colocarTropas con -numTroops para quitarlas del mapa
             colocarTropas(territorioName, whoami, false, -numTroops);
-            setNumTropas(numTropas-numTroops); // tampoco las tengo colocables, las tengo seleccionadas así que las quito de ahí
+            //setNumTropas(numTropas-numTroops); // tampoco las tengo colocables, las tengo seleccionadas así que las quito de ahí
             console.log('tropas colocables: ', numTropas);
             console.log('tropas seleccionadas', numTroops);
             setAtaqueTropas(numTroops);
@@ -1255,6 +1264,58 @@ export default function RiskMap({ naviagtion, route }) {
     setSeguir(true);
   }
 
+
+  const seleccionarTerritorioEnemigo = async (_territoriId, user2, attack2) => {
+    console.log('Seleccionar tropas');
+    
+    const terrainId = _territoriId; // territorio enemigo a atacar
+    console.log("Vas a atacar el territorio con id: ", terrainId);
+    //para probar comento esto
+    let duenno = thisPartida.jugadores.find(jugador => jugador.usuario == user2);
+    if ((terrainId && duenno && duenno.territorios.includes(terrainId))) {
+      Alert.alert('No puedes atacar tu propio territorio');
+      //this.cdr.detectChanges();
+
+      return;
+    }
+    console.log("Territorio origen", ataqueOrigen);
+    let origen = ataqueOrigen;
+    // debo obtener el territorio origen como tal
+    let thisPartidaAux = thisPartida;
+    const territorios = thisPartidaAux.mapa.flatMap(continent => continent.territorios);
+    const origenAtaque = territorios.find(territorio => territorio.nombre === origen);
+    console.log(origenAtaque);
+    // si el territorio enemigo no está en la frontera muestro error
+    if(origenAtaque && origenAtaque.frontera){ 
+      if(!origenAtaque.frontera.includes(terrainId)){
+        Alert.alert('No puedes atacar un territorio que no es frontera');
+        return;
+      }
+    }else { // esto no debería pasar
+      Alert.alert('El territorio origen no exsite o no tiene una frontera');
+      return;
+    }
+
+    // busco el territorio objetivo 
+    const terrainInfo = territorios.find(terrain => terrain.nombre === terrainId);
+
+    if (terrainInfo) {
+      const enemy = thisPartida.jugadores.find(jugador => jugador.territorios.includes(terrainId));
+      console.log(enemy)
+      if (!enemy) {
+        Alert.alert('Este territorio no pertenece a ningún enemigo');
+        return;
+      } 
+    } else {
+      Alert.alert('Ha ocurrido un error interno.', 'Atención');
+      return;
+    }
+
+    Alert.alert(`Has seleccionado el territorio enemigo ${terrainId}.`);
+    //TODO PONER ANIMACIÓN DE SELECCIÓN DE TERRITORIO
+    return terrainId;
+      
+  }
 
 
   //rutina de OK del boton de dialog
