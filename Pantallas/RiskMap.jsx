@@ -35,6 +35,10 @@ export default function RiskMap({ naviagtion, route }) {
 
   const [isOk, setOkState] = useState("No");
 
+  // 
+  const [newClicked, setNewClicked] = useState(false);
+  const [territorioName, setTerritorioName] = useState('');
+
   
 
   useEffect(() => {
@@ -751,25 +755,68 @@ export default function RiskMap({ naviagtion, route }) {
         }
         break;
       case 1: // ataque
-        // antes de atacar, selecciono las tropas q quiero utilizar para atacar
+        // aviso de nuevo click y relleno el territorio en el q se ha pulsado
+        setNewClicked(true);
+        setTerritorioName(territoriname);
+        
+        break
+      /*case 2: // maniobra -> reutilizo las variables de ataque jeje
         if (ataqueTropas === 0) {
-          console.log('Selecccionar tropas para atacar');
-          setAtaqueTropas(0);
-          setAtaqueDestino('');
-          setAtaqueOrigen('');
-          const numTroops = await seleccionarTropas(territoriname,whoami,false); //FALTA CAMBIAR
-          console.log(ataqueTropas, ataqueOrigen, ataqueDestino, numTroops);
-          console.log(`Player has selected ${numTroops} troops`);
-          console.log(recolocacion);
-          tropasPuestas = 0;
-          colocarTropas(e, svgDoc, 50, 50, whoami, false, true, -numTroops); // FALTA CAMBIAR
-          setNumTropas(numTropas-numTroops); // tampoco las tengo colocables, las tengo seleccionadas así que las quito de ahí
-          //cdr.detectChanges();    //QUE ES CDR?Actualizar estado mapa//no hace falta en movil
-          
+          setAtaqueTropas(0)
+          setAtaqueDestino('')
+          setAtaqueOrigen('')
+          //colocarTropas(e, svgDoc, 50, 50, this.whoami, false, true, -numTroops) // las quito del mapa
+          setNumTropas(prevNumTropas => prevNumTropas - numTroops)
+          this.numTropas -= numTroops // tampoco las tengo colocables, las tengo seleccionadas así que las quito de ahí
         } else {
-          
           // una vez seleccionadas las tropas me tocará elegir un territorio enemigo
-          const enemyTerritoryId = await seleccionarTerritorioEnemigo(e, territoriname, whoami);
+          const enemyTerritoryId = await this.seleccionarTerritorioAmigo(e, svgDoc, this.whoami)
+          console.log(`Player has selected friendly territory ${enemyTerritoryId}`)
+          this.ataqueDestino = enemyTerritoryId
+          // TODO AVISAR AL BACK END, ESPERAR RESPUESTA Y ACTUALIZAR EL ESTADO DE LA PARTIDA
+          //this.partida._id, this.whoami, targetId, this.tropasPuestas
+          //atacarTerritorio(this.partida._id, this.whoami, this.ataqueOrigen, this.ataqueDestino, this.ataqueTropas)
+          // esto recibe el back end
+          console.log(this.partida._id, this.whoami, this.ataqueOrigen, this.ataqueDestino, this.ataqueTropas)
+          // dependiendo del resultado de la llamada al back, se actualizará el estado de la partida y permitirá continuar
+          await new Promise(resolve => setTimeout(resolve, 5000)) // falseo llamada al back
+          const territorios = this.mapa.flatMap(continent => continent.territorios)
+          const destinoTropas = await territorios.find(territorio => territorio.nombre === this.ataqueDestino)
+          if (destinoTropas)
+            destinoTropas.tropas += this.ataqueTropas // seguramente esto te lo dé el back? tampoco está mal hacerlo localmente
+          this.colocarTropas(e, svgDoc, 50, 50, this.whoami, false, true, this.ataqueTropas) // las pongo
+          console.log(destinoTropas)
+          // TODO ACTUALIZAR ESTADO ETC -> de momento no lo hago, es trivial
+          this.ataqueDestino = ''
+          this.ataqueOrigen = ''
+          this.ataqueTropas = 0
+        }
+        break
+      case 3: // robo 
+        //this.final(e, svgDoc, imgWidth, imgHeight);
+        break
+      case 4: // fin
+        //this.final(e, svgDoc, imgWidth, imgHeight);
+        break*/
+    }
+    //this.colocarTropas(e, svgDoc, imgWidth, imgHeight, this.whoami);
+    //this.cdr.detectChanges()
+  }
+
+  // Cada vez que el jugador pulse en un territorio, se ejecutará este useEffect
+  // solo ocurrira si está en la fase de ataque, ya que se avisa de newClicked, 
+  // y si ya ha selccionado tropas. En caso contrario, se ejecutará el useEffect
+  // de abajo, que es el que selecciona las tropas a poner. 
+  useEffect(() => {
+    if (ataqueTropas !== 0 && newClicked) {
+        console.log("pulsación secundaria")
+        console.log("Ataque tropas: ", ataqueTropas);
+        let tropasAUtilizar = ataqueTropas;
+        setAtaqueTropas(0);
+        setNewClicked(false);
+        // TODO ADAPTAR ESTO
+        /*console.log('Tropas para atacar: ', ataqueTropas);
+        const enemyTerritoryId = await seleccionarTerritorioEnemigo(e, territoriname, whoami);
           console.log(`Player has selected enemy territory ${enemyTerritoryId}`);
           setAtaqueDestino(enemyTerritoryId);
           console.log("Info:", partida._id, ataqueOrigen, ataqueDestino, tropasPuestas);
@@ -825,53 +872,51 @@ export default function RiskMap({ naviagtion, route }) {
               setAtaqueOrigen('');
               setAtaqueTropas(0);
             }
-          );
-        }
-
-        break
-      /*case 2: // maniobra -> reutilizo las variables de ataque jeje
-        if (ataqueTropas === 0) {
-          setAtaqueTropas(0)
-          setAtaqueDestino('')
-          setAtaqueOrigen('')
-          //colocarTropas(e, svgDoc, 50, 50, this.whoami, false, true, -numTroops) // las quito del mapa
-          setNumTropas(prevNumTropas => prevNumTropas - numTroops)
-          this.numTropas -= numTroops // tampoco las tengo colocables, las tengo seleccionadas así que las quito de ahí
-        } else {
-          // una vez seleccionadas las tropas me tocará elegir un territorio enemigo
-          const enemyTerritoryId = await this.seleccionarTerritorioAmigo(e, svgDoc, this.whoami)
-          console.log(`Player has selected friendly territory ${enemyTerritoryId}`)
-          this.ataqueDestino = enemyTerritoryId
-          // TODO AVISAR AL BACK END, ESPERAR RESPUESTA Y ACTUALIZAR EL ESTADO DE LA PARTIDA
-          //this.partida._id, this.whoami, targetId, this.tropasPuestas
-          //atacarTerritorio(this.partida._id, this.whoami, this.ataqueOrigen, this.ataqueDestino, this.ataqueTropas)
-          // esto recibe el back end
-          console.log(this.partida._id, this.whoami, this.ataqueOrigen, this.ataqueDestino, this.ataqueTropas)
-          // dependiendo del resultado de la llamada al back, se actualizará el estado de la partida y permitirá continuar
-          await new Promise(resolve => setTimeout(resolve, 5000)) // falseo llamada al back
-          const territorios = this.mapa.flatMap(continent => continent.territorios)
-          const destinoTropas = await territorios.find(territorio => territorio.nombre === this.ataqueDestino)
-          if (destinoTropas)
-            destinoTropas.tropas += this.ataqueTropas // seguramente esto te lo dé el back? tampoco está mal hacerlo localmente
-          this.colocarTropas(e, svgDoc, 50, 50, this.whoami, false, true, this.ataqueTropas) // las pongo
-          console.log(destinoTropas)
-          // TODO ACTUALIZAR ESTADO ETC -> de momento no lo hago, es trivial
-          this.ataqueDestino = ''
-          this.ataqueOrigen = ''
-          this.ataqueTropas = 0
-        }
-        break
-      case 3: // robo 
-        //this.final(e, svgDoc, imgWidth, imgHeight);
-        break
-      case 4: // fin
-        //this.final(e, svgDoc, imgWidth, imgHeight);
-        break*/
+          );*/
     }
-    //this.colocarTropas(e, svgDoc, imgWidth, imgHeight, this.whoami);
-    //this.cdr.detectChanges()
-  }
   
+  }, [ataqueTropas, newClicked]);
+  
+  // Cada vez que se haga un click en la fase de ataque, se ejecutará este useEffect
+  // esto es debido a que se hace un setNewClicked. Dentro de aquí, ejecutamos 
+  // la función q calcula las tropas a poner, por lo q el siguiente click de la fase
+  // llamará al useEffect de arriba, y no a este. 
+  useEffect(() => {
+    if (ataqueTropas === 0 && newClicked) {
+          console.log("pulsación inicial")
+          console.log('Selecccionar tropas para atacar');
+          setAtaqueTropas(0);
+          setAtaqueDestino('');
+          setAtaqueOrigen(''); 
+          setNewClicked(false);
+      
+          const fetchTroops = async () => {
+            console.log("entro dentro")
+            const numTroops = await seleccionarTropas(territorioName, whoami, false);
+            console.log(ataqueTropas, ataqueOrigen, ataqueDestino, numTroops);
+            console.log(`Player has selected ${numTroops} troops`);
+            console.log(recolocacion);
+            tropasPuestas = 0;
+            
+            // llamo a colocarTropas con -numTroops para quitarlas del mapa
+            colocarTropas(territorioName, whoami, false, -numTroops);
+            setNumTropas(numTropas-numTroops); // tampoco las tengo colocables, las tengo seleccionadas así que las quito de ahí
+            console.log('tropas colocables: ', numTropas);
+            console.log('tropas seleccionadas', numTroops);
+            setAtaqueTropas(numTroops);
+            console.log('tropas para atacar: ', ataqueTropas);
+          };
+
+          fetchTroops();
+          
+          // llegados a este punto, ataqueTropas valdrá 0 porque React Native 
+          // no actualiza el estado de forma síncrona. Para lograr lo del 
+          // "if/else", lo que debo hacer es un useEffect que haga lo que haría el else...
+          // voy a ver si lo consigo
+
+    }
+  }, [newClicked, ataqueTropas]);
+
   //Pone todas las tropas en 0
   const limpiarTropas =  () => {
     let mapa = thisPartida.mapa;
