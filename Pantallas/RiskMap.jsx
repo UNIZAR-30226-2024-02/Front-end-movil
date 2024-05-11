@@ -954,39 +954,45 @@ export default function RiskMap({ naviagtion, route }) {
 
         break
       case 2: // maniobra -> reutilizo las variables de ataque jeje
-        /*if (ataqueTropas === 0) {
+        if (ataqueTropas === 0) {
           setAtaqueTropas(0)
           setAtaqueDestino('')
           setAtaqueOrigen('')
-          // TODO ojo con esto que en movil será diferente
-          const numTroops = await seleccionarTropas(e, svgDoc, this.whoami, true);
-          //colocarTropas(e, svgDoc, 50, 50, this.whoami, false, true, -numTroops) // las quito del mapa
+          // TODO revisar esto, ha cambiado respecto a web
+          const numTroops = await seleccionarTropas(targetId, whoami, true);
+          colocarTropas(territoriname, whoami, false, true, -numTroops) // las quito del mapa
           setNumTropas(prevNumTropas => prevNumTropas - numTroops)
         } else {
           // una vez seleccionadas las tropas me tocará elegir un territorio enemigo
-          const enemyTerritoryId = await this.seleccionarTerritorioAmigo(e, svgDoc, this.whoami)
+          const enemyTerritoryId = await seleccionarTerritorioAmigo(e, svgDoc, this.whoami) // TODO revisar, es diferente en movil
           console.log(`Player has selected friendly territory ${enemyTerritoryId}`)
-          this.ataqueDestino = enemyTerritoryId
-          // TODO AVISAR AL BACK END, ESPERAR RESPUESTA Y ACTUALIZAR EL ESTADO DE LA PARTIDA
-          //this.partida._id, this.whoami, targetId, this.tropasPuestas
-          //atacarTerritorio(this.partida._id, this.whoami, this.ataqueOrigen, this.ataqueDestino, this.ataqueTropas)
-          // esto recibe el back end
-          console.log(this.partida._id, this.whoami, this.ataqueOrigen, this.ataqueDestino, this.ataqueTropas)
-          // dependiendo del resultado de la llamada al back, se actualizará el estado de la partida y permitirá continuar
-          await new Promise(resolve => setTimeout(resolve, 5000)) // falseo llamada al back
-          const territorios = this.mapa.flatMap(continent => continent.territorios)
-          const destinoTropas = await territorios.find(territorio => territorio.nombre === this.ataqueDestino)
-          if (destinoTropas)
-            destinoTropas.tropas += this.ataqueTropas // seguramente esto te lo dé el back? tampoco está mal hacerlo localmente
-          this.colocarTropas(e, svgDoc, 50, 50, this.whoami, false, true, this.ataqueTropas) // las pongo
-          console.log(destinoTropas)
-
-          socket.emit('actualizarEstado', thisPartida._id)
-
-          setAtaqueDestino('')
-          setAtaqueOrigen('')
-          setAtaqueTropas(0)
-        }*/
+          const ataqueDestino = enemyTerritoryId
+          console.log('espero que esto sea correcto ' + ataqueTropas + ' ' + ataqueOrigen + ' ' + ataqueDestino)
+          axios.put(`${IP}/partida/realizarManiobra`, { idPartida: thisPartida._id, territorioOrigen: ataqueOrigen, territorioDestino: ataqueDestino, numTropas: ataqueTropas }, { headers: { 'Authorization': token } })
+          .then(async response => {
+            console.log(response) // TODO revisar que esto funcione
+            setThisPartida(response.partida) // actualizo el estado de la partida
+            await new Promise(resolve => setTimeout(resolve, 1000)) // espero un rato
+            
+            limpiarTropas()
+            
+            //Pinto el mapa
+            distribuirPiezas()
+            setAtaqueDestino('')
+            setAtaqueOrigen('')
+            setAtaqueTropas(0)
+            // update the state of every client
+            socket.emit('actualizarEstado', thisPartida._id)
+          })
+          .catch(error => {
+            this.toastr.error('¡ERROR FATAL!');
+            this.fase = 0;
+            this.fase = 1;
+            setAtaqueDestino('')
+            setAtaqueOrigen('')
+            setAtaqueTropas(0)
+          })
+        }
         break
       case 3: // robo 
         //this.final(e, svgDoc, imgWidth, imgHeight);
@@ -1102,7 +1108,7 @@ export default function RiskMap({ naviagtion, route }) {
 
     if(!init2 && !recolocacion){
       if(!(territoriname2 && duenno && duenno.territorios.includes(territoriname2))){
-        alert('No puedes poner tropas en territorios que no te pertenecen ('+territoriname2+')');
+        alert('No puedes poner tropas en territorios que no te pertenecen ('+territoriname2.charAt(0).toUpperCase() + territoriname2.slice(1).toLowerCase()+')');
         //this.cdr.detectChanges();
         return;
       }
@@ -1154,7 +1160,7 @@ export default function RiskMap({ naviagtion, route }) {
       setStateTropas({territoriname: territoriname2, user: user2, init: init2});
       let newState = { message: null };
       setState(newState);
-      let auxDialog = {visible: true, type: 'colocar', title: 'Cuantas tropas quieres colocar?'};
+      let auxDialog = {visible: true, type: 'colocar', title: '¿Cuántas tropas quieres colocar en '+territoriname2.charAt(0).toUpperCase() + territoriname2.slice(1).toLowerCase()+'?'};
       setDialogState(auxDialog);
     }
 
@@ -1215,7 +1221,7 @@ export default function RiskMap({ naviagtion, route }) {
           socket.emit('actualizarEstado', partida._id);
         } else {
           Alert.alert('¡ERROR FATAL!');
-          colocarTropas(stateTropas.territoriname,stateTropas.user, stateTropas.init, tropasPuestas);
+          colocarTropas(stateTropas.territoriname, stateTropas.user, stateTropas.init, tropasPuestas);
           ocupado = false
           numTropas += tropasPuestas;
           tropasPuestas = 0;
@@ -1337,6 +1343,106 @@ export default function RiskMap({ naviagtion, route }) {
     setSeguir(true);
   }
 
+  // Función que comprueba que un territorio es alcanzable desde el territorio de origen
+  isFriendlyReachable(mapa, origen, destino, jugador) = () => {
+    if (!jugador.territorios.includes(destino)) {
+      console.log("El territorio destino no pertenece al jugador")
+      return false
+    }
+    const territorios = mapa.flatMap(continent => continent.territorios)
+    const territoriosExplorados = new Set()
+    const territoriosPorExplorar = new Set()
+    territoriosPorExplorar.add(origen)
+    while (territoriosPorExplorar.size > 0) {
+      const territorioActual = territoriosPorExplorar.values().next().value
+
+      const vecinosValidos = territorioActual.frontera.filter((vecino) =>                       // Los vecinos válidos son los vecinos del territorio actual
+        vecino != territorioActual.nombre                                                       // sin el territorio actual
+        && !Array.from(territoriosExplorados).some(territorio => territorio.nombre === vecino)  // que no han sido ya explorados
+        && jugador.territorios.includes(vecino)                                                 // y pertenecen al jugador
+      )
+
+      territoriosPorExplorar.delete(territorioActual)
+      territoriosExplorados.add(territorioActual)
+      for (let nombre of vecinosValidos) {
+        const territorio = territorios.find(territorio => territorio.nombre === nombre)
+        if (territorio && territorio.nombre === destino) {
+          console.log("Ruta encontrada desde el territorio origen hasta el territorio destino")
+          return true
+        } else if (territorio) {
+          territoriosPorExplorar.add(territorio)
+        }
+      }
+    }
+    console.log("No se ha encontrado una ruta desde el territorio origen hasta el territorio destino")
+    return false
+  }
+
+  seleccionarTerritorioAmigo(e, svgDoc, user) = () => { // TODO toda la función
+    return new Promise((resolve, reject) => {
+      const terrainId = e.target.id;
+      let duenno = this.jugadores.find(jugador => jugador.usuario == user);
+
+      // Check if the territory belongs to the player (it should)
+      if (terrainId && duenno && !duenno.territorios.includes(terrainId)) {
+        this.toastr.error('No puedes mover tropas fuera de tu territorio');
+        this.cdr.detectChanges();
+        reject('Must select your own territory');
+        return;
+      }
+
+      // Get the origin of the troops
+      const territorios = this.mapa.flatMap(continent => continent.territorios);
+      const origenTropas = territorios.find(territorio => territorio.nombre === this.ataqueOrigen);
+
+      // Check if the origin of the troops exists and has a border
+      if (origenTropas && origenTropas.frontera) {
+        if (duenno) {
+          // Search borders until exhaustion
+          const ok = isFriendlyReachable(this.mapa, origenTropas, terrainId, duenno)
+          // TODO comprobar que funcione
+          console.log(ok)
+          if (!ok) {
+            // The selected territory is not in the border of the origin of the troops --> fatal error user is stupid xd
+            this.toastr.error('El territorio seleccionado no está conectado con el origen de las tropas')
+            this.cdr.detectChanges()
+            reject('The selected territory is not connected to the origin of the troops')
+            return
+          }
+        }
+      } else {
+        // The origin of the troops does not exist or does not have a border (never should happen... )
+        this.toastr.error('El origen de las tropas no existe o no tiene una frontera');
+        this.cdr.detectChanges();
+        reject('The origin of the troops does not exist or does not have a border');
+        return;
+      }
+
+      // Check if the territory exists and belongs to the player
+      const terrainInfo = this.tropas.get(terrainId);
+      if (terrainInfo) {
+        const terrainOwner = this.jugadores.find(jugador => jugador.territorios.some(territorio => territorio == terrainId));
+        if (terrainOwner != duenno) {
+          this.toastr.error('Este territorio no te pertenece');
+          this.cdr.detectChanges();
+          reject('This territory does not belong to you');
+          return;
+        }
+      } else {
+        this.toastr.error('Ha ocurrido un error interno.', 'Atención');
+        reject('Internal error');
+        return;
+      }
+
+      this.toastr.success(`Has seleccionado tu territorio ${terrainId}`);
+      const territoryElement = svgDoc.getElementById(terrainId);
+      if (territoryElement) {
+        // TODO quizás renta hacer una animación: (+numero de tropas, por ejemplo)
+      }
+      this.cdr.detectChanges();
+      resolve(terrainId);
+    });
+  }
 
 
   //rutina de OK del boton de dialog
