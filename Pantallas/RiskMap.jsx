@@ -757,7 +757,7 @@ export default function RiskMap({ naviagtion, route }) {
           setAtaqueTropas(0);
           setAtaqueDestino('');
           setAtaqueOrigen('');
-          const numTroops = await seleccionarTropas(e, svgDoc, whoami); //FALTA CAMBIAR
+          const numTroops = await seleccionarTropas(territoriname,whoami,false); //FALTA CAMBIAR
           console.log(ataqueTropas, ataqueOrigen, ataqueDestino, numTroops);
           console.log(`Player has selected ${numTroops} troops`);
           console.log(recolocacion);
@@ -884,7 +884,7 @@ export default function RiskMap({ naviagtion, route }) {
   }
 
   //Esto pinta el mapa con las piezas de cada territorio pero creo que no hace falta aqui porque ya se pinta en el colocar tropas
-  //No hace falta pintar nada, al hacer setThisPartida se pinta el mapa
+  //No hace falta pintar nadc al hacer setThisPartida se pinta el mapa
   //Lo dejo de momento porque no se si hara falta para otra cosa, pero creo que no
   const distribuirPiezas = () => {
     //console.log("Continentes", mapa)
