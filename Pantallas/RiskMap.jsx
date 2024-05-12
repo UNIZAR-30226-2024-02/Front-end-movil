@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, Image, StyleSheet, TouchableOpacity, Text as Text1, Alert } from 'react-native';
+import { View, Image, StyleSheet, TouchableOpacity, Text as Text1, ToastAndroid, Alert } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
 import Svg, { Defs, G, Path, Circle, Use, Text as Text2 , TSpan } from "react-native-svg"
@@ -107,24 +107,30 @@ export default function RiskMap({ naviagtion, route }) {
       const user = thisPartida.jugadores.find(jugador => jugador.territorios.includes(key))
 
       if (user) {
-        switch (user.color) {
-          case "verde":
-            return "#0f0"
-          case "rojo":
-            return "#f00"
-          case "azul":
-            return "#0ff" // Cian, con el azul se ve mal el número de tropas
-          case "amarillo":
-            return "#ff0"
-          case "rosa":
-            return "#f0f"
-          case "morado":
-            return "#808"
-        }
+        return makeRGB(user.color)
       }
     }
     else
       return "#000";
+  }
+
+  const makeRGB = (color) => {
+    switch (color) {
+      case "verde":
+        return "#0f0"
+      case "rojo":
+        return "#f00"
+      case "azul":
+        return "#0ff" // Cian, con el azul se ve mal el número de tropas
+      case "amarillo":
+        return "#ff0"
+      case "rosa":
+        return "#f0f"
+      case "morado":
+        return "#808"
+      default:
+        return "#000"
+    }
   }
 
   const MapSVGComponent = (props) => (
@@ -958,26 +964,19 @@ export default function RiskMap({ naviagtion, route }) {
           setAtaqueTropas(0)
           setAtaqueDestino('')
           setAtaqueOrigen('')
-          // TODO revisar esto, ha cambiado respecto a web
-          const numTroops = await seleccionarTropas(targetId, whoami, true);
+          const numTroops = await seleccionarTropas(territoriname, whoami, false);
           colocarTropas(territoriname, whoami, false, true, -numTroops) // las quito del mapa
-          setNumTropas(prevNumTropas => prevNumTropas - numTroops)
         } else {
           // una vez seleccionadas las tropas me tocará elegir un territorio enemigo
-          const enemyTerritoryId = await seleccionarTerritorioAmigo(e, svgDoc, this.whoami) // TODO revisar, es diferente en movil
+          const enemyTerritoryId = seleccionarTerritorioAmigo(territoriname)
           console.log(`Player has selected friendly territory ${enemyTerritoryId}`)
           const ataqueDestino = enemyTerritoryId
+          console.log(enemyTerritoryId)
           console.log('espero que esto sea correcto ' + ataqueTropas + ' ' + ataqueOrigen + ' ' + ataqueDestino)
           axios.put(`${IP}/partida/realizarManiobra`, { idPartida: thisPartida._id, territorioOrigen: ataqueOrigen, territorioDestino: ataqueDestino, numTropas: ataqueTropas }, { headers: { 'Authorization': token } })
           .then(async response => {
-            console.log(response) // TODO revisar que esto funcione
-            setThisPartida(response.partida) // actualizo el estado de la partida
-            await new Promise(resolve => setTimeout(resolve, 1000)) // espero un rato
-            
-            limpiarTropas()
-            
-            //Pinto el mapa
-            distribuirPiezas()
+            console.log(response.data)
+            onLoad()
             setAtaqueDestino('')
             setAtaqueOrigen('')
             setAtaqueTropas(0)
@@ -1098,7 +1097,11 @@ export default function RiskMap({ naviagtion, route }) {
     //console.log(partida.jugadores);
   }
 
-    const [stateTropas, setStateTropas] = useState({territoriname: '', user: '', init: false});
+  const [stateTropas, setStateTropas] = useState({territoriname: '', user: '', init: false});
+
+  const fixCapitalization = (str) => {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
 
   const colocarTropas = (territoriname2, user2, init2, limite= null) => {
     // Ask the user for the number of troops
@@ -1108,7 +1111,7 @@ export default function RiskMap({ naviagtion, route }) {
 
     if(!init2 && !recolocacion){
       if(!(territoriname2 && duenno && duenno.territorios.includes(territoriname2))){
-        alert('No puedes poner tropas en territorios que no te pertenecen ('+territoriname2.charAt(0).toUpperCase() + territoriname2.slice(1).toLowerCase()+')');
+        alert('No puedes poner tropas en territorios que no te pertenecen ('+fixCapitalization(territoriname2)+')');
         //this.cdr.detectChanges();
         return;
       }
@@ -1117,6 +1120,7 @@ export default function RiskMap({ naviagtion, route }) {
     //Si hay limite, no hace falta preguntar por las tropas, esto solo se usa cuando hay que quitar tropas del mapa
     if(limite){
       troops = limite.toString();
+      console.log('limite: ', troops);
 
       let numTroops = parseInt(troops);
       let select = false;
@@ -1133,10 +1137,9 @@ export default function RiskMap({ naviagtion, route }) {
       if (territorios) {
         const terrainInfo = territorios.find(territorio => territorio.nombre === territoriname2)
         if (terrainInfo) {
-          let aux = terrainInfo.tropas;
           terrainInfo.tropas += numTroops;
           terrainInfo.user = user2;
-          numTroops = terrainInfo.tropas;
+          numTroops = terrainInfo.tropas
           //setterritoriosTropas(territoriosTropas);
           setThisPartida(thisPartidaAux);
           if(!init2){
@@ -1160,7 +1163,7 @@ export default function RiskMap({ naviagtion, route }) {
       setStateTropas({territoriname: territoriname2, user: user2, init: init2});
       let newState = { message: null };
       setState(newState);
-      let auxDialog = {visible: true, type: 'colocar', title: '¿Cuántas tropas quieres colocar en '+territoriname2.charAt(0).toUpperCase() + territoriname2.slice(1).toLowerCase()+'?'};
+      let auxDialog = {visible: true, type: 'colocar', title: '¿Cuántas tropas quieres colocar en '+fixCapitalization(territoriname2)+'?'};
       setDialogState(auxDialog);
     }
 
@@ -1280,7 +1283,7 @@ export default function RiskMap({ naviagtion, route }) {
       //para probar comento esto
       let duenno = thisPartida.jugadores.find(jugador => jugador.usuario == user2);
       if (!(terrainId && duenno && duenno.territorios.includes(terrainId))) {
-        Alert.alert('No puedes seleccionar tropas en territorios que no te pertenecen');
+        Alert.alert('No puedes seleccionar tropas en territorios que no te pertenecen ('+fixCapitalization(terrainId)+')');
         //this.cdr.detectChanges();
 
         return;
@@ -1289,7 +1292,7 @@ export default function RiskMap({ naviagtion, route }) {
       setStateTropas({territoriId: _territoriId, user: user2, attack: attack2});
       let newState = { message: null };
       setState(newState);
-      setDialogState({visible: true, type: 'seleccionar', title: 'Cuantas tropas quieres seleccionar?'});
+      setDialogState({visible: true, type: 'seleccionar', title: '¿Cuántas tropas quieres seleccionar de '+fixCapitalization(terrainId)+'?'});
       //setDialog('seleccionar');
       //setVisible(true);
       //Despues del dialog se sigue en el SelectTropasCorrectas
@@ -1315,7 +1318,6 @@ export default function RiskMap({ naviagtion, route }) {
     if (stateTropas.attack && numTroops > 3) {
       console.log(stateTropas.attack)
       Alert.alert('Sólo puedes seleccionar hasta 3 tropas para atacar.')
-      this.cdr.detectChanges();
 
       return;
     }
@@ -1344,7 +1346,7 @@ export default function RiskMap({ naviagtion, route }) {
   }
 
   // Función que comprueba que un territorio es alcanzable desde el territorio de origen
-  isFriendlyReachable(mapa, origen, destino, jugador) = () => {
+  const isFriendlyReachable = (mapa, origen, destino, jugador) => {
     if (!jugador.territorios.includes(destino)) {
       console.log("El territorio destino no pertenece al jugador")
       return false
@@ -1378,70 +1380,59 @@ export default function RiskMap({ naviagtion, route }) {
     return false
   }
 
-  seleccionarTerritorioAmigo(e, svgDoc, user) = () => { // TODO toda la función
-    return new Promise((resolve, reject) => {
-      const terrainId = e.target.id;
-      let duenno = this.jugadores.find(jugador => jugador.usuario == user);
+  const seleccionarTerritorioAmigo = (_territoriId) => {
+    console.log('Seleccionar tropas')
 
-      // Check if the territory belongs to the player (it should)
-      if (terrainId && duenno && !duenno.territorios.includes(terrainId)) {
-        this.toastr.error('No puedes mover tropas fuera de tu territorio');
-        this.cdr.detectChanges();
-        reject('Must select your own territory');
-        return;
-      }
-
-      // Get the origin of the troops
-      const territorios = this.mapa.flatMap(continent => continent.territorios);
-      const origenTropas = territorios.find(territorio => territorio.nombre === this.ataqueOrigen);
-
-      // Check if the origin of the troops exists and has a border
-      if (origenTropas && origenTropas.frontera) {
-        if (duenno) {
-          // Search borders until exhaustion
-          const ok = isFriendlyReachable(this.mapa, origenTropas, terrainId, duenno)
-          // TODO comprobar que funcione
-          console.log(ok)
-          if (!ok) {
-            // The selected territory is not in the border of the origin of the troops --> fatal error user is stupid xd
-            this.toastr.error('El territorio seleccionado no está conectado con el origen de las tropas')
-            this.cdr.detectChanges()
-            reject('The selected territory is not connected to the origin of the troops')
-            return
-          }
+    const terrainId = _territoriId // territorio origen
+    console.log("Territorio destino: ", terrainId)
+    let duenno = thisPartida.jugadores.find(jugador => jugador.usuario == whoami);
+    console.log("Duenno: ", duenno)
+    // Check if the territory belongs to the player (it should)
+    if (terrainId && duenno && !duenno.territorios.includes(terrainId)) {
+      Alert.alert('No puedes mover tropas fuera de tu territorio ('+fixCapitalization(terrainId)+')')
+      return
+    }
+    console.log("Territorio origen", ataqueOrigen);
+    let origen = ataqueOrigen;
+    // debo obtener el territorio origen como tal
+    let thisPartidaAux = thisPartida;
+    const territorios = thisPartidaAux.mapa.flatMap(continent => continent.territorios);
+    const origenAtaque = territorios.find(territorio => territorio.nombre === origen);
+    console.log(origenAtaque);
+    // Check if the origin of the troops exists and has a border
+    if(origenAtaque && origenAtaque.frontera){
+      if (duenno) {
+        // Search borders until exhaustion
+        const ok = isFriendlyReachable(thisPartida.mapa, origenAtaque, terrainId, duenno)
+        console.log(ok)
+        if (!ok) {
+          // The selected territory is not in the border of the origin of the troops --> fatal error user is stupid xd
+          Alert.alert('El territorio seleccionado no está conectado con el origen de las tropas ('+fixCapitalization(terrainId)+')')
+          return
         }
-      } else {
-        // The origin of the troops does not exist or does not have a border (never should happen... )
-        this.toastr.error('El origen de las tropas no existe o no tiene una frontera');
-        this.cdr.detectChanges();
-        reject('The origin of the troops does not exist or does not have a border');
-        return;
       }
+    }else { // esto no debería pasar
+      Alert.alert('El territorio origen no existe o no tiene una frontera ('+fixCapitalization(terrainId)+')');
+      return
+    }
 
-      // Check if the territory exists and belongs to the player
-      const terrainInfo = this.tropas.get(terrainId);
-      if (terrainInfo) {
-        const terrainOwner = this.jugadores.find(jugador => jugador.territorios.some(territorio => territorio == terrainId));
-        if (terrainOwner != duenno) {
-          this.toastr.error('Este territorio no te pertenece');
-          this.cdr.detectChanges();
-          reject('This territory does not belong to you');
-          return;
-        }
-      } else {
-        this.toastr.error('Ha ocurrido un error interno.', 'Atención');
-        reject('Internal error');
-        return;
+    // Check if the territory exists and belongs to the player
+    const terrainInfo = territorios.find(terrain => terrain.nombre === terrainId)
+    if (terrainInfo) {
+      const terrainOwner = thisPartida.jugadores.find(jugador => jugador.territorios.includes(terrainId))
+      console.log(terrainOwner)
+      if (terrainOwner != duenno) {
+        Alert.alert('Este territorio no te pertenece ('+fixCapitalization(terrainId)+')')
+        return
       }
+    } else {
+      Alert.alert('Ha ocurrido un error interno.', 'Atención')
+      return
+    }
 
-      this.toastr.success(`Has seleccionado tu territorio ${terrainId}`);
-      const territoryElement = svgDoc.getElementById(terrainId);
-      if (territoryElement) {
-        // TODO quizás renta hacer una animación: (+numero de tropas, por ejemplo)
-      }
-      this.cdr.detectChanges();
-      resolve(terrainId);
-    });
+    ToastAndroid.show('Has seleccionado tu territorio ('+fixCapitalization(terrainId)+')', ToastAndroid.SHORT)
+    console.log("Territorio destino: ", terrainId)
+    return terrainId
   }
 
 
@@ -1473,6 +1464,13 @@ export default function RiskMap({ naviagtion, route }) {
         </ReactNativeZoomableView>
       </View>
       <View style={styles.containerRight}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text1 style={styles.zoneText}>Tu color: {
+            thisPartida ? thisPartida.jugadores.find(jugador => jugador.usuario === whoami) ? thisPartida.jugadores.find(jugador => jugador.usuario === whoami).color : "Loading..." : "Loading..."
+          }
+          </Text1>
+          <View style={[styles.colorSquare, { backgroundColor: makeRGB(thisPartida ? thisPartida.jugadores.find(jugador => jugador.usuario === whoami) ? thisPartida.jugadores.find(jugador => jugador.usuario === whoami).color : "" : "") }]} />
+        </View>
         <Text1 style={styles.zoneText}>Tropas: {numTropas}</Text1>
         <Text1 style={styles.zoneText}>Turno del jugador: {turnoJugador}</Text1>
         <View style={styles.buttonContainer}>
@@ -1540,5 +1538,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     margin: 10,
     borderRadius: 5,
+  },
+  colorSquare: {
+    width: 10,
+    height: 10,
+    margin: 10,
   },
 });
