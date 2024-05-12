@@ -97,12 +97,6 @@ export default function Inicial({ navigation, route }) {
     navigation.navigate('Perfil', { id: id, token: token });
   };
 
-
-  const goToMap = () => {
-    // Navigate to "Perfil" screen
-    navigation.navigate('RiskMap', { token: token });
-  }
-
   const goToChats = () => {
     // Navigate to "Chats" screen
     navigation.navigate('MyChats', { token: token });
@@ -133,9 +127,6 @@ export default function Inicial({ navigation, route }) {
           <TouchableOpacity style={styles.Perfilbutton} onPress={goToPerfil}>
           <FontAwesome name="user" size={24} color="white" />
             <Text style={styles.PerfilbuttonText}>Perfil</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.Mapabutton} onPress={goToMap}>
-            <Text style={styles.AmistadbuttonText}>MapaXD</Text>
           </TouchableOpacity>
         <TouchableOpacity style={styles.Amistadbutton} onPress={goToAmistad}>
         <FontAwesome name="user-plus" size={24} color="white" />

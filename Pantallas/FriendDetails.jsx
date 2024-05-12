@@ -52,7 +52,9 @@ export default function PlayerDetails({navigation, route }) {
       <View style={styles.container}>
         <View style={styles.content}>
           <View style={styles.detailsContainer}>
-            <Text style={styles.playerName}>{friend}</Text>
+            <View style={styles.titleContainer}>
+              <Text style={styles.playerName}>{friend}</Text>
+            </View>
             <View style={styles.containerButton}>
               <TouchableOpacity style={styles.addButton} onPress={handleEliminateFriend}>
                 <FontAwesome name="times" size={24} color="white" />
@@ -81,6 +83,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 50,
     
+  },
+  titleContainer: {
+    position: 'absolute',
+    top: 20,
+    left:290,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    padding: 10,
+    borderRadius: 5,
+    zIndex: 1,
+    width:100,
+    borderWidth: 2 ,
+    borderColor:'#DB4437',
   },
   content: {
     flexDirection: 'row',

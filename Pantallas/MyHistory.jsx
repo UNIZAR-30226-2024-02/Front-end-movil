@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     borderColor: '#DB4437',
     borderRadius: 15,
     overflow: 'hidden',
-    minWidth: '80%',
+    minWidth: '90%',
   },
   tableHeader: {
     flexDirection: 'row',
@@ -88,6 +88,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#DB4437',
+    backgroundColor: 'gray',
   },
   cell: {
     textAlign: 'center',

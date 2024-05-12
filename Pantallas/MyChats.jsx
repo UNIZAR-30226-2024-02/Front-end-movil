@@ -55,6 +55,9 @@ export default function FriendshipRequests({ navigation, route }) {
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background} resizeMode="stretch">
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>CHATS</Text>
+      </View>
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
@@ -86,10 +89,26 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     justifyContent: 'center',
   },
+  titleContainer: {
+    position: 'absolute',
+    top: 20,
+    left:290,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    padding: 10,
+    borderRadius: 5,
+    zIndex: 1,
+    width:90
+  },
+  title: {
+    color: '#000', // Set color to black for visibility
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   searchContainer: {
-    marginTop: 25, 
+    marginTop: 90, 
     marginLeft: 15,
-    marginBottom: 10, 
+    marginRight: 15,
+    marginBottom: 10
   },
   searchInput: {
     backgroundColor: '#ffffff',

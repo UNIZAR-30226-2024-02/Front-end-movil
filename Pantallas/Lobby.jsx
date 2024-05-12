@@ -233,7 +233,6 @@ const Lobby = ({ navigation, route }) => {
                 style={[styles.input, styles.numPlayersInput]}
                 placeholder="Jugadores *"
                 keyboardType="numeric"
-                value={createGamePlayers}
                 onChangeText={handleChangeNumPlayers}
                 placeholderTextColor="rgba(0, 0, 0, 0.7)"
               />
