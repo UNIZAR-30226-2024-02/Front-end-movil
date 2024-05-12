@@ -965,7 +965,7 @@ export default function RiskMap({ naviagtion, route }) {
           setAtaqueDestino('')
           setAtaqueOrigen('')
           const numTroops = await seleccionarTropas(territoriname, whoami, false);
-          colocarTropas(territoriname, whoami, false, true, -numTroops) // las quito del mapa
+          colocarTropas(territoriname, whoami, false, -numTroops) // las quito del mapa
         } else {
           // una vez seleccionadas las tropas me tocará elegir un territorio enemigo
           const enemyTerritoryId = seleccionarTerritorioAmigo(territoriname)
@@ -1120,7 +1120,6 @@ export default function RiskMap({ naviagtion, route }) {
     //Si hay limite, no hace falta preguntar por las tropas, esto solo se usa cuando hay que quitar tropas del mapa
     if(limite){
       troops = limite.toString();
-      console.log('limite: ', troops);
 
       let numTroops = parseInt(troops);
       let select = false;
