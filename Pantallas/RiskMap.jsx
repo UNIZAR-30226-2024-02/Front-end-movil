@@ -7,13 +7,14 @@ import Risk from '../assets/Risk_game_board.svg'
 import { useEffect } from 'react';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
 import io from 'socket.io-client';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useNavigation } from '@react-navigation/native';
 
 import Dialog from "react-native-dialog";
 
 export default function RiskMap({ naviagtion, route }) {
   //const [socket, setSocket] = useState('')
-
+  const navigation = useNavigation();
   const [whoami, setWhoami] = useState(null);
 
   const { token, partida, socket } = route.params;
@@ -35,8 +36,8 @@ export default function RiskMap({ naviagtion, route }) {
 
   const [isOk, setOkState] = useState("No");
   const [isPaused, setIsPaused] = useState(false);
-
-  
+  const [ganador, setGanador] = useState(null);
+  let eloGanado = 0; let puntosGanados = 0;
 
   useEffect(() => {
     //setSocket(io(IP))
@@ -67,8 +68,36 @@ export default function RiskMap({ naviagtion, route }) {
         
       });
 
+      socket.on('gameOver',(posibleGanador) => {
+        if(posibleGanador === whoami){
+          Alert.alert('¡Has ganado la partida!');
+          eloGanado+=200; puntosGanados+=200;
+        }
+        setGanador(posibleGanador);
+      });
+
+
     } 
   }, [socket])
+
+
+useEffect(() => {
+    if (ganador !== null) {
+        Alert.alert(
+            `El ganador es ${ganador}`,
+            ganador === whoami ? '¡Has ganado la partida!' : '',
+            [
+                {
+                    text: 'OK',
+                    onPress: () => navigation.navigate('Partidas', { token: token })
+                }
+            ]
+        );
+        if(ganador === whoami){
+            eloGanado+=200; puntosGanados+=200;
+        }
+    }
+}, [ganador]);
 
   /*
   *
@@ -738,7 +767,7 @@ export default function RiskMap({ naviagtion, route }) {
 
     // Atributos generales
     let nombrePartida = '';
-    let ganador = null;
+    //let ganador = null;
     let turno= 0;
     const [cartas, setCartas] = useState(null);
     let descartes= [];
@@ -1073,6 +1102,10 @@ export default function RiskMap({ naviagtion, route }) {
     descartes = partida.descartes;
 
     ganador = partida.ganador;
+    if(ganador === whoami){
+      Alert.alert('¡Has ganado la partida!');
+      eloGanado+=200; puntosGanados+=200;
+    }
     setFase(partida.fase);
     setTurnoJugador(partida.jugadores[turno % numJugadores].usuario)
 
