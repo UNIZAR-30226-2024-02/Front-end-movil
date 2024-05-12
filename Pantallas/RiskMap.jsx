@@ -34,6 +34,7 @@ export default function RiskMap({ naviagtion, route }) {
   const [dialogState, setDialogState] = useState({visible: false, title: '', type: ''});
 
   const [isOk, setOkState] = useState("No");
+  const [isPaused, setIsPaused] = useState(false);
 
   
 
@@ -59,6 +60,13 @@ export default function RiskMap({ naviagtion, route }) {
           //Pinto el mapa
           //distribuirPiezas() // TODO
       });
+      socket.on('partidaPausada', async () => {
+        let paused = isPaused; let txt = ''; if(isPaused) txt = 'resumida'; else txt = 'pausada';
+        setIsPaused(!isPaused);
+        Alert.alert('Partida ' + txt);
+        
+      });
+
     } 
   }, [socket])
 
@@ -868,6 +876,11 @@ export default function RiskMap({ naviagtion, route }) {
       console.log('No es tu turno');
       return;
     } 
+    if(isPaused){
+      Alert.alert('La partida está pausada');
+      console.log('La partida está pausada');
+      return;
+    }
     if(ocupado){ console.log("espere"); return};
     switch(fase){
       case 0: // colocación
@@ -1449,6 +1462,21 @@ export default function RiskMap({ naviagtion, route }) {
   const handleCancel = async () => {
     setDialogState({type: null, visible: false, title: dialogState.title})
   }
+
+  const handlePauseResume = async () => {
+      const response = await axios.put(IP+ "/partida/pausarPartida", {idPartida: thisPartida._id}, { headers: { 'Authorization': token } });
+        if(response.status === 200){
+        let paused = isPaused; let txt = ''; if(isPaused) txt = 'resumida'; else txt = 'pausada';
+        setIsPaused(!isPaused);
+        socket.emit('pausoPartida', this.partida._id);
+        Alert.alert('Partida ' + txt);
+      } else{ 
+        console.log('Error al pausar la partida');
+        Alert.alert('Error al pausar la partida');
+      }
+  };
+
+
   return (
     <View style={styles.container} >
       <View style={styles.containerleft}>
@@ -1479,7 +1507,12 @@ export default function RiskMap({ naviagtion, route }) {
           <TouchableOpacity style={styles.botonControl}>
             <Text1 style={styles.zoneText}>Cambiar turno</Text1>
           </TouchableOpacity>
-
+          <TouchableOpacity 
+              style={[styles.botonControl, { width: 50, height: 50, justifyContent: 'center', alignItems: 'center' }]} 
+              onPress={handlePauseResume}
+          >
+              <Text1 style={styles.zoneText}>{isPaused ? '▶' : '❚❚'}</Text1>
+          </TouchableOpacity>
           <Text1 style={styles.zoneText}>{textoFase}</Text1>
         </View>
       </View>
