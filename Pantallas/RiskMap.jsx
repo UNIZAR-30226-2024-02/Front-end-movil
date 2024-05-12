@@ -38,7 +38,7 @@ export default function RiskMap({ naviagtion, route }) {
   // 
   const [newClicked, setNewClicked] = useState(false);
   const [territorioName, setTerritorioName] = useState('');
-
+  const [seleccionadoAtaque, setAtaqueReady] = useState(false);
   
 
   useEffect(() => {
@@ -668,6 +668,7 @@ export default function RiskMap({ naviagtion, route }) {
     const [ataqueDestino, setAtaqueDestino] = useState('');
     let avatarAMostrar = '';
 
+  
 
 
   useEffect(() => {
@@ -696,7 +697,44 @@ export default function RiskMap({ naviagtion, route }) {
     }
   }, [fase, turnoJugador]);
 
+  const ResolverAtaque= async (partidaId, ataqueOrigen, ataqueDestino, tropasPuestas) => {
+    const token = await AsyncStorage.getItem('token');
+    let header;
+    console.log('Resolviendo Ataque');
+    
+    if (!token) {
+      // redirect the user to the login page if token does not exist
+      console.log('resolviendo 2')
+      navigation.navigate('Login');
+      header=null;
+    }
 
+    header=await AsyncStorage.getItem('username');// hasta aqui no es seguro
+    console.log('resolviendo 1')
+    if (!headers) {
+      console.log('fallo headers')
+      return null;
+    }
+
+    try {
+      const response = await axios.put(IP+'/partida/atacarTerritorio', {
+        idPartida: partidaId,
+        territorioAtacante: ataqueOrigen,
+        territorioDefensor: ataqueDestino,
+        numTropas: ataqueDestino
+      }, {
+        headers: {
+          'Authorization': `${token}`
+        }
+      });
+      console.log('atacando')
+      return response.data;
+      
+    } catch (error) {
+      console.error('Error Resolviendo ataque:', error);
+    }
+  }
+  
   const  updateFase = async () => {
     /*if(this.paused){
       this.toastr.error('La partida está pausada');
@@ -819,9 +857,63 @@ export default function RiskMap({ naviagtion, route }) {
               let territorioDestinoAtacar = await seleccionarTerritorioEnemigo(territorioName, whoami, false);
               console.log(`Player has selected enemy territory ${territorioName}`);
               setAtaqueDestino(territorioName); // hace falta? 
-              console.log('Ataque origen: ', ataqueOrigen, "ataque destino", territorioName);
+              console.log('Ataque origen: ', ataqueOrigen, "ataque destino", territorioName, "tropas origen:", "tropas destino:");
               // TODO -> LLAMAR A RESOLVER ATAQUE Y ACTUALIZAR ESTADO
               // NO ME DA TIEMPO A TERMINIARLO PERO ES TRIVIAL
+              let usuarioObjetivo = thisPartida.jugadores.find(jugador => jugador.territorios.includes(territorioName));
+              console.log('Usuario objetivo:', usuarioObjetivo)
+              ResolverAtaque(partida._id, ataqueOrigen, ataqueDestino, -tropasPuestas).then(  
+                async response => {
+                  console.log('respuesta resolver ataque',response);
+                  Toast.success('¡Ataque realizado con éxito!');
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  Toast.info('Tus dados: ' + response.dadosAtacante + ' Dados defensor: ' + response.dadosDefensor);
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  Toast.info('Tus bajas: ' + response.resultadoBatalla.tropasPerdidasAtacante + ' Bajas defensor: ' + response.resultadoBatalla.tropasPerdidasDefensor);
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  if(response.conquistado){
+                    Toast.success('¡Territorio conquistado!');
+    
+                  } else {
+                    Alert.alert('¡No has conquistado el territorio!');
+                    
+                  }
+                  inicializacionPartida(partida); // actualizo el estado de la partida
+                  await new Promise(resolve => setTimeout(resolve, 1000)); // espero un rato
+                  
+                  //limpiarTropas();  en movil no cambiamos skins
+                  
+                  //Pinto el mapa
+                  //distribuirPiezas(); en movil no cambiamos skins
+                  setAtaqueDestino('');
+                  setAtaqueOrigen('');
+                  setAtaqueTropas(0);
+                  // update the state of every client
+                  socket.emit('actualizarEstado', partida._id);
+                  // and notify the defense player 
+                  
+                  socket.emit('ataco', {userOrigen: whoami, userDestino: usuarioObjetivo?.usuario ?? '', 
+                                   dadosAtacante: response.dadosAtacante, dadosDefensor: response.dadosDefensor, 
+                                   tropasPerdidasAtacante: response.resultadoBatalla.tropasPerdidasAtacante,
+                                   tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
+                                   conquistado: response.conquistado, territorioOrigen: ataqueOrigen, 
+                                   territorioDestino: enemyTerritoryId});
+                  setAtaquePerpetrado({userOrigen: whoami, userDestino: usuarioObjetivo?.usuario ?? '', 
+                                          dadosAtacante: response.dadosAtacante, dadosDefensor: response.dadosDefensor, 
+                                          tropasPerdidasAtacante: response.resultadoBatalla.tropasPerdidasAtacante,
+                                          tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
+                                          conquistado: response.conquistado, territorioOrigen: ataqueOrigen, 
+                                          territorioDestino: enemyTerritoryId});
+                },
+                error => {
+                  Alert.alert('¡ERROR FATAL!');
+                  setFase(0);
+                  setFase(1);
+                  setAtaqueDestino('');
+                  setAtaqueOrigen('');
+                  setAtaqueTropas(0);
+                }
+              );
           } catch (error) {
               console.error('An error occurred:', error);
           }
