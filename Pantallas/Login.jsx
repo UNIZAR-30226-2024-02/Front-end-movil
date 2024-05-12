@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { IP } from '../config';
+import io from 'socket.io-client';
+//import CryptoJS from 'crypto-js';
 
 export default function App({ navigation }) {
   const { width, height } = useWindowDimensions();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [socket, setSocket] = useState('');
+
+  useEffect(() => {
+    setSocket(io(IP))
+  }, [])
 
   const handleLogin = async() => {
     // Validate that both username and password are filled
@@ -22,13 +29,34 @@ export default function App({ navigation }) {
         });
   
         const token = response.data.token;
-
-        // Store token in AsyncStorage
         await AsyncStorage.setItem('token', token);
-        await AsyncStorage.setItem('username', response.data.idUsuario);
-        Alert.alert('Éxito', 'Usuario logeado exitosamente');
-        navigation.navigate('Inicial', { id: username, token: token });
 
+        try{
+          const partida =await axios.get(IP+'/partida/estoyEnPartida', {
+            headers: {
+              Authorization: token,
+            },
+          });
+          console.log(partida.data.partida);
+          if(partida.data){
+            try{
+              const partidaInfo =await axios.put(IP+'/partida/getPartida', { idPartida:partida.data.partida},{headers: {'Authorization': token}},);
+              console.log(partidaInfo.data);
+              Alert.alert('Partida en curso.');
+              navigation.navigate('RiskMap', { token: token, partida: partidaInfo.data, socket: socket });
+            }catch(error){
+              console.error('Error:', error);
+            }
+          }else{
+            Alert.alert('Éxito', 'Usuario logeado exitosamente');
+            navigation.navigate('Inicial', { id: username, token: token });
+          }
+        }catch(error){
+          console.error('Error:', error);
+          Alert.alert('Error', 'Ha ocurrido un error al logear usuario');
+        }
+        // Store token in AsyncStorage
+        
       } catch (error) {
         console.error('Error:', error);
         Alert.alert('Error', 'Ha ocurrido un error al logear usuario');
@@ -159,7 +187,7 @@ const styles = StyleSheet.create({
   showPasswordButton: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: '#DB4437',
+    backgroundColor: 'olive',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -187,7 +215,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 2,
   },
   button: {
-    backgroundColor: '#DB4437',
+    backgroundColor: '#556b2f',
     paddingVertical: 11,
     paddingHorizontal: 40,
     borderRadius: 25,
