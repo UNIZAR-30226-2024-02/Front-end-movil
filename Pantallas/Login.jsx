@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   showPasswordButton: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: '#DB4437',
+    backgroundColor: 'olive',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 2,
   },
   button: {
-    backgroundColor: '#DB4437',
+    backgroundColor: '#556b2f',
     paddingVertical: 11,
     paddingHorizontal: 40,
     borderRadius: 25,

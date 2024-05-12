@@ -120,11 +120,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: '#ffffff',
     borderRadius: 8,
-    width: '90%',
+    width: '50%',
     elevation: 3,
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
     marginTop:30,
-    marginLeft:15,
+    marginLeft:170,
   },
   title: {
     fontWeight: 'bold',
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   skinsbutton: {
-    backgroundColor: '#DB4437',
+    backgroundColor: 'green',
     paddingVertical: 11,
     paddingHorizontal: 40,
     borderRadius: 12,
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   amigosbutton: {
-    backgroundColor: '#DB4437',
+    backgroundColor: 'purple',
     paddingVertical: 11,
     paddingHorizontal: 40,
     borderRadius: 12,
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 5,
   },
   historialbutton: {
-    backgroundColor: '#DB4437',
+    backgroundColor: 'darkorange',
     paddingVertical: 11,
     paddingHorizontal: 40,
     borderRadius: 12,

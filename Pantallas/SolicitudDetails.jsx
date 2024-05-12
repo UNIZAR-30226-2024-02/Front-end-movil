@@ -5,9 +5,7 @@ import { IP } from '../config';
 
 export default function SolicitudDetails({ navigation,route }) {
   const {solicitante,token} = route.params;
-  console.log('Token:', token); // Access token
-  console.log('amigo:', solicitante)
-  
+
   const handleConfirmaFriend = async () => {
     // Implementación para confirmar amistad
     try {
@@ -29,7 +27,7 @@ export default function SolicitudDetails({ navigation,route }) {
       <View style={styles.container}>
         <View style={styles.content}>
           <View style={styles.detailsContainer}>
-            <Text style={styles.playerName}>{solicitante}</Text>
+            <Text style={styles.playerName}>Solicitud de amistad de {solicitante}</Text>
             <Text style={styles.playerDescription}>{solicitante} te ha mandado una solicitud de amistad.¿Deseas aceptarla?</Text>
             <View style={styles.containerButton}>
               <TouchableOpacity style={styles.addButton} onPress={handleConfirmaFriend}>

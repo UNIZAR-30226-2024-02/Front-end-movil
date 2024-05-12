@@ -116,7 +116,7 @@ export default function Chat({ navigation, route }) {
   }, [messages]);
 
   return (
-    <ImageBackground source={require('../assets/img-0vyoZ2EwbuNtpdymzDNJY.jpeg')} style={styles.background}>
+    <ImageBackground source={require('../assets/img-0vyoZ2EwbuNtpdymzDNJY.jpeg')} style={styles.background} resizeMode="stretch">
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>{chat.nombre}</Text>

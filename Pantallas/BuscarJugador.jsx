@@ -7,7 +7,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function App({ navigation ,route }) {
 
   const { token } = route.params;
-  console.log('Token:', token);
   const { width, height } = useWindowDimensions();
   const [username, setUsername] = useState('');
 
@@ -44,6 +43,7 @@ export default function App({ navigation ,route }) {
           position: 'absolute',
           top: 0,
           left: 0,
+          resizeMode:"stretch"
         }}
       />
       <View style={styles.overlayContainer}>
@@ -57,7 +57,7 @@ export default function App({ navigation ,route }) {
           />
         </View>
         <TouchableOpacity style={styles.button} onPress={handleFriendShip}>
-          <Text style={styles.buttonText}>Buscar amigo</Text>
+          <Text style={styles.buttonText}>ENVIAR</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -70,6 +70,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', // Set flexDirection to 'row' for horizontal layout
     justifyContent: 'center',
     alignItems: 'center',
+    
   },
   overlayContainer: {
     maxWidth: 300,
@@ -81,9 +82,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 8,
     borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'silver',
     borderWidth:2,
     borderColor:'#DB4437',
+    color:'gray',
   },
   title: {
     color: 'white',
@@ -115,13 +117,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     borderRadius: 12,
     marginBottom: 0,
-    marginRight: 10,
+    marginLeft: 55,
     alignItems: 'center',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
-    width:270,
-    height:50,
+    width:150,
+    height:70,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -135,7 +137,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 19,
     fontWeight: 'bold',
     textTransform: 'uppercase',
     textShadowColor: 'black',

@@ -6,10 +6,8 @@ import { IP } from '../config';
 export default function Ranking({ route }) {
 
   const { token } = route.params;
-  console.log('Token:', token);
   const [rankingData, setRankingData] = useState([]);
   const [perfil, setPerfil] = useState(null);
-
   useEffect(() => {
     fetchRankingData();
     fetchData();
@@ -21,7 +19,6 @@ export default function Ranking({ route }) {
         IP+'/perfil',
         { headers: { Authorization: token } }
       );
-      console.log(response.data.nombre)
         setPerfil(response.data);
     } catch (error) {
       console.error('Error fetching skins:', error);
@@ -33,22 +30,24 @@ export default function Ranking({ route }) {
         const response = await axios.get(IP+'/ranking',{headers: {
         'Authorization': `${token}`
       }});
+      
       setRankingData(response.data);
+
     } catch (error) {
       console.error('Error fetching ranking data:', error);
     }
   };
 
   return (
-    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
+    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background} resizeMode="stretch">
       <View style={styles.eloContainer}>
-        <Text style={styles.title}>Mi elo:  {perfil ? perfil.elo : ''}</Text>
+        <Text style={styles.title}>ELO :  {perfil ? perfil.elo : ''}</Text>
       </View>
       <ScrollView vertical={true} contentContainerStyle={styles.container}>
         <View style={[styles.table, { minWidth: '60%' }]}>
           <View style={styles.tableHeader}>
-            <Text style={[styles.headerText, { flex: 1 }]}>Rank</Text>
-            <Text style={[styles.headerText, { flex: 3 }]}>Player</Text>
+            <Text style={[styles.headerText, { flex: 1 }]}>Ranking</Text>
+            <Text style={[styles.headerText, { flex: 3 }]}>Jugador</Text>
             <Text style={[styles.headerText, { flex: 1 }]}>Elo</Text>
           </View>
           {rankingData.map((player, index) => (
@@ -124,6 +123,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#DB4437',
+    backgroundColor: 'gray',
   },
   rank: {
     textAlign: 'center',

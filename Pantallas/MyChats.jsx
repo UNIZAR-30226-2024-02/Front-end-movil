@@ -54,7 +54,7 @@ export default function FriendshipRequests({ navigation, route }) {
   };
 
   return (
-    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
+    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background} resizeMode="stretch">
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}

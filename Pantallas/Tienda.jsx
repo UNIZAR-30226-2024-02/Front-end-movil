@@ -14,7 +14,6 @@ export default function Tienda({ navigation, route }) {
   const [minPrice, setMinPrice] = useState({});
   const [maxPrice, setMaxPrice] = useState({});
   const [type, setType] = useState('');
-  console.log('Token:', token); // Access token
 
   const fetchData = async () => {
     try {
@@ -29,7 +28,6 @@ export default function Tienda({ navigation, route }) {
       setMinPrice(0);
       setPrice('precio');
       setType(undefined);
-      console.log("Skins: ",response.data);
       const responseMy = await axios.get(
         IP+'/misSkins/enPropiedad', // Replace with your server's URL
         { headers: { Authorization: token } }
@@ -40,7 +38,6 @@ export default function Tienda({ navigation, route }) {
         { headers: { Authorization: token } }
       );
       setMoney(responseMoney.data);
-      console.log("Money: ",responseMoney.data);
     } catch (error) {
       console.error('Error fetching skins:', error);
     }

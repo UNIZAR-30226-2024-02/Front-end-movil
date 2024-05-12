@@ -52,7 +52,7 @@ export default function MySkinDetailScreen({ route }) {
           <Image source={images.find(item => item.index === skin.idSkin).img} style={styles.skinImage} />
           <View style={styles.detailsContainer}>
             <Text style={styles.skinName}>{skin.idSkin}</Text>
-            <Text style={styles.skinDescription}>{skin.tipo}</Text>
+            <Text style={styles.skinDescription}>Tipo: {skin.tipo}</Text>
           </View>
         </View>
         {skins && skins._id === skin._id ? (
@@ -103,7 +103,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start', // Align items at the top
   },
   skinName: {
-    fontSize: 24,
+    fontSize: 50,
+    color:'white',
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
@@ -111,7 +112,8 @@ const styles = StyleSheet.create({
   },
   skinDescription: {
     top:1,
-    fontSize: 18,
+    fontSize: 40,
+    color:'white',
     textAlign: 'center',
     marginBottom: 20,
     paddingBottom: 150, // Add paddingTop to give space for the skin name

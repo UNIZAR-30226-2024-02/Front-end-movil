@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, ImageBackground,Alert 
 import axios from 'axios';
 import { IP } from '../config';
 import { images } from '../assets/Skins_image'
-
+import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome from expo/vector-icons
 export default function SkinDetailScreen({ route}) {
   const { skin,token} = route.params;
   const [misSkin,setSkinsMySkins]=useState([]);
@@ -27,9 +27,6 @@ export default function SkinDetailScreen({ route}) {
 
   const handleBuyButtonPress = async() => {
     // Handle buy button press event here
-    console.log('Buy button pressed');
-    console.log('Skin:', skin.idSkin); // Access skin details
-    console.log('Token:', token); // Access token
     try {
       const response = await axios.post(
         IP+'/tienda/comprar', // Replace with your server's URL
@@ -37,27 +34,25 @@ export default function SkinDetailScreen({ route}) {
         { headers: { Authorization: token } }
         
       );
-      console.log('Response:', response.data);
       Alert.alert('Éxito', 'La skin se ha comprado correctamente.');
       fetchData();
     } catch (error) {
       Alert.alert('Error', 'La compra de la skin no se ha podido realizar.');
-      console.error('Error fetching skins:', error);
     }
   };
 
   return (
-    <ImageBackground source={require('../assets/tienda.jpg')} style={styles.background}>
+    <ImageBackground source={require('../assets/tienda.jpg')} style={styles.background} resizeMode="cover">
       <View style={styles.container}>
         <View style={styles.content}>
           <Image source={images.find(item => item.index === skin.idSkin).img} style={styles.skinImage} />
           <View style={styles.detailsContainer}>
             <Text style={styles.skinName}>{skin.idSkin}</Text>
-            <Text style={styles.skinDescription}>{skin.tipo}</Text>
+            <Text style={styles.skinDescription}>Tipo: {skin.tipo}</Text>
           </View>
         </View>
-        { misSkin.length > 0 ?
-        ( <TouchableOpacity 
+
+        <TouchableOpacity 
           style={styles.buyButton} 
           onPress={(misSkin.filter(item => item !== null)).some(s => s._id === skin._id) ? null : handleBuyButtonPress}
           disabled={(misSkin.filter(item => item !== null)).some(s => s._id === skin._id)}
@@ -67,9 +62,13 @@ export default function SkinDetailScreen({ route}) {
               ((misSkin.filter(item => item !== null)).some(s => s._id === skin._id) ? 'Adquirido' : skin.precio) 
               : skin.precio}
           </Text>
-        </TouchableOpacity>) : (<TouchableOpacity style={styles.buyButton} onPress={handleBuyButtonPress}>
-          <Text style={styles.priceText}>{skin.precio}</Text>
-        </TouchableOpacity>)}
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.buyButton} onPress={handleBuyButtonPress}>
+        <FontAwesome name="dollar" size={18} color="white" style={styles.dollarIcon} />
+  <Text style={styles.priceText}> Comprar {skin.precio}</Text>
+</TouchableOpacity>
+
       </View>
     </ImageBackground>
   );
@@ -105,15 +104,17 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start', // Align items at the top
   },
   skinName: {
-    fontSize: 24,
+    fontSize: 40,
     fontWeight: 'bold',
     textAlign: 'center',
+    color:'white',
     marginBottom: 10,
     
   },
   skinDescription: {
-    top:1,
-    fontSize: 18,
+    top:20,
+    fontSize: 30,
+    color:'white',
     textAlign: 'center',
     marginBottom: 20,
     paddingBottom: 150, // Add paddingTop to give space for the skin name
@@ -121,12 +122,12 @@ const styles = StyleSheet.create({
   },
   buyButton: {
     position: 'absolute', // Position the button absolutely
-    bottom: 20, // Adjust the bottom margin
-    right: 150,
-    backgroundColor: '#4CAF50',
+    bottom: 60, // Adjust the bottom margin
+    right: 80,
+    backgroundColor: 'olive',
     borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 30,
+    paddingVertical: 20,
+    paddingHorizontal: 80,
     alignItems: 'center', // Align button content at the center horizontally
     flexDirection: 'row', // Arrange button content in a row
   },
