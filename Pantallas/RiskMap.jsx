@@ -40,6 +40,10 @@ export default function RiskMap({ naviagation, route }) {
   const [ganador, setGanador] = useState(null);
   let eloGanado = 0; let puntosGanados = 0;
 
+  const [newClicked, setNewClicked] = useState(false);
+  const [territorioName, setTerritorioName] = useState('');
+  const [seleccionadoAtaque, setAtaqueReady] = useState(false);
+  
   useEffect(() => {
     //setSocket(io(IP))
    
@@ -844,6 +848,60 @@ useEffect(() => {
     }
   }, [fase, turnoJugador]);
 
+  const ResolverAtaque= async (partidaId, ataqueOrigen, ataqueDestino, tropasPuestas) => {
+    console.log('Partida_id',partidaId,'territorio origen',ataqueOrigen, 'ter destino', ataqueDestino, 'num tropas',tropasPuestas)
+    const token = await AsyncStorage.getItem('token');
+    let header;
+    console.log('Resolviendo Ataque');
+    
+    if (!token) {
+      // redirect the user to the login page if token does not exist
+      console.log('resolviendo 2')
+      navigation.navigate('Login');
+      header=null;
+    }
+
+    header=await AsyncStorage.getItem('username');// hasta aqui no es seguro
+    console.log('resolviendo 1')
+    if (!header) {
+      console.log('fallo headers')
+      return null;
+    }
+    console.log('resolviendo 3')
+    try {
+      
+      const response = await axios.put(IP+'/partida/atacarTerritorio', {
+        idPartida: partidaId,
+        territorioAtacante: ataqueOrigen,
+        territorioDefensor: ataqueDestino,
+        numTropas: tropasPuestas
+      }, {
+        headers: {
+          'Authorization': `${token}`
+        }
+      });
+      console.log('ataacando')
+      console.log(response.data)
+      return response.data;
+      
+    } catch (error) {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Server responded with error data:', error.response.data);
+        console.error('Server responded with status code:', error.response.status);
+        console.error('Server responded with headers:', error.response.headers);
+    } else if (error.request) {
+        // The request was made but no response was received
+        console.error('No response received:', error.request);
+    } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Error setting up the request:', error.message);
+    }
+    return null; // Ensure to return in case of error
+    }
+  }
+
 
   const  updateFase = async () => {
     /*if(this.paused){
@@ -911,83 +969,11 @@ useEffect(() => {
         }
         break;
       case 1: // ataque
-        // antes de atacar, selecciono las tropas q quiero utilizar para atacar
-        /*if (ataqueTropas === 0) {
-          console.log('Seleccionar tropas para atacar')
-          setAtaqueTropas(0)
-          setAtaqueDestino('')
-          setAtaqueOrigen('')
-          const numTroops = await seleccionarTropas(e, svgDoc, this.whoami, true);
-          console.log(ataqueTropas, ataqueOrigen, ataqueDestino, numTroops)
-          console.log(`Player has selected ${numTroops} troops`);
-          console.log(this.recolocacion)
-          this.tropasPuestas = 0;
-          this.colocarTropas(e, svgDoc, 50, 50, this.whoami, false, true, -numTroops); // las quito del mapa
-          this.numTropas -= numTroops; // tampoco las tengo colocables, las tengo seleccionadas así que las quito de ahí
-          this.cdr.detectChanges()
-          
-        } else {
-          
-          // una vez seleccionadas las tropas me tocará elegir un territorio enemigo
-          const enemyTerritoryId = await this.seleccionarTerritorioEnemigo(e, svgDoc, this.whoami)
-          console.log(`Player has selected enemy territory ${enemyTerritoryId}`)
-          this.ataqueDestino = enemyTerritoryId
-          console.log("Info:", this.partida._id, this.ataqueOrigen, this.ataqueDestino, this.tropasPuestas)
-          let usuarioObjetivo = this.jugadores.find(jugador => jugador.territorios.includes(enemyTerritoryId));
-          this.partidaService.ResolverAtaque(this.partida._id, this.ataqueOrigen, this.ataqueDestino, -this.tropasPuestas).subscribe(
-            async response => {
-              console.log(response);
-              this.toastr.success('¡Ataque realizado con éxito!');
-              await new Promise(resolve => setTimeout(resolve, 1000)) 
-              this.toastr.info('Tus dados: ' + response.dadosAtacante + ' Dados defensor: ' + response.dadosDefensor);
-              await new Promise(resolve => setTimeout(resolve, 1000)) 
-              this.toastr.info('Tus bajas: ' + response.resultadoBatalla.tropasPerdidasAtacante + ' Bajas defensor: ' + response.resultadoBatalla.tropasPerdidasDefensor);
-              await new Promise(resolve => setTimeout(resolve, 1000))
-              if(response.conquistado){
-                this.toastr.success('¡Territorio conquistado!');
-
-              } else {
-                Alert.alert('¡No has conquistado el territorio!');
-                
-              }
-              this.inicializacionPartida(this.partida); // actualizo el estado de la partida
-              await new Promise(resolve => setTimeout(resolve, 1000)) // espero un rato
-              
-              this.limpiarTropas();
-              
-              //Pinto el mapa
-              this.distribuirPiezas();
-              this.ataqueDestino = ''
-              this.ataqueOrigen = ''
-              setAtaqueTropas(0)
-              // update the state of every client
-              this.socket.emit('actualizarEstado', this.partida._id);
-              // and notify the defense player 
-              
-              this.socket.emit('ataco', {userOrigen: this.whoami, userDestino: usuarioObjetivo?.usuario ?? '', 
-                               dadosAtacante: response.dadosAtacante, dadosDefensor: response.dadosDefensor, 
-                               tropasPerdidasAtacante: response.resultadoBatalla.tropasPerdidasAtacante,
-                               tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
-                               conquistado: response.conquistado, territorioOrigen: this.ataqueOrigen, 
-                               territorioDestino: enemyTerritoryId});
-              this.ataquePerpetrado = {userOrigen: this.whoami, userDestino: usuarioObjetivo?.usuario ?? '', 
-                                      dadosAtacante: response.dadosAtacante, dadosDefensor: response.dadosDefensor, 
-                                      tropasPerdidasAtacante: response.resultadoBatalla.tropasPerdidasAtacante,
-                                      tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
-                                      conquistado: response.conquistado, territorioOrigen: this.ataqueOrigen, 
-                                      territorioDestino: enemyTerritoryId}
-            },
-            error => {
-              Alert.alert('¡ERROR FATAL!');
-              this.fase = 0;
-              this.fase = 1;
-              this.ataqueDestino = ''
-              this.ataqueOrigen = ''
-              setAtaqueTropas(0)
-            }
-          );
-        }*/
-
+        // aviso de nuevo click y relleno el territorio en el q se ha pulsado
+        console.log('Fase 1')
+        setNewClicked(true);
+        setTerritorioName(territoriname);
+        console.log('Fase 1_1')
         break
       case 2: // maniobra -> reutilizo las variables de ataque jeje
         if (ataqueTropas === 0) {
@@ -1033,6 +1019,135 @@ useEffect(() => {
     //this.colocarTropas(e, svgDoc, imgWidth, imgHeight, this.whoami);
     //this.cdr.detectChanges()
   }
+
+  // Cada vez que el jugador pulse en un territorio, se ejecutará este useEffect
+  // solo ocurrira si está en la fase de ataque, ya que se avisa de newClicked, 
+  // y si ya ha selccionado tropas. En caso contrario, se ejecutará el useEffect
+  // de abajo, que es el que selecciona las tropas a poner. 
+  useEffect(() => {
+    if (ataqueTropas !== 0 && newClicked) {
+        console.log("pulsación secundaria")
+        console.log("Ataque tropas: ", ataqueTropas);
+        let tropasAUtilizar = ataqueTropas;
+        // TODO ADAPTAR ESTO
+        console.log('Tropas para atacar: ', tropasAUtilizar);
+        const selectEnemyTerritory = async () => {
+          try {
+              let territorioDestinoAtacar = await seleccionarTerritorioEnemigo(territorioName, whoami, false);
+              console.log(`Player has selected enemy territory ${territorioName}`);
+              setAtaqueDestino(territorioName); // hace falta? 
+              console.log('Ataque origen: ', ataqueOrigen, "ataque destino", territorioName, "tropas origen:", "tropas destino:");
+              // TODO -> LLAMAR A RESOLVER ATAQUE Y ACTUALIZAR ESTADO
+              // NO ME DA TIEMPO A TERMINIARLO PERO ES TRIVIAL
+              console.log('Ataque origen: ', ataqueOrigen, "ataque destino", territorioDestinoAtacar, "tropas origen:", "tropas destino:");
+              // TODO -> LLAMAR A RESOLVER ATAQUE Y ACTUALIZAR ESTADO
+              // NO ME DA TIEMPO A TERMINIARLO PERO ES TRIVIAL
+              let usuarioObjetivo = thisPartida.jugadores.find(jugador => jugador.territorios.includes(territorioDestinoAtacar));
+              console.log('Usuario objetivo:', usuarioObjetivo)
+              console.log('THIS PARTIDA',thisPartida._id)
+              ResolverAtaque(thisPartida._id, ataqueOrigen, territorioDestinoAtacar, tropasAUtilizar).then(  
+                async response => {
+                  console.log('respuesta resolver ataque',response);
+                  onLoad()
+                  Toast.success('¡Ataque realizado con éxito!');
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  Toast.info('Tus dados: ' + response.dadosAtacante + ' Dados defensor: ' + response.dadosDefensor);
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  Toast.info('Tus bajas: ' + response.resultadoBatalla.tropasPerdidasAtacante + ' Bajas defensor: ' + response.resultadoBatalla.tropasPerdidasDefensor);
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  if(response.conquistado){
+                    Toast.success('¡Territorio conquistado!');
+    
+                  } else {
+                    Alert.alert('¡No has conquistado el territorio!');
+                    
+                  }
+                  inicializacionPartida(partida); // actualizo el estado de la partida
+                  await new Promise(resolve => setTimeout(resolve, 1000)); // espero un rato
+                  //limpiarTropas();  en movil no cambiamos skins
+                  
+                  //Pinto el mapa
+                  //distribuirPiezas(); en movil no cambiamos skins
+                  setAtaqueDestino('');
+                  setAtaqueOrigen('');
+                  setAtaqueTropas(0);
+                  // update the state of every client
+                  socket.emit('actualizarEstado', partida._id);
+                  // and notify the defense player 
+                  
+                  socket.emit('ataco', {userOrigen: whoami, userDestino: usuarioObjetivo?.usuario ?? '', 
+                                   dadosAtacante: response.dadosAtacante, dadosDefensor: response.dadosDefensor, 
+                                   tropasPerdidasAtacante: response.resultadoBatalla.tropasPerdidasAtacante,
+                                   tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
+                                   conquistado: response.conquistado, territorioOrigen: ataqueOrigen, 
+                                   territorioDestino: enemyTerritoryId});
+                  setAtaquePerpetrado({userOrigen: whoami, userDestino: usuarioObjetivo?.usuario ?? '', 
+                                          dadosAtacante: response.dadosAtacante, dadosDefensor: response.dadosDefensor, 
+                                          tropasPerdidasAtacante: response.resultadoBatalla.tropasPerdidasAtacante,
+                                          tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
+                                          conquistado: response.conquistado, territorioOrigen: ataqueOrigen, 
+                                          territorioDestino: enemyTerritoryId});
+                },
+                error => {
+                  Alert.alert('¡ERROR FATAL!');
+                  setFase(0);
+                  setFase(1);
+                  setAtaqueDestino('');
+                  setAtaqueOrigen('');
+                  setAtaqueTropas(0);
+                }
+              );
+          } catch (error) {
+              console.error('An error occurred:', error);
+          }
+        }
+        selectEnemyTerritory();
+        setAtaqueTropas(0);
+        setNewClicked(false);
+
+    }
+  
+  }, [ataqueTropas, newClicked]);
+  
+  // Cada vez que se haga un click en la fase de ataque, se ejecutará este useEffect
+  // esto es debido a que se hace un setNewClicked. Dentro de aquí, ejecutamos 
+  // la función q calcula las tropas a poner, por lo q el siguiente click de la fase
+  // llamará al useEffect de arriba, y no a este. 
+  useEffect(() => {
+    if (ataqueTropas === 0 && newClicked) {
+          console.log("pulsación inicial")
+          console.log('Selecccionar tropas para atacar');
+          setAtaqueTropas(0);
+          setAtaqueDestino('');
+          setAtaqueOrigen(''); 
+          setNewClicked(false);
+      
+          const fetchTroops = async () => {
+            console.log("entro dentro")
+            const numTroops = await seleccionarTropas(territorioName, whoami, false);
+            console.log(ataqueTropas, ataqueOrigen, ataqueDestino, numTroops);
+            console.log(`Player has selected ${numTroops} troops`);
+            console.log(recolocacion);
+            tropasPuestas = 0;
+            
+            // llamo a colocarTropas con -numTroops para quitarlas del mapa
+            colocarTropas(territorioName, whoami, false, -numTroops);
+            //setNumTropas(numTropas-numTroops); // tampoco las tengo colocables, las tengo seleccionadas así que las quito de ahí
+            console.log('tropas colocables: ', numTropas);
+            console.log('tropas seleccionadas', numTroops);
+            setAtaqueTropas(numTroops);
+            console.log('tropas para atacar: ', ataqueTropas);
+          };
+
+          fetchTroops();
+          
+          // llegados a este punto, ataqueTropas valdrá 0 porque React Native 
+          // no actualiza el estado de forma síncrona. Para lograr lo del 
+          // "if/else", lo que debo hacer es un useEffect que haga lo que haría el else...
+          // voy a ver si lo consigo
+
+    }
+  }, [newClicked, ataqueTropas]);
   
   //Pone todas las tropas en 0
   const limpiarTropas =  () => {
@@ -1336,7 +1451,57 @@ useEffect(() => {
       return parseInt(await AsyncStorage.getItem('numTroops'));
       
   }
+  const seleccionarTerritorioEnemigo = async (_territoriId, user2, attack2) => {
+    console.log('Seleccionar tropas');
+    
+    const terrainId = _territoriId; // territorio enemigo a atacar
+    console.log("Vas a atacar el territorio con id: ", terrainId);
+    //para probar comento esto
+    let duenno = thisPartida.jugadores.find(jugador => jugador.usuario == user2);
+    if ((terrainId && duenno && duenno.territorios.includes(terrainId))) {
+      Alert.alert('No puedes atacar tu propio territorio');
+      //this.cdr.detectChanges();
 
+      return;
+    }
+    console.log("Territorio origen", ataqueOrigen);
+    let origen = ataqueOrigen;
+    // debo obtener el territorio origen como tal
+    let thisPartidaAux = thisPartida;
+    const territorios = thisPartidaAux.mapa.flatMap(continent => continent.territorios);
+    const origenAtaque = territorios.find(territorio => territorio.nombre === origen);
+    console.log(origenAtaque);
+    // si el territorio enemigo no está en la frontera muestro error
+    if(origenAtaque && origenAtaque.frontera){ 
+      if(!origenAtaque.frontera.includes(terrainId)){
+        Alert.alert('No puedes atacar un territorio que no es frontera');
+        return;
+      }
+    }else { // esto no debería pasar
+      Alert.alert('El territorio origen no exsite o no tiene una frontera');
+      return;
+    }
+
+    // busco el territorio objetivo 
+    const terrainInfo = territorios.find(terrain => terrain.nombre === terrainId);
+
+    if (terrainInfo) {
+      const enemy = thisPartida.jugadores.find(jugador => jugador.territorios.includes(terrainId));
+      console.log(enemy)
+      if (!enemy) {
+        Alert.alert('Este territorio no pertenece a ningún enemigo');
+        return;
+      } 
+    } else {
+      Alert.alert('Ha ocurrido un error interno.', 'Atención');
+      return;
+    }
+
+    Alert.alert(`Has seleccionado el territorio enemigo ${terrainId}.`);
+    //TODO PONER ANIMACIÓN DE SELECCIÓN DE TERRITORIO
+    return terrainId;
+      
+  }
   //Aqui sigue la funcion seleccionar tropas despus de introducirlas en el dialog
   const seleccionarTropasCorrectas = async () => {
     const troops = state.message;
