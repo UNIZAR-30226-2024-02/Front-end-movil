@@ -70,10 +70,10 @@ export default function RiskMap({ naviagation, route }) {
       });
 
       socket.on('gameOver',(posibleGanador) => {
-        if(posibleGanador === whoami){
+        /*if(posibleGanador === whoami){
           Alert.alert('¡Has ganado la partida!');
           eloGanado+=200; puntosGanados+=200;
-        }
+        }*/
         setGanador(posibleGanador);
       });
 
@@ -1089,11 +1089,13 @@ useEffect(() => {
 
     descartes = partida.descartes;
 
-    ganador = partida.ganador;
-    if(ganador === whoami){
+    let _ganador = partida.ganador;
+    console.log(whoami, _ganador);
+    /*if(_ganador === whoami && whoami !== null){
       Alert.alert('¡Has ganado la partida!');
       eloGanado+=200; puntosGanados+=200;
-    }
+    }*/
+    setGanador(_ganador);
     setFase(partida.fase);
     setTurnoJugador(partida.jugadores[turno % numJugadores].usuario)
 
@@ -1111,7 +1113,7 @@ useEffect(() => {
       setNumTropas(partida.auxColocar);
       
     }
-    console.log("MAPA:", thisPartida);
+    //console.log("MAPA:", thisPartida);
   }
 
 
@@ -1547,7 +1549,15 @@ useEffect(() => {
     
   }
 
-
+  const handleOpenCartasModal = () => {
+    if(fase === 0 && turnoJugador === whoami && whoami !== null){
+      setModalVisible(true)
+      setUsoCartas(true)
+    }
+    else{
+      ToastAndroid.show('No puedes usar cartas en este momento', ToastAndroid.SHORT)
+    }
+  }
 
   const handlePauseResume = async () => {
       const response = await axios.put(IP+ "/partida/pausarPartida", {idPartida: thisPartida._id}, { headers: { 'Authorization': token } });
@@ -1614,8 +1624,7 @@ useEffect(() => {
           <TouchableOpacity style={styles.botonControl} onPress={updateFase}>
             <Text1 style={styles.zoneText}>Siguiente Fase</Text1>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.botonControl} onPress={()=> {setModalVisible(true)
-                                                                       setUsoCartas(true)}}>
+          <TouchableOpacity style={styles.botonControl} onPress={()=> handleOpenCartasModal()}>
             <Text1 style={styles.zoneText}>Usar Cartas</Text1>
           </TouchableOpacity>
           <TouchableOpacity 
