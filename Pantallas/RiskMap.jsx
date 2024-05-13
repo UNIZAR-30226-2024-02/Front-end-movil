@@ -868,7 +868,7 @@ useEffect(() => {
               setFase(auxThisPartida.fase);
             }
             
-            console.log(response.data);
+            //console.log(response.data);
             setThisPartida(auxThisPartida);
             //eventoCancelado = true;
       } 
@@ -1090,7 +1090,7 @@ useEffect(() => {
     descartes = partida.descartes;
 
     let _ganador = partida.ganador;
-    console.log(whoami, _ganador);
+    //console.log(whoami, _ganador);
     /*if(_ganador === whoami && whoami !== null){
       Alert.alert('¡Has ganado la partida!');
       eloGanado+=200; puntosGanados+=200;
@@ -1128,7 +1128,7 @@ useEffect(() => {
       Alert.alert('Error', 'Error cargando partida');
     }
     setWhoami(await AsyncStorage.getItem('username'));
-    console.log(response.data.partida);
+    //console.log(response.data.partida);
     inicializarPartida(response.data.partida);
     //console.log(partida.jugadores);
   }
@@ -1503,10 +1503,11 @@ useEffect(() => {
             thisPartida.auxColocar = thisPartida.auxColocar + aumento; 
           }
           let me = thisPartida.jugadores.find(jugador => jugador.usuario === whoami);
-          me.cartas = me.cartas.filter(elem => elem !== cartaUsada);
+          if(me){ me.cartas = me.cartas.filter(elem => elem !== cartaUsada);
           setThisPartida(thisPartida);
           console.log("Carta jugada" + cartaUsada.estrellas +". Tropas:" + numTropas)
           return numTropas+cartaUsada.estrellas;
+          }
         } else {
           Alert.alert('¡ERROR FATAL!');
         }
@@ -1528,7 +1529,7 @@ useEffect(() => {
   const listaCartas = () => {
     if(!thisPartida) return (<Text1>Loading...</Text1>);
     let me = thisPartida.jugadores.find(jugador => jugador.usuario === whoami);
-    if(me){
+    if(me && me.cartas && me.cartas.length > 0){
       console.log(me.cartas);
       let cartasUsuario = me.cartas;
       //ESTOY USANDO EL ESTADO DE LA PARTIDA, NO EL DEL USUARIO, HAY QUE CAMBIAR ESTO!!!!!!!
@@ -1544,6 +1545,9 @@ useEffect(() => {
           </TouchableOpacity>
         </View>
       )));
+    }
+    else{
+      return (<Text1>No tienes cartas</Text1>);
     }
     return (<Text1>Loading...</Text1>);
     
