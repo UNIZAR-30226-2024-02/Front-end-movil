@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, Image, StyleSheet, TouchableOpacity, Text as Text1, ToastAndroid, Alert } from 'react-native';
+import { View, ScrollView, Image, StyleSheet, TouchableOpacity, Text as Text1, ToastAndroid, Alert, Modal, Pressable } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
 import Svg, { Defs, G, Path, Circle, Use, Text as Text2 , TSpan } from "react-native-svg"
@@ -11,7 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Dialog from "react-native-dialog";
 
-export default function RiskMap({ naviagtion, route }) {
+export default function RiskMap({ naviagation, route }) {
   //const [socket, setSocket] = useState('')
 
   const [whoami, setWhoami] = useState(null);
@@ -22,8 +22,9 @@ export default function RiskMap({ naviagtion, route }) {
   //const [partida, setPartida] = useState(null);
   const [mapa, setMapa] = useState(null);
 
-  //Pruebas para cambiar el color
-  const [colorTest, setColorTest] = useState(["#ff0", "#cc6"]);
+  const [usoCartas, setUsoCartas] = useState(false);
+
+  const [modalVisible, setModalVisible] = useState(false);
 
   const [state, setState] = useState({
     message: '',
@@ -41,7 +42,7 @@ export default function RiskMap({ naviagtion, route }) {
     //setSocket(io(IP))
    
     //COMENTADO PARA PRUEBAS SIN VENIR DEL LOBBY
-    console.log(partida)
+    //console.log(partida)
     //setIdPartida(partida._id);
     setThisPartida(partida);
     onLoad();
@@ -72,22 +73,6 @@ export default function RiskMap({ naviagtion, route }) {
   * 
   */
 
-  //Listener de los eventos del svg, De momento o hace nada
-  //Esta funcion habra que quitarla
-  const eventListener = (key,color, event) => {
-    console.log(key);
-    const nextCounters = colorTest.map((c, i) => {
-      if (i === key) {
-        // This one changed
-        return color;
-
-      } else {
-        // The rest haven't changed
-        return c;
-      }
-    });
-    setColorTest(nextCounters);
-  }
 
   //Esta fundion sirve para buscar el numero de tropas en un territorio y represetarlo en el svg
   const findTropas = (key) => {
@@ -146,7 +131,7 @@ export default function RiskMap({ naviagtion, route }) {
         <Path
         id="b"
         //ALASKA
-          fill={colorTest[0]} 
+          fill="#cc9" 
           d="M254 242c-1-1 0 0-1-2 0-2-1-2-2-3 0 0-1 0-1-2 1-1 1-1 1-2l-3-3v-2c0-1 0-2-1-2-2-1-3 1-4-1 0-2 0-1-2-1-1 0-2 0-2-1-1-1-1-2-2-2s-2 0-3-1c0-1-1-2-2-2s-1 0-2 1c-2 0 2 1-1 2s-4 1-5 0c0 0-3 1-2 0 0-2 0-2 1-3 1 0 2 0 2-1-1 0-1-1-3 0-3 0-4 0-5 1s-1 2-1 3c0 0 1 0-2 1-3 2-1 0-4 2-3 3-2 3-4 4-3 0-1 0-3 2-2 1-1 2-3 2s-1 3-3 1-3-1-1-2c1-1 1-1 2-1s1 0 2-1c1-2 1-2 2-3 2 0 2 2 3 0 0-3 0-3 1-4s3-2 1-3c-2 0-2 0-3 1-2 0-2 1-4 1-1-1-2-1-2-1v-3s1-1-1-1c-2-1-2 1-2-1 0-1 1-1 0-2s-1-1-2-1c-1 1-3 2-2 0s2-2 3-3c0-1 1-3 1-4 1-1-1-1 1-2 1-1 1-1 3-1s1 0 2 1c2 0 2 1 3 0l2-2 1-1c0-1 1-2-1-1-1 0-1 0-2 1-2 0-2 1-3 0-1-2-1-3-1-3v-1c0-2-1-5 2-6s5 0 6 0c0 1-1 1 0 2 2 0 2 0 3-1 0-1 1-1 0-2-1 0-1 0-2-1v-3l-2-2c0-1-2-3 0-4 3 0 5-1 5-1s2-3 4-2c2 0 4 0 6-2 2-1 4 0 4 0l3 1s2 3 4 2 2 2 5 2c3 1 5 1 8 2 0 0 1 0 1 1-1 1-2 31-2 31l8 1v2c1 1 1 2 2 4 2 2 1 8 1 8l2 3s1 1 2 1v4c0 2-2 1-2 1-1 1-2 3-2 4s-2 1-2 1Z"
           onPress={stateMachine.bind(this, 0, "ALASKA")}/>
         <Circle
@@ -830,7 +815,7 @@ export default function RiskMap({ naviagtion, route }) {
     }*/
     if(turnoJugador === whoami){
       const response = await axios.put(IP+ "/partida/siguienteFase", {idPartida: thisPartida._id}, { headers: { 'Authorization': token } });
-      console.log(response);
+      //console.log(response);
       if(response.status === 200){
         let auxThisPartida = thisPartida;
             // This will be executed when the HTTP request is successful
@@ -845,6 +830,9 @@ export default function RiskMap({ naviagtion, route }) {
             if(auxThisPartida.fase !== undefined && auxThisPartida.fase !== null){
               setFase(auxThisPartida.fase);
             }
+            
+            console.log(response.data);
+            setThisPartida(auxThisPartida);
             //eventoCancelado = true;
       } 
       else{
@@ -1449,8 +1437,97 @@ export default function RiskMap({ naviagtion, route }) {
   const handleCancel = async () => {
     setDialogState({type: null, visible: false, title: dialogState.title})
   }
+
+
+  //Funcion para usar cartas que se llama desde el modal de las cartas
+  const usarCarta = async (cartaUsada) => {
+    //e.preventDefault();
+    ToastAndroid.show('Carta usada '+cartaUsada, ToastAndroid.SHORT)
+    console.log(cartaUsada)
+
+    let aumento = cartaUsada.estrellas;
+    if (usoCartas) {
+      try{
+        const response = await axios.put(IP+"/partida/utilizarCartas", {idPartida: thisPartida._id, carta1: cartaUsada, carta2: null}, { headers: { 'Authorization': token } });
+        if (response.status === 200) {
+          console.log(response.data)
+          if (thisPartida.auxColocar) {
+            thisPartida.auxColocar = thisPartida.auxColocar + aumento; 
+          }
+          let me = thisPartida.jugadores.find(jugador => jugador.usuario === whoami);
+          me.cartas = me.cartas.filter(elem => elem !== cartaUsada);
+          setThisPartida(thisPartida);
+          console.log("Carta jugada" + cartaUsada.estrellas +". Tropas:" + numTropas)
+          return numTropas+cartaUsada.estrellas;
+        } else {
+          Alert.alert('¡ERROR FATAL!');
+        }
+      }
+      catch(error){
+        console.log(error)
+        Alert.alert('¡ERROR FATAL!');
+      }
+      
+    }
+    else {
+      console.log(usoCartas)
+      ToastAndroid.show('Usocartas no inicializado', ToastAndroid.SHORT)
+      return 0;
+    }
+  }
+
+
+  const listaCartas = () => {
+    if(!thisPartida) return (<Text1>Loading...</Text1>);
+    let me = thisPartida.jugadores.find(jugador => jugador.usuario === whoami);
+    if(me){
+      console.log(me.cartas);
+      let cartasUsuario = me.cartas;
+      //ESTOY USANDO EL ESTADO DE LA PARTIDA, NO EL DEL USUARIO, HAY QUE CAMBIAR ESTO!!!!!!!
+      return (cartasUsuario.map(carta => (
+        <View 
+          key={carta._id}
+          style={styles.cartasContainer}>
+          <Text1 style={styles.textStyle}>{carta.territorio}  {carta.estrellas} &#11088;</Text1>
+          <TouchableOpacity
+                style={styles.botonUse}
+                onPress={() =>usarCarta(carta)}>
+                <Text1 style={styles.textUse}>Use</Text1>
+          </TouchableOpacity>
+        </View>
+      )));
+    }
+    return (<Text1>Loading...</Text1>);
+    
+  }
+
+
   return (
     <View style={styles.container} >
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          Alert.alert('Modal has been closed.');
+          setModalVisible(!modalVisible);
+        }}>
+        <View style={styles.modal}>
+          <View style={styles.modalView}>
+            <View style={{height: 200}} >
+              <ScrollView style={styles.scroll}>
+                {listaCartas()}              
+              </ScrollView>
+            </View>
+            <Pressable
+                style={styles.botonUse}
+                onPress={() => {setModalVisible(!modalVisible);
+                                setUsoCartas(false)}}>
+                <Text1 style={styles.textUse}>Cerrar</Text1>
+              </Pressable>
+          </View>
+        </View>
+      </Modal>
       <View style={styles.containerleft}>
         <ReactNativeZoomableView
           maxZoom={3}
@@ -1476,8 +1553,9 @@ export default function RiskMap({ naviagtion, route }) {
           <TouchableOpacity style={styles.botonControl} onPress={updateFase}>
             <Text1 style={styles.zoneText}>Siguiente Fase</Text1>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.botonControl}>
-            <Text1 style={styles.zoneText}>Cambiar turno</Text1>
+          <TouchableOpacity style={styles.botonControl} onPress={()=> {setModalVisible(true)
+                                                                       setUsoCartas(true)}}>
+            <Text1 style={styles.zoneText}>Usar Cartas</Text1>
           </TouchableOpacity>
 
           <Text1 style={styles.zoneText}>{textoFase}</Text1>
@@ -1495,7 +1573,7 @@ export default function RiskMap({ naviagtion, route }) {
     </View>
     
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -1504,6 +1582,45 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'left',
   },
+  scroll: {
+    width: 500,
+    height: 10,
+  },
+  modal: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  cartasList: {
+    flexDirection: 'column',
+    justifyContent: 'start',
+    width: 200,
+    height: 100,
+    paddingVertical: 10,
+  },
+  cartasContainer: {
+    flexDirection: 'row',
+    borderColor: 'black',
+    borderWidth: 1,
+    borderRadius: 5,
+    justifyContent: 'space-between',
+  },
   containerRight: {
     top: 25,
     left: 15,
@@ -1511,6 +1628,32 @@ const styles = StyleSheet.create({
     alignItems: 'start',
     flexDirection: 'column',
     justifyContent: 'start',
+  },
+  textStyle: {
+    marginStart: 10,
+    color: 'black',
+    fontWeight: 'bold',
+    textAlign: 'auto',
+    textAlignVertical: 'center',
+    fontSize: 20,
+  },
+  botonUse: {
+    backgroundColor: 'red',
+    color: 'red',
+    padding: 10,
+    marginBottom: 5,
+    marginTop: 5,
+    marginEnd: 5,
+    textAlign: 'center',
+    borderRadius: 5,
+
+  },
+  textUse: {
+    color: 'black',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    fontSize: 20,
   },
   containerleft: {
     height: 400,
