@@ -7,13 +7,14 @@ import Risk from '../assets/Risk_game_board.svg'
 import { useEffect } from 'react';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
 import io from 'socket.io-client';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useNavigation } from '@react-navigation/native';
 
 import Dialog from "react-native-dialog";
 
 export default function RiskMap({ naviagation, route }) {
   //const [socket, setSocket] = useState('')
-
+  const navigation = useNavigation();
   const [whoami, setWhoami] = useState(null);
 
   const { token, partida, socket } = route.params;
@@ -35,8 +36,9 @@ export default function RiskMap({ naviagation, route }) {
   const [dialogState, setDialogState] = useState({visible: false, title: '', type: ''});
 
   const [isOk, setOkState] = useState("No");
-
-  
+  const [isPaused, setIsPaused] = useState(false);
+  const [ganador, setGanador] = useState(null);
+  let eloGanado = 0; let puntosGanados = 0;
 
   useEffect(() => {
     //setSocket(io(IP))
@@ -60,8 +62,43 @@ export default function RiskMap({ naviagation, route }) {
           //Pinto el mapa
           //distribuirPiezas() // TODO
       });
+      socket.on('partidaPausada', async () => {
+        let paused = isPaused; let txt = ''; if(isPaused) txt = 'resumida'; else txt = 'pausada';
+        setIsPaused(!isPaused);
+        Alert.alert('Partida ' + txt);
+        
+      });
+
+      socket.on('gameOver',(posibleGanador) => {
+        if(posibleGanador === whoami){
+          Alert.alert('¡Has ganado la partida!');
+          eloGanado+=200; puntosGanados+=200;
+        }
+        setGanador(posibleGanador);
+      });
+
+
     } 
   }, [socket])
+
+
+useEffect(() => {
+    if (ganador !== null) {
+        Alert.alert(
+            `El ganador es ${ganador}`,
+            ganador === whoami ? '¡Has ganado la partida!' : '',
+            [
+                {
+                    text: 'OK',
+                    onPress: () => navigation.navigate('Partidas', { token: token })
+                }
+            ]
+        );
+        if(ganador === whoami){
+            eloGanado+=200; puntosGanados+=200;
+        }
+    }
+}, [ganador]);
 
   /*
   *
@@ -715,7 +752,7 @@ export default function RiskMap({ naviagation, route }) {
 
     // Atributos generales
     let nombrePartida = '';
-    let ganador = null;
+    //let ganador = null;
     let turno= 0;
     const [cartas, setCartas] = useState(null);
     let descartes= [];
@@ -856,6 +893,11 @@ export default function RiskMap({ naviagation, route }) {
       console.log('No es tu turno');
       return;
     } 
+    if(isPaused){
+      Alert.alert('La partida está pausada');
+      console.log('La partida está pausada');
+      return;
+    }
     if(ocupado){ console.log("espere"); return};
     switch(fase){
       case 0: // colocación
@@ -1048,6 +1090,10 @@ export default function RiskMap({ naviagation, route }) {
     descartes = partida.descartes;
 
     ganador = partida.ganador;
+    if(ganador === whoami){
+      Alert.alert('¡Has ganado la partida!');
+      eloGanado+=200; puntosGanados+=200;
+    }
     setFase(partida.fase);
     setTurnoJugador(partida.jugadores[turno % numJugadores].usuario)
 
@@ -1502,6 +1548,21 @@ export default function RiskMap({ naviagation, route }) {
   }
 
 
+
+  const handlePauseResume = async () => {
+      const response = await axios.put(IP+ "/partida/pausarPartida", {idPartida: thisPartida._id}, { headers: { 'Authorization': token } });
+        if(response.status === 200){
+        let paused = isPaused; let txt = ''; if(isPaused) txt = 'resumida'; else txt = 'pausada';
+        setIsPaused(!isPaused);
+        socket.emit('pausoPartida', this.partida._id);
+        Alert.alert('Partida ' + txt);
+      } else{ 
+        console.log('Error al pausar la partida');
+        Alert.alert('Error al pausar la partida');
+      }
+  };
+
+
   return (
     <View style={styles.container} >
       <Modal
@@ -1557,7 +1618,12 @@ export default function RiskMap({ naviagation, route }) {
                                                                        setUsoCartas(true)}}>
             <Text1 style={styles.zoneText}>Usar Cartas</Text1>
           </TouchableOpacity>
-
+          <TouchableOpacity 
+              style={[styles.botonControl, { width: 50, height: 50, justifyContent: 'center', alignItems: 'center' }]} 
+              onPress={handlePauseResume}
+          >
+              <Text1 style={styles.zoneText}>{isPaused ? '▶' : '❚❚'}</Text1>
+          </TouchableOpacity>
           <Text1 style={styles.zoneText}>{textoFase}</Text1>
         </View>
       </View>
