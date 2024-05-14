@@ -77,22 +77,25 @@ export default function PlayerDetails({navigation, route }) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Translucent white background
+    padding: 20,
+    borderRadius: 10,
+    margin: 20,
+    width:560,
+    height:300,
+    marginHorizontal: 70,
     
   },
   titleContainer: {
-    position: 'absolute',
     top: 20,
-    left:290,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(173, 216, 230, 0.8)',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 8,
     zIndex: 1,
     width:100,
-    borderWidth: 2 ,
-    borderColor:'#DB4437',
+    width: '70%',
+    elevation: 3,
+    height: 60,
   },
   content: {
     flexDirection: 'row',
@@ -102,23 +105,23 @@ const styles = StyleSheet.create({
   detailsContainer: {
     flex: 1,
     marginLeft: 20,
+    alignItems:'center',
   },
   playerName: {
     color: 'white',
     fontSize: 30,
     fontWeight: 'bold',
-    textTransform: 'uppercase',
     textShadowColor: 'black',
     textShadowOffset: { width: 2, height: 1 },
     textShadowRadius: 2,
     textAlign:'center',
   },
   containerButton: {
-    alignItems: 'center',
-    marginBottom: 20, // Espacio adicional entre el contenido y el botón
-    flexDirection: 'row',  // Alinea los elementos en fila
+    alignItems: 'center',       // Centra los elementos horizontalmente
+    marginBottom: 20,           // Espacio adicional entre el contenido y el botón
+    flexDirection: 'column',    // Alinea los elementos en columna
     justifyContent: 'space-between',
-    marginTop: 150,
+    marginTop: 40,
   },
   addButton: {
     backgroundColor: '#DB4437',
@@ -131,7 +134,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
-    width:200,
+    width:300,
     height:80,
     shadowColor: '#000',
     shadowOffset: {
