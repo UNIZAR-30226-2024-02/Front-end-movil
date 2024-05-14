@@ -4,18 +4,15 @@ import axios from 'axios';
 import { IP } from '../config';
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
 
-
-export default function FriendshipRequests({ navigation,route }){
+export default function FriendshipRequests({ navigation, route }) {
   const { token } = route.params;
   const [requests, setRequests] = useState([]);
-  console.log('Token:', token); // Access token
   const [searchQuery, setSearchQuery] = useState('');
   const [filtred, setFiltred] = useState([]);
 
-
   const fetchData = async () => {
     try {
-      const response = await axios.get(IP+'/amistad/listarAmigos', {
+      const response = await axios.get(IP + '/amistad/listarAmigos', {
         headers: {
           Authorization: token,
         },
@@ -23,7 +20,6 @@ export default function FriendshipRequests({ navigation,route }){
       const responseData = response.data;
       setRequests(responseData.friends);
       setFiltred(responseData.friends);
-      console.log(responseData.friends);
     } catch (error) {
       console.error('Error fetching friendship:', error);
     }
@@ -59,31 +55,33 @@ export default function FriendshipRequests({ navigation,route }){
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background} resizeMode="stretch">
-       <View style={styles.titleContainer}>
-        <Text style={styles.title}>AMIGOS</Text>
+      <View style={styles.translucentBox}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>MIS AMIGOS</Text>
+        </View>
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Introduce el nombre del amigo a buscar"
+            onChangeText={handleSearch}
+            value={searchQuery}
+            mode="outlined"
+          />
+        </View>
+        <ScrollView contentContainerStyle={styles.container}>
+          {filtred.map((userId) => (
+            <TouchableOpacity
+              key={userId}
+              style={styles.FriendItem}
+              onPress={() => handleFriendPress(userId)}
+            >
+              <View style={styles.FriendDetails}>
+                <Text style={styles.playerName}>{userId}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Introduce el nombre del amigo a buscar"
-          onChangeText={handleSearch}
-          value={searchQuery}
-          mode="outlined"
-        />
-      </View>
-      <ScrollView contentContainerStyle={styles.container}>
-        {filtred.map((userId) => (
-          <TouchableOpacity
-            key={userId}
-            style={styles.FriendItem}
-            onPress={() => handleFriendPress(userId)}
-          >
-            <View style={styles.FriendDetails}>
-              <Text style={styles.playerName}>{userId}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
     </ImageBackground>
   );
 }
@@ -94,20 +92,23 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     justifyContent: 'center',
   },
+  translucentBox: {
+    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Translucent white background
+    padding: 20,
+    borderRadius: 10,
+    margin: 20,
+    width:560,
+    height:300,
+    marginHorizontal: 70, // Adjusted margin on both sides
+  },
   titleContainer: {
-    position: 'absolute',
-    top: 20,
-    left:290,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    padding: 10,
-    borderRadius: 5,
-    zIndex: 1,
-    width:100
+    marginBottom: 20,
   },
   title: {
-    color: '#000', // Set color to black for visibility
+    color: '#000',
     fontSize: 20,
     fontWeight: 'bold',
+    left:200,
   },
   container: {
     flexGrow: 1,
@@ -116,19 +117,16 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   searchContainer: {
-    marginTop: 90, 
-    marginLeft: 15,
-    marginRight: 15,
-    marginBottom: 10, 
+    marginBottom: 20,
   },
   searchInput: {
     backgroundColor: '#ffffff',
     padding: 10,
-    marginBottom: 10,
     borderWidth: 1,
     borderColor: '#DB4437',
     borderRadius: 8,
-    minWidth: '80%',
+    maxWidth: '60%',
+    left:100,
   },
   FriendDetails: {
     flex: 1,
@@ -147,9 +145,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'rgba(173, 216, 230, 0.8)',
     borderRadius: 8,
-    width: '90%',
+    width: '70%',
     elevation: 3,
     height: 60,
   },

@@ -3,13 +3,13 @@ import { View, ScrollView, Image, ImageBackground, TouchableOpacity, Text, Style
 import axios from 'axios';
 import { IP } from '../config';
 import { images } from '../assets/Skins_image'
+import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
 
 export default function MisSkins({ navigation, route }) {
   const { token } = route.params;
   const [skins, setSkins] = useState([]);
   const [equipada,setEquipada]=useState([]);
-  console.log('Token:', token); // Access token
-  useEffect(() => {
+  
     const fetchData = async () => {
       try {
         const response = await axios.get(
@@ -17,7 +17,6 @@ export default function MisSkins({ navigation, route }) {
           { headers: { Authorization: token } }
         );
         setSkins(response.data);
-        console.log(response.data);
       } catch (error) {
         console.error('Error fetching skins:', error);
       }
@@ -29,18 +28,25 @@ export default function MisSkins({ navigation, route }) {
           IP+'/misSkins/equipadas', // Replace with your server's URL
           { headers: { Authorization: token } }
         );
-        console.log("Equipadas: ",response.data);
         setEquipada(response.data);
       } catch (error) {
         console.error('Error fetching skins:', error);
       }
     };
 
+   
+
+  useEffect(() => {
     fetchData();
     equipadas();
   }, [token]);
-
-
+  
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+      equipadas();
+    }, [token])
+  );
 
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {

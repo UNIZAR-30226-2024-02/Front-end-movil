@@ -4,18 +4,16 @@ import axios from 'axios';
 import { IP } from '../config';
 import { images } from '../assets/Skins_image'
 
+
 export default function MySkinDetailScreen({ route }) {
   const { skin,token} = route.params;
   const [skins,setSkins]=useState([]);
-  console.log('Token:', token); // Access token
-  console.log(skin);
   const fetchData = async () => {
     try {
       const response = await axios.get(
         IP+'/misSkins/equipadas', // Replace with your server's URL
         { headers: { Authorization: token } }
       );
-      console.log("Equipada: ",response.data[skin.tipo.charAt(0).toLowerCase() + skin.tipo.slice(1)]);
       setSkins(response.data[skin.tipo.charAt(0).toLowerCase() + skin.tipo.slice(1)]);
     } catch (error) {
       console.error('Error fetching skins:', error);
@@ -29,22 +27,21 @@ export default function MySkinDetailScreen({ route }) {
 
   const handleEquipadasPress = async() => {
     // Handle buy button press event here
-    console.log('Equiped button pressed');
-    console.log('Skin:', skin.idSkin); // Access skin details
-    console.log('Token:', token); // Access token
+
     try {
       const response = await axios.post(
         IP+'/misSkins/equipar', // Replace with your server's URL
         { skinAEquipar: skin.idSkin },
         { headers: { Authorization: token } }
       );
-      console.log('Response:', response.data);
-      Alert.alert("Sucess. Skin equipada correctamente.");
+      Alert.alert("Skin equipada correctamente.");
       fetchData();
     } catch (error) {
       console.error('Error fetching skins:', error);
     }
   };
+
+  
   return (
     <ImageBackground source={require('../assets/img-2d3IDaHACsstyAx6hCGZP.jpeg')} style={styles.background}>
       <View style={styles.container}>

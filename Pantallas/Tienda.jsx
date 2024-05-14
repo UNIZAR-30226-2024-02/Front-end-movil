@@ -3,6 +3,7 @@ import { View, ScrollView, Image, ImageBackground,TextInput, TouchableOpacity, T
 import axios from 'axios';
 import { IP } from '../config';
 import { images } from '../assets/Skins_image'
+import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
 
 export default function Tienda({ navigation, route }) {
   const { token } = route.params;
@@ -110,6 +111,12 @@ export default function Tienda({ navigation, route }) {
   useEffect(() => {
     fetchData();
   }, [token]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+    }, [token])
+  );
 
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {

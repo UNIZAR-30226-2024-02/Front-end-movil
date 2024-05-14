@@ -4,13 +4,15 @@ import axios from 'axios';
 import { IP } from '../config';
 import { images } from '../assets/Skins_image'
 import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome from expo/vector-icons
-export default function SkinDetailScreen({ route}) {
-  const { skin,token} = route.params;
-  const [misSkin,setSkinsMySkins]=useState([]);
+
+export default function SkinDetailScreen({ route }) {
+  const { skin, token } = route.params;
+  const [misSkin, setSkinsMySkins] = useState([]);
+
   const fetchData = async () => {
     try {
       const responseMy = await axios.get(
-        IP+'/misSkins/enPropiedad', // Replace with your server's URL
+        IP + '/misSkins/enPropiedad', // Replace with your server's URL
         { headers: { Authorization: token } }
       );
       setSkinsMySkins(responseMy.data);
@@ -19,25 +21,25 @@ export default function SkinDetailScreen({ route}) {
     }
   };
 
-
   useEffect(() => {
-   
     fetchData();
   }, [token]);
 
-  const handleBuyButtonPress = async() => {
-    // Handle buy button press event here
-    try {
-      const response = await axios.post(
-        IP+'/tienda/comprar', // Replace with your server's URL
-        { idSkin: skin.idSkin },
-        { headers: { Authorization: token } }
-        
-      );
-      Alert.alert('Éxito', 'La skin se ha comprado correctamente.');
-      fetchData();
-    } catch (error) {
-      Alert.alert('Error', 'La compra de la skin no se ha podido realizar.');
+  const handleBuyButtonPress = async () => {
+    if (misSkin.some(s => s._id === skin._id)) {
+      Alert.alert('Error', 'Esta skin ya está comprada.');
+    } else {
+      try {
+        const response = await axios.post(
+          IP + '/tienda/comprar', // Replace with your server's URL
+          { idSkin: skin.idSkin },
+          { headers: { Authorization: token } }
+        );
+        Alert.alert('Éxito', 'La skin se ha comprado correctamente.');
+        fetchData();
+      } catch (error) {
+        Alert.alert('Error', 'La compra de la skin no se ha podido realizar.');
+      }
     }
   };
 
@@ -52,22 +54,15 @@ export default function SkinDetailScreen({ route}) {
           </View>
         </View>
 
-        <TouchableOpacity 
-          style={styles.buyButton} 
-          onPress={(misSkin.filter(item => item !== null)).some(s => s._id === skin._id) ? null : handleBuyButtonPress}
-          disabled={(misSkin.filter(item => item !== null)).some(s => s._id === skin._id)}
+        <TouchableOpacity
+          style={[styles.buyButton, misSkin.some(s => s._id === skin._id) && styles.buttonDisabled]}
+          onPress={handleBuyButtonPress}
+          disabled={misSkin.some(s => s._id === skin._id)}
         >
           <Text style={styles.priceText}>
-            {(misSkin.filter(item => item !== null)).length > 0 ? 
-              ((misSkin.filter(item => item !== null)).some(s => s._id === skin._id) ? 'Adquirido' : skin.precio) 
-              : skin.precio}
+            {misSkin.some(s => s._id === skin._id) ? 'Adquirido' : `Comprar ${skin.precio}`}
           </Text>
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.buyButton} onPress={handleBuyButtonPress}>
-        <FontAwesome name="dollar" size={18} color="white" style={styles.dollarIcon} />
-  <Text style={styles.priceText}> Comprar {skin.precio}</Text>
-</TouchableOpacity>
 
       </View>
     </ImageBackground>

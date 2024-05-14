@@ -4,6 +4,7 @@ import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome from exp
 import axios from 'axios';
 import { images } from '../assets/Skins_image'
 import { IP } from '../config';
+import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
 
 export default function Perfil({ navigation,route }) {
 
@@ -18,7 +19,6 @@ export default function Perfil({ navigation,route }) {
         IP+'/perfil',
         { headers: { Authorization: token } }
       );
-      console.log(response.data.nombre)
         setPerfil(response.data);
     } catch (error) {
       console.error('Error fetching skins:', error);
@@ -31,7 +31,6 @@ export default function Perfil({ navigation,route }) {
         IP+'/misSkins/equipadas', // Replace with your server's URL
         { headers: { Authorization: token } }
       );
-      console.log("Equipadas: ",response.data['avatar']);
       setEquipada(response.data['avatar']);
     } catch (error) {
       console.error('Error fetching skins:', error);
@@ -45,7 +44,6 @@ export default function Perfil({ navigation,route }) {
         { headers: { Authorization: token } }
       );
       setMoney(responseMoney.data);
-      console.log("Money: ",responseMoney.data);
     } catch (error) {
       console.error('Error fetching skins:', error);
     }
@@ -58,6 +56,14 @@ export default function Perfil({ navigation,route }) {
     fetchData();
     dinero();
   }, [token]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+      equipadas();
+      dinero();
+    }, [token])
+  );
 
   
   const goToMySkins = () => {

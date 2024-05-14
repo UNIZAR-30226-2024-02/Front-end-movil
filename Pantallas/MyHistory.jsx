@@ -15,7 +15,6 @@ export default function Ranking({ route }) {
         const response = await axios.get(IP+'/partidas/historico',{headers: {
         'Authorization': `${token}`
       }});
-      console.log(response.data)
       setHistorialData(response.data);
     } catch (error) {
       console.error('Error fetching historial data:', error);

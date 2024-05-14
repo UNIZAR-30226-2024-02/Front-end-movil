@@ -19,7 +19,6 @@ export default function PlayerDetails({navigation, route }) {
         
       );
       Alert.alert("Sucess.Eliminado de la lista de amigos");
-      console.log('Response:', response.data);
       navigation.navigate('MisAmigos', { token: token });
       
     } catch (error) {
@@ -36,7 +35,6 @@ export default function PlayerDetails({navigation, route }) {
           { nombreChat: chatName, usuarios: [friend] },
           { headers: { Authorization: token } }
         );
-        console.log('Chat creado:', response.data);
         Alert.alert("Éxito. Chat creado correctamente.");
       } catch (error) {
         console.error('Error al crear el chat:', error);
