@@ -34,6 +34,7 @@ export default function Register({ navigation }) {
           
                 const token = response.data.token;
                 await AsyncStorage.setItem('token', token);
+                await AsyncStorage.setItem('username', response.data.idUsuario);
                 console.log('TokenRegister:', token);
                 Alert.alert('Success', 'Usuario registrado exitosamente');
                 navigation.navigate('Inicial', { token: token });
