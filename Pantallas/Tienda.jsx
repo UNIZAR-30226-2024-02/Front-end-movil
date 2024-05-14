@@ -141,7 +141,7 @@ export default function Tienda({ navigation, route }) {
   };
 
   return (
-    <ImageBackground source={require('../assets/tienda.jpg')} style={styles.background}>
+    <ImageBackground source={require('../assets/tienda.jpg')} style={styles.background} resizeMode="stretch">
       <View style={styles.moneyContainer}>
         <Text style={styles.moneyText}>Mi dinero: {money.dinero} $</Text>
       </View>
@@ -151,7 +151,7 @@ export default function Tienda({ navigation, route }) {
           selectedValue={price}
           onValueChange={handleOptionChange}
         >
-          <Picker.Item label="Opciones: precio (menor a mayor o A-Z)" value="" />
+          <Picker.Item label="Opciones: precio (menor a mayor) o A-Z" value="" />
           <Picker.Item label="precio" value="precio" />
           <Picker.Item label="A-Z" value="A-Z" />
         </Picker>

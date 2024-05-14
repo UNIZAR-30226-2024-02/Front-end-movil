@@ -28,15 +28,15 @@ export default function Ranking({ route }) {
           <View style={styles.tableHeader}>
           <Text style={[styles.headerText, { flex: 3 }]}>Fecha inicio</Text>
             <Text style={[styles.headerText, { flex: 3 }]}>Fecha fin</Text>
-            <Text style={[styles.headerText, { flex: 3 }]}>Turno</Text>
-            <Text style={[styles.headerText, { flex: 3 }]}>Jugadores</Text>
+            <Text style={[styles.headerText, { flex: 1 }]}>Turno</Text>
+            <Text style={[styles.headerText, { flex: 2 }]}>Jugadores</Text>
           </View>
           {historialData.map((part) => (
             <View key={part._id} style={styles.tableRow}>
               <Text style={[styles.fecha, { flex: 3 }]}>{part.fechaInicio}</Text>
               <Text style={[styles.fecha, { flex: 3 }]}>{part.fechaFin}</Text>
-              <Text style={[styles.fecha, { flex: 3 }]}>{part.turno}</Text>
-              <Text style={[styles.fecha, { flex: 3 }]}>{part.jugadores.map(jugador => (
+              <Text style={[styles.fecha, { flex: 1 }]}>{part.turno}</Text>
+              <Text style={[styles.fecha, { flex: 2 }]}>{part.jugadores.map(jugador => (
                 (part.ganador === jugador.usuario ? '⭐ ' : ''))+jugador.usuario).join(', ')}</Text>
             </View>
           ))}
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     borderColor: '#DB4437',
     borderRadius: 15,
     overflow: 'hidden',
-    minWidth: '90%',
+    minWidth: '95%',
   },
   tableHeader: {
     flexDirection: 'row',

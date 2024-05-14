@@ -1,17 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { View, TouchableOpacity, ScrollView,Text, StyleSheet, ImageBackground } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome from expo/vector-icons
 import { IP } from '../config';
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import io from 'socket.io-client';
 
 export default function Inicial({ navigation, route }) {
   const { id, token } = route.params;
   const [showPopup, setShowPopup] = useState(false);
   const [friendrequests, setFriendRequests] = useState([]);
   const [invitaciones, setInvitacionesData] = useState([]);
+  const [notificaciones,setNotificacion]=useState([]);
+  const [socket ,setSocket]=useState('');
 
+  useEffect(() => {
+    setSocket(io(IP))
+      OnNot();
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -53,16 +60,12 @@ export default function Inicial({ navigation, route }) {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-    fetchInvitations();
-  }, [token]);
+  
 
   // Use useFocusEffect to refetch data when the screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
-      fetchData();
-      fetchInvitations();
+      OnNot();
     }, [])
   );
 
@@ -81,6 +84,34 @@ export default function Inicial({ navigation, route }) {
 
   const goToNotificaciones = () => {
     setShowPopup(true);
+  };
+
+  const OnNot = async () => {
+      socket.on('friendRequest',(notificacion) => {
+        setNotificacion(notificaciones => notificaciones.concat('Nueva solicitud de amistad:'+notificacion));
+      });
+
+      try{
+        const response= await axios.get(IP+'/chats/listar', { headers: {'Authorization':token } });
+        console.log('response',response.chats)
+        {response.data.chats.map((chat) =>( 
+          socket.emit('joinChat', chat.oid)
+      ))}
+      socket.on('chatMessage',(mensaje,user,timestamp) => {
+        let shortMensaje= mensaje.lenght > 10 ? mensaje.substring(0,10) + '...' : mensaje;
+        setNotificacion(notificaciones => notificaciones.concat('Nuevo mensaje '+'de '+ user+ ' '+shortMessage));
+      })
+
+      socket.on('gameInvitation', (gameId,user_from) =>{
+        setNotificacion(notificaciones => notificaciones.concat('Nueva invitacion a partida: '+'de '+user_from));
+      })
+      }catch (error){
+        console.error('Error fetching:', error);
+      }
+
+      
+
+
   };
 
   const goToRanking = () => {
@@ -161,23 +192,13 @@ export default function Inicial({ navigation, route }) {
           <TouchableOpacity style={styles.popupBackdrop} onPress={() => setShowPopup(false)}>
             <View style={styles.popupContainer}>
             <ScrollView contentContainerStyle={styles.scrollViewContent}>
-              {friendrequests.map((userId) => (
+              {notificaciones.map((userId) => (
                 <TouchableOpacity
                   key={userId}
                   style={styles.notificationButton}
                   onPress={() => handleSolicitudPress(userId)}>
                   <View style={styles.notificationContent}>
                     <Text style={styles.notificationButtonText}>Solicitud de amistad de {userId}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-              {invitaciones.map((userId) => (
-                <TouchableOpacity
-                  key={userId}
-                  style={styles.notificationButton}
-                  onPress={() => handlePartidaPress(userId)}>
-                  <View style={styles.notificationContent}>
-                    <Text style={styles.notificationButtonText}>Invitacion a partida de {userId}</Text>
                   </View>
                 </TouchableOpacity>
               ))}
