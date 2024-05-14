@@ -3,12 +3,14 @@ import { View, ScrollView, Text, TextInput,TouchableOpacity, StyleSheet, ImageBa
 import axios from 'axios';
 import { IP } from '../config';
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
+import { io } from 'socket.io-client';
 
 export default function FriendshipRequests({ navigation, route }) {
   const { id, token } = route.params;
   const [chats, setChats] = useState([]);
   const [filtred, setFiltred] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [socket, setSocket] = useState();
 
   const fetchChats = async () => {
     try {
@@ -27,6 +29,7 @@ export default function FriendshipRequests({ navigation, route }) {
 
   useEffect(() => {
     fetchChats();
+    setSocket(io(IP));
   }, [token]);
 
   // Use useFocusEffect to refetch data when the screen comes into focus
@@ -49,8 +52,13 @@ export default function FriendshipRequests({ navigation, route }) {
   };
 
   const handleChatPress = (c) => {
+    if (socket) {
+      console.log('Joining chat:', c);
+      socket.emit('joinChat', c.oid);
+      navigation.navigate('Chat',{ chat:c, id:id, token: token, socket: socket});
+    }
     // Navigate to chat details screen or implement your logic here
-    navigation.navigate('Chat',{ chat:c, id:id, token: token });
+    
   };
 
   return (

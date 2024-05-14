@@ -5,7 +5,7 @@ import { IP } from '../config';
 
 export default function Chat({ navigation, route }) {
   const [isOptionsMenuVisible, setOptionsMenuVisible] = useState(false);
-  const { chat, id ,token } = route.params;
+  const { chat, id ,token, socket } = route.params;
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -16,13 +16,14 @@ export default function Chat({ navigation, route }) {
   console.log('Chat',chat.oid)
   const fetchMessages = async () => {
     try {
+      console.log('ChatId:',chat.oid)
       const response = await axios.post(
         IP+'/chats/obtenerMensajes',
         { OIDChat: chat.oid },
         { headers: { Authorization: token } }
       );
+      console.log(response)
       setMessages(response.data.msgs);
-      console.log(response.data.msgs)
     } catch (error) {
       console.error('Error fetching messages:', error.response.data.error);
     }
@@ -32,11 +33,19 @@ export default function Chat({ navigation, route }) {
     fetchMessages();
   }, []);
 
-
+  useEffect(() => {
+    if (socket) {
+        socket.on('chatMessage', (mensaje, user, timestamp, chatId) => {
+            console.log('chatMessage', mensaje, user, timestamp, chatId)
+            fetchMessages();
+        })
+    }
+    }, [socket]);
 
   const handleMessageSend = async () => {
     if (message.trim() !== '') {
       try {
+        
         await axios.post(
           IP+'/chats/enviarMensaje',
           {
@@ -45,9 +54,14 @@ export default function Chat({ navigation, route }) {
           },
           { headers: { Authorization: token } }
         );
+        console.log('ChatId:',chat.oid)
+        socket.emit('sendChatMessage', { chatId: chat.oid, message: message, user: id, timestamp: new Date().toISOString()});
+        
         setMessage('');
+        
         fetchMessages();
       } catch (error) {
+        console.log('Error sending message:', error);
         console.error('Error sending message:', error.response.data.error);
       }
     }
@@ -104,7 +118,8 @@ export default function Chat({ navigation, route }) {
 
   // Scroll to the bottom of the message list
   const scrollToBottom = () => {
-    scrollViewRef.current.scrollToEnd({ animated: true });
+    if(scrollViewRef.current)
+        scrollViewRef.current.scrollToEnd({ animated: true });
   };
 
   const handleOptionsMenuPress = () => {
