@@ -47,11 +47,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 50,
     
+    
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Translucent white background
   },
   detailsContainer: {
     flex: 1,
