@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { IP } from '../config';
+import io from 'socket.io-client';
 import CryptoJS from 'crypto-js';
+import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
 
 export default function App({ navigation }) {
   const { width, height } = useWindowDimensions();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [socket, setSocket] = useState('');
+
+  useEffect(() => {
+    setSocket(io(IP))
+  }, [])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setPassword('')
+      setUsername('')
+    }, [])
+  );
 
   const handleLogin = async() => {
     // Validate that both username and password are filled
@@ -23,13 +37,37 @@ export default function App({ navigation }) {
         });
   
         const token = response.data.token;
-
-        // Store token in AsyncStorage
         await AsyncStorage.setItem('token', token);
         await AsyncStorage.setItem('username', response.data.idUsuario);
-        Alert.alert('Éxito', 'Usuario logeado exitosamente');
-        navigation.navigate('Inicial', { id: username, token: token });
 
+        try{
+          const partida =await axios.get(IP+'/partida/estoyEnPartida', {
+            headers: {
+              Authorization: token,
+            },
+          });
+          console.log(partida.data.partida);
+          if(partida.data.partida!==undefined){
+            try{
+              const partidaInfo = await axios.get(IP+`/partidas/partida/`+partida.data.partida, { headers: { 'Authorization': token } });
+              console.log(partidaInfo.data);
+              Alert.alert('Partida en curso.');
+              socket.emit('joinChat', partidaInfo.data.chat._id);
+              socket.emit('joinGame', { gameId: partidaInfo.data._id, user: response.data.idUsuario });
+              navigation.navigate('RiskMap', { token: token, partida: partidaInfo.data, socket: socket });
+            }catch(error){
+              console.error('Error:', error);
+            }
+          }else{
+            Alert.alert('Éxito', 'Usuario logeado exitosamente');
+            navigation.navigate('Inicial', { id: username, token: token });
+          }
+        }catch(error){
+          console.error('Error:', error);
+          Alert.alert('Error', 'Ha ocurrido un error al logear usuario');
+        }
+        // Store token in AsyncStorage
+        
       } catch (error) {
         console.error('Error:', error);
         Alert.alert('Error', 'Ha ocurrido un error al logear usuario');

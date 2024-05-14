@@ -4,6 +4,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { IP } from '../config';
 import CryptoJS from 'crypto-js';
+import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
 
 export default function Register({ navigation }) {
   const { width, height } = useWindowDimensions();
@@ -13,6 +14,15 @@ export default function Register({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setPassword('')
+      setIdUsuario('')
+      setCorreo('')
+      setConfirmPassword('')
+    }, [])
+  );
 
   const handleRegister = async() => {
     // Check if inputs are not empty
