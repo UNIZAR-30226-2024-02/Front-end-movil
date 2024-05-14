@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Image, ImageBackground,TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, ScrollView, Image, ImageBackground, TouchableOpacity, Text, TextInput,StyleSheet } from 'react-native'; // Update imports
 import axios from 'axios';
 import { IP } from '../config';
 import { images } from '../assets/Skins_image'
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
+import { Picker } from '@react-native-picker/picker'; // Import Picker from the new package
 
 export default function Tienda({ navigation, route }) {
   const { token } = route.params;
@@ -16,10 +17,17 @@ export default function Tienda({ navigation, route }) {
   const [maxPrice, setMaxPrice] = useState({});
   const [type, setType] = useState('');
 
+  // Options for the "Tipo" dropdown menu
+  const tipoOptions = [
+    { label: 'Avatar', value: 'Avatar' },
+    { label: 'SetFichas', value: 'SetFichas' },
+    { label: 'Terreno', value: 'Terreno' },
+  ];
+
   const fetchData = async () => {
     try {
       const response = await axios.post(
-        IP+'/tienda', // Replace with your server's URL
+        IP+'/tienda',
         { sortBy: 'precio', precioMin: 0, precioMax: 100000000, tipo: undefined },
         { headers: { Authorization: token } }
       );
@@ -30,12 +38,12 @@ export default function Tienda({ navigation, route }) {
       setPrice('precio');
       setType(undefined);
       const responseMy = await axios.get(
-        IP+'/misSkins/enPropiedad', // Replace with your server's URL
+        IP+'/misSkins/enPropiedad',
         { headers: { Authorization: token } }
       );
       setSkinsMySkins(responseMy.data);
       const responseMoney=await axios.get(
-        IP+'/tienda/dineroUser', // Replace with your server's URL
+        IP+'/tienda/dineroUser',
         { headers: { Authorization: token } }
       );
       setMoney(responseMoney.data);
@@ -52,7 +60,7 @@ export default function Tienda({ navigation, route }) {
     }
     else {
       const filtered = await axios.post(
-        IP+'/tienda', // Replace with your server's URL
+        IP+'/tienda',
         { sortBy: price, precioMin: minPrice, precioMax: maxPrice, tipo: type },
         { headers: { Authorization: token } }
       );
@@ -68,7 +76,7 @@ export default function Tienda({ navigation, route }) {
     }
     else {
       const filtered = await axios.post(
-        IP+'/tienda', // Replace with your server's URL
+        IP+'/tienda',
         { sortBy: price, precioMin: minPrice, precioMax: maxPrice, tipo: type },
         { headers: { Authorization: token } }
       );
@@ -77,31 +85,39 @@ export default function Tienda({ navigation, route }) {
   };
 
   const handleOptionChange = async (query) => {
-    setPrice(query.nativeEvent.text);
-    if (query.nativeEvent.text === '') {
+    if (!query) {
       setFiltred(skins); 
-      setPrice('precio');
-    }
-    else {
+      setPrice(undefined);
+    } else if (query === 'precio') { // Use equality operator instead of assignment
       const filtered = await axios.post(
-        IP+'/tienda', // Replace with your server's URL
+        IP+'/tienda',
         { sortBy: price, precioMin: minPrice, precioMax: maxPrice, tipo: type },
         { headers: { Authorization: token } }
       );
       setFiltred(filtered.data);
+      setPrice(query); // Use the query value here instead of undefined
+    } else {
+      const filtered = await axios.post(
+        IP+'/tienda',
+        { sortBy: 'A-Z', precioMin: minPrice, precioMax: maxPrice, tipo: type },
+        { headers: { Authorization: token } }
+      );
+      setFiltred(filtered.data);
+      setPrice(query); // Use the query value here instead of 'A-Z'
     }
   };
+  
 
-  const handleType = async (query) => {
-    setType(query.nativeEvent.text);
-    if (query.nativeEvent.text === '') {
+  const handleTypeChange = async (value) => { // Updated function to handle dropdown change
+    setType(value);
+    if (!value) {
       setFiltred(skins); 
       setType(undefined);
     }
     else {
       const filtered = await axios.post(
-        IP+'/tienda', // Replace with your server's URL
-        { sortBy: price, precioMin: minPrice, precioMax: maxPrice, tipo: type },
+        IP+'/tienda',
+        { sortBy: price, precioMin: minPrice, precioMax: maxPrice, tipo: value },
         { headers: { Authorization: token } }
       );
       setFiltred(filtered.data);
@@ -127,16 +143,33 @@ export default function Tienda({ navigation, route }) {
   return (
     <ImageBackground source={require('../assets/tienda.jpg')} style={styles.background}>
       <View style={styles.moneyContainer}>
-        <Text style={styles.moneyText}>Dinero: {money.dinero}</Text>
+        <Text style={styles.moneyText}>Mi dinero: {money.dinero} $</Text>
       </View>
       <View style={styles.filterContainer}>
-        <TextInput style={styles.input} placeholder="Ordenar(precio o A-Z)" onSubmitEditing={handleOptionChange} mode="outlined"/>
-        <TextInput style={styles.inputPrice} placeholder="Precio Min..." onSubmitEditing={handlePriceMin} mode="outlined"/>
-        <TextInput style={styles.inputPrice} placeholder="Precio Max..." onSubmitEditing={handlePriceMax} mode="outlined"/>
-        <TextInput style={styles.inputType} placeholder="Tipo de skin(Avatar,SetFichas o Terreno)" onSubmitEditing={handleType} mode="outlined"/>
+        <Picker
+          style={styles.input}
+          selectedValue={price}
+          onValueChange={handleOptionChange}
+        >
+          <Picker.Item label="Opciones: precio (menor a mayor o A-Z)" value="" />
+          <Picker.Item label="precio" value="precio" />
+          <Picker.Item label="A-Z" value="A-Z" />
+        </Picker>
+        <TextInput style={styles.inputPrice} placeholder="Precio Min" onSubmitEditing={handlePriceMin} mode="outlined"/>
+        <TextInput style={styles.inputPrice} placeholder="Precio Max" onSubmitEditing={handlePriceMax} mode="outlined"/>
+        <Picker
+          style={styles.inputType}
+          selectedValue={type}
+          onValueChange={handleTypeChange}
+        >
+          <Picker.Item label="Tipo: Avatar, SetFichas o Terreno" value="" />
+          {tipoOptions.map(option => (
+            <Picker.Item key={option.value} label={option.label} value={option.value} />
+          ))}
+        </Picker>
       </View>
       <ScrollView contentContainerStyle={styles.container}>
-      {filtred.map((skin) => (
+        {filtred.map((skin) => (
           <TouchableOpacity
             key={skin._id}
             style={styles.skinItem}
@@ -149,8 +182,7 @@ export default function Tienda({ navigation, route }) {
               <Text style={styles.skinPrice}>{(misSkin.filter(item => item !== null)).some(s => s._id === skin._id) ? 'Adquirido' : skin.precio}</Text>
             </View>
           </TouchableOpacity>
-        ))
-      }
+        ))}
       </ScrollView>
     </ImageBackground>
   );
@@ -202,8 +234,8 @@ const styles = StyleSheet.create({
     height:50,
   },
   moneyContainer: {
-    marginTop: 30, 
-    marginLeft: 15, 
+    marginTop: 40, 
+    marginLeft: 50, 
   },
   moneyText: {
     color: 'white',

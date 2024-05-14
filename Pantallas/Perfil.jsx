@@ -119,6 +119,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10, 
   },
   detailsContainer:{
+    top:20,
     flexDirection: 'row',
     borderWidth: 1,
     borderColor: '#DB4437',
