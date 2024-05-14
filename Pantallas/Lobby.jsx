@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TextInput, StyleSheet, ToastAndroid, Alert, TouchableOpacity } from 'react-native';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { IP } from '../config';
 import io from 'socket.io-client';
 import { images } from '../assets/Skins_image'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ModalChat from './ModalChat';
 
 const Lobby = ({ navigation, route }) => { // Partida and session token are passed as props
     const { id, token } = route.params
@@ -14,7 +16,8 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
     const [jugadores, setJugadores] = useState(null)
     const [invitado, setInvitado] = useState('')
     const [mensaje, setMensaje] = useState('')
-    // const [chat, setChat] = useState(null) // TODO: implementar chat, es trivial
+    const [chatVisible, setChatVisible] = useState(false)
+    const [chat, setChat] = useState(null) // TODO: implementar chat, es trivial
     const [gameStarted, setGameStarted] = useState(null);
     const [userExited, setUserExited] = useState(null);
     const [userJoined, setUserJoined] = useState(null);
@@ -257,6 +260,10 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
                             <Text style={styles.buttonText}>Invitar</Text>
                         </TouchableOpacity>
                     </View>
+                    <TouchableOpacity style={styles.chatButton} onPress={()=>setChatVisible(true)}>
+                    <FontAwesome name="comments" size={24} color="white" />
+                    <Text style={styles.chatButtonText}>Chat</Text>
+                    </TouchableOpacity>
                 </View>
                 <View>
                     <Text style={styles.title}>Chat de la partida</Text>
@@ -279,10 +286,12 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
                         </TouchableOpacity>
                     </View>
                 </View>
+                <ModalChat socket={socket} whoami={username} chat={partidaData ? partidaData.chat : null} onClose={()=>setChatVisible(false)} token={token} isVisible={chatVisible} />
             </View>
         ) : (
             <Text>Loading...</Text>
         )}
+        
         </View>
   );
 }
@@ -355,7 +364,30 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         alignSelf: 'flex-start', // align to the left
     },
+    // Chat button styles
+  chatButton: {
+    position: 'absolute',
+    bottom: 10,
+    right: 500,
+    backgroundColor: '#007bff',
+    borderRadius: 80,
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
     
+  },
+  chatButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    marginLeft: 0,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1,
+  },
     messageText: {
         fontSize: 16,
     },
