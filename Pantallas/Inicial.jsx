@@ -100,7 +100,7 @@ export default function Inicial({ navigation, route }) {
 
   const goToChats = () => {
     // Navigate to "Chats" screen
-    navigation.navigate('MyChats', { token: token });
+    navigation.navigate('MyChats', {id: id, token: token });
   };
 
   const goToAmigos = () => {
