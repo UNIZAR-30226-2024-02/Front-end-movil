@@ -50,10 +50,40 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     justifyContent: 'center',
   },
-  button: {
-    backgroundColor: 'olive',
-    flexDirection: 'row',
+  Partidasbutton: {
+    backgroundColor: '#DB4437',
+    paddingVertical: 11,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    marginBottom: 0,
+    marginRight: 10,
+    justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+    // Adding larger darker bottom part
+    borderBottomColor: 'rgba(0,0,0,0.2)',
+    borderBottomWidth: 5,
+  },
+  PartidasbuttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
+  },
+  Rankingbutton: {
+    backgroundColor: '#DB4437',
     paddingVertical: 11,
     paddingHorizontal: 20,
     borderRadius: 12,

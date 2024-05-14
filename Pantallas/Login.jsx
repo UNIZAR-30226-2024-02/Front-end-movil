@@ -26,6 +26,7 @@ export default function App({ navigation }) {
 
         // Store token in AsyncStorage
         await AsyncStorage.setItem('token', token);
+        await AsyncStorage.setItem('username', response.data.idUsuario);
         Alert.alert('Éxito', 'Usuario logeado exitosamente');
         navigation.navigate('Inicial', { id: username, token: token });
 

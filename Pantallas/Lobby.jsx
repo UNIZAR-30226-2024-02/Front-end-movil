@@ -1,405 +1,364 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Button, StyleSheet, ImageBackground, Alert } from 'react-native';
+import { View, Text, Image, TextInput, StyleSheet, ToastAndroid, Alert, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
+import io from 'socket.io-client';
+import { images } from '../assets/Skins_image'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Lobby = ({ navigation, route }) => {
+const Lobby = ({ navigation, route }) => { // Partida and session token are passed as props
+    const { id, token } = route.params
+    const [socket, setSocket] = useState('')
+    const [partidaData, setPartidaData] = useState(null)
+    const [username, setUsername] = useState('')
+    const [jugadores, setJugadores] = useState(null)
+    const [invitado, setInvitado] = useState('')
+    const [mensaje, setMensaje] = useState('')
+    // const [chat, setChat] = useState(null) // TODO: implementar chat, es trivial
+    const [gameStarted, setGameStarted] = useState(null);
+    const [userExited, setUserExited] = useState(null);
+    const [userJoined, setUserJoined] = useState(null);
+    const [chatMessage, setChatMessage] = useState(null);
 
-  const { token } = route.params;
-  const [partidas, setPartidasData] = useState([]);
-  const [invitaciones, setInvitacionesData] = useState([]);
+    useEffect(() => {
+        setSocket(io(IP))
+    }, [])
 
+    useEffect(() => {
+        if (partidaData) {
+            fetchJugadores()
+        }
+    }, [partidaData])
 
+    useEffect(() => {
+        if (socket) {
+            if (!partidaData) {
+                fetchPartidaData()
+            }
 
-  const [selectedGame, setSelectedGame] = useState(null);
-  const [joinGameId, setJoinGameId] = useState('');
-  const [joinGamePassword, setJoinGamePassword] = useState('');
-  const [createGameName, setCreateGameName] = useState('');
-  const [createGamePassword, setCreateGamePassword] = useState('');
-  const [createGamePlayers, setCreateGamePlayers] = useState('');
-  const [inviteUsername, setInviteUsername] = useState('');
-  const [inviteGameId, setInviteGameId] = useState('');
-  const [inviteResult, setInviteResult] = useState('');
+            // TODO: Socket del chat, si se implementa en esta pantalla
+            // lo he dejado preparado para que cuando se implemente sea simplemente des-comentar esto
+            /* socket.on('chatMessage', (mensaje, user, timestamp, chatId) => {
+                console.log('chatMessage', mensaje, user, timestamp, chatId)
+                setChatMessage({ mensaje, user, timestamp, chatId })
+            }) */
 
+            socket.on('userJoined', (user) => {
+                console.log('userJoined', user)
+                ToastAndroid.show(`${user} se ha unido a la partida`, ToastAndroid.SHORT)
+                /*this.userService.getUserSkin(user).subscribe(response => {
+                this.users[user] = response.path
+                this.partida.jugadores.push({ usuario: user, territorios: [], cartas: [], abandonado: false, _id: '', skinFichas: '', color: ''})
+                })// Para las skins*/
+                setUserJoined(user)
+            })
 
-  useEffect(() => {
-    fetchPartidasData();
-    fetchInvitations();
-  }, []);
+            socket.on('userDisconnected', (user) => {
+                console.log('userDisconnected', user)
+                ToastAndroid.show(`${user} ha abandonado la partida`, ToastAndroid.SHORT)
+                setUserExited(user)
+            })
+            socket.on('gameStarted', (gameId) => {
+                console.log('gameStarted', gameId)
+                setGameStarted(gameId); // Store the gameId in state
+            })
+        }
+    }, [socket])
 
-  const fetchPartidasData = async () => {
-    try {
-      const response = await axios.get(IP+'/partidas', { headers: { 'Authorization': token } });
-      const partidasData = await Promise.all(response.data.map(async partida => {
+    // gestión del ilegítimo estado de israel
+    useEffect(() => {
+        if (gameStarted && partidaData) {
+            // If a game has started and partidaData is not null, navigate to RiskMap
+            navigation.navigate('RiskMap', { token: token, partida: partidaData, socket: socket})
+        }
+    }, [gameStarted, partidaData])
+
+    useEffect(() => {
+        if (userExited && partidaData && jugadores) { 
+            ToastAndroid.show(`${userExited} ha abandonado la partida`, ToastAndroid.SHORT)
+            for(let i = 0; i < jugadores.length; i++) {
+                if (jugadores[i][0] === userExited) {
+                    jugadores.splice(i, 1)
+                    break
+                }
+            }
+            setUserExited(null);
+        }
+    }, [userExited, partidaData, jugadores])
+
+    useEffect(() => {
+        if(userJoined && jugadores){
+            ToastAndroid.show(`${userJoined} se ha unido a la partida`, ToastAndroid.SHORT)
+            jugadores.push([userJoined, ''])
+            setUserJoined(null);
+        }
+    }, [userJoined, jugadores])
+
+    /*useEffect(() => {
+        if(chatMessage && partidaData && chat){
+            chat.mensajes.push({texto: chatMessage.mensaje, idUsuario: chatMessage.user, timestamp: chatMessage.timestamp})
+            setChatMessage(null)
+        }
+    }, [chatMessage, partidaData, chat])*/
+
+    const fetchPartidaData = async () => {
         try {
-          const partidaInfoResponse = await axios.get(`${IP}/partidas/partida/${partida._id}`, { headers: { 'Authorization': token } });
-          return partidaInfoResponse.data;
+            const response = await axios.get(`${IP}/partidas/partida/${id}`, { headers: { 'Authorization': token } })
+            const storedUsername = await AsyncStorage.getItem('username');
+            setUsername(storedUsername);
+            socket.emit('joinChat', response.data.chat._id);
+            console.log('Joining chat:', response.data._id)
+            socket.emit('joinGame', { gameId: response.data._id, user: storedUsername });
+            setPartidaData(response.data)
+            this.partida = response.data;
         } catch (error) {
-          console.error('Error fetching partida info:', error);
-          return null; // Returning null for failed requests
+            console.error('Error fetching partida data:', error)
+            Alert.alert('Error', 'Ha ocurrido un error al obtener los datos de la partida. Por favor, inténtalo de nuevo más tarde.')
         }
-      }));
-  
-      // Filter out null values and flatten the array
-      const flattenedPartidasData = partidasData.filter(partida => partida !== null).flat();
-  
-      setPartidasData(flattenedPartidasData);
-    } catch (error) {
-      console.error('Error fetching partida data:', error);
-      Alert.alert('Error', 'Ha ocurrido un error al obtener las partidas. Por favor, inténtalo de nuevo más tarde.');
-    }
-  };
-  
+    };
 
-  const fetchInvitations = async () => {
-    try {
-      const response = await axios.get(IP+'/partidas/invitaciones', { headers: {'Authorization': `${token}` } });
-      const invitacionesData = await Promise.all(response.data.Partidas.map(async partida => {
+    const fetchJugadores = async () => {
         try {
-          if (partida != null) {
-            const partidaInvitedInfoResponse = await axios.get(`${IP}/partidas/partida/${partida._id}`, { headers: { 'Authorization': token } });
-            return partidaInvitedInfoResponse.data;
-          }
-          return null;
+            const userRequests = partidaData.jugadores.map(async (jugador) => 
+                axios.get(`${IP}/misSkins/obtenerAvatar/${jugador.usuario}`, { headers: { 'Authorization': token } })
+            )
+            let newJugadores = [];
+            axios.all(userRequests)
+            .then(responses => {
+                responses.forEach((response, index) => {
+                    newJugadores.push([partidaData.jugadores[index].usuario, response.data.path])
+                })
+                setJugadores(newJugadores)
+            })
+            .catch(error => {
+                console.error(error)
+            });
         } catch (error) {
-          console.error('Error fetching partida info:', error);
-          return null; // Returning null for failed requests
+            console.error('Error fetching partida data:', error)
+            Alert.alert('Error', 'Ha ocurrido un error al obtener los datos de la partida. Por favor, inténtalo de nuevo más tarde.')
         }
-      }));
-  
-      // Filter out null values and flatten the array
-      const flattenedInvitacionesData = invitacionesData.filter(partida => partida !== null).flat();
-  
-      setInvitacionesData(flattenedInvitacionesData);
-    } catch (error) {
-      console.error('Error fetching invitations:', error);
-      Alert.alert('Error', 'Ha ocurrido un error al obtener las invitaciones. Por favor, inténtalo de nuevo más tarde.');
     }
-  };
-  
-  
-  
-  
 
-  const handleCreateGame = async () => {
-    if (!createGameName.trim() || !createGamePlayers.trim()) {
-      Alert.alert('Error', 'Nombre de la partida y número de jugadores son obligatorios.');
-      return;
-    } else {
-      try {
-        const privacidad = !!createGamePassword;
-        const response = await axios.post(IP+'/nuevaPartida', {
-          nombre: createGameName,
-          password: createGamePassword,
-          numJugadores: createGamePlayers,
-        }, {
-          headers: {
-            'Authorization': token,
-          }
-        });
-        
-        if (response.status === 200) {
-          console.log('Partida creada exitosamente');
-          Alert.alert('Success', 'Partida creada exitosamente');
-          // You may want to perform additional actions after a successful creation, such as navigating to another screen or updating the UI.
-        } else {
-          console.error('Error al crear la partida:', response.data.message);
-          Alert.alert('Error', 'Ha ocurrido un error al crear la partida. Por favor, inténtalo de nuevo más tarde.');
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        Alert.alert('Error', 'Ha ocurrido un error al crear la partida. Por favor, inténtalo de nuevo más tarde.');
-      }
+    const empezarPartida = () => {
+        console.log(this.partidaId)
+        axios.put(`${IP}/partida/iniciarPartida`, { idPartida: id }, { headers: { 'Authorization': token } })
+        .then(response => {
+            if (response.status === 200) {
+                
+                socket.emit('gameStarted', id)
+                console.log(id)
+                console.log(token)
+                console.log(partidaData)
+                navigation.navigate('RiskMap', { token: token, partida: partidaData, socket: socket }) //Envio token y partida a mapa
+            } else {
+                console.error('Error al empezar la partida:', response.data.message);
+                Alert.alert('Error', 'Ha ocurrido un error al empezar la partida. Por favor, inténtalo de nuevo más tarde.');
+            }
+        })
+        .catch(error => {
+            console.error(error)
+        })
     }
-  };
 
-  const handleChangeNumPlayers = (value) => {
-    const num = parseInt(value);
-    if (num >= 2 && num <= 6) {
-      setCreateGamePlayers(num.toString());
+    const confirmSalirPartida = () => {
+        Alert.alert(
+            "Confirmación",
+            "¿Estás seguro de que deseas abandonar la partida?",
+            [
+                { text: "Cancel" },
+                { text: "OK", onPress: () => salirPartida() }
+            ]
+        )
     }
-  };
 
-  const handleJoinGame = async () => {
-    try {
-      const response = await axios.put(`${IP}/nuevaPartida/join`, { idPartida: joinGameId, password: joinGamePassword }, {
-        headers: {
-          'Authorization': token,
-        }
-      });
-      
-      if (response.status === 200) {
-        Alert.alert('Success', 'Unido correctamente');
-        // Optionally, you can navigate to another screen or perform additional actions after successful joining
-      } else {
-        Alert.alert('Error', 'Error uniendo');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'Ha ocurrido un error al unirse a la partida. Por favor, inténtalo de nuevo más tarde.');
+    const salirPartida = () => {
+        axios.put(`${IP}/partida/salirPartida`, { idPartida: id }, { headers: { 'Authorization': token } })
+        .then(response => {
+            if (response.status === 200) {
+                socket.emit('disconnectGame', { gameId: id, user: username })
+                navigation.navigate('Partidas', { token: token });
+            } else {
+                console.error('Error al salir de la partida:', response.data.message);
+                Alert.alert('Error', 'Ha ocurrido un error al salir de la partida. Por favor, inténtalo de nuevo más tarde.');
+            }
+        })
+        .catch(error => {
+            console.error(error)
+        })
     }
-  };
 
-  
-  const handleInvite = async () => {
-    try {
-      const response = await axios.put(`${IP}/nuevaPartida/invite`, { user: inviteUsername, idPartida: inviteGameId }, {
-        headers: {
-          'Authorization': token,
-        }
-      });
-      
-      if (response.status === 200) {
-        Alert.alert('Success', 'Invitado correctamente');
-        // Optionally, you can update the list of invited games after successful invitation
-        // fetchInvitations();
-      } else {
-        Alert.alert('Error', 'Error invitando');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'Ha ocurrido un error al invitar al amigo. Por favor, inténtalo de nuevo más tarde.');
+    const invitar = () => {
+        axios.put(`${IP}/nuevaPartida/invite`, { user: invitado, idPartida: id }, { headers: { 'Authorization': token } })
+        .then(response => {
+            if (response.status === 200) {
+                ToastAndroid.show('Invitación enviada con éxito al jugador ' + invitado, ToastAndroid.SHORT)
+                socket.emit('inviteGame', { gameId: id, user_dest: invitado, user_from: username})
+            } else {
+                console.error('Error al invitar a la partida:', response.data.message);
+                Alert.alert('Error', 'Ha ocurrido un error al invitar a la partida. Por favor, inténtalo de nuevo más tarde.');
+            }
+        })
+        .catch(error => {
+            console.error(error)
+        })
     }
-  };
 
-  const handlePartidaPress = (id) => {
-    navigation.navigate('Partida', { id,token }); // Navigate to Partida component with id as a parameter
-  };
+    const enviarMensaje = () => {
+        axios.post(`${IP}/chats/enviarMensaje`, { OID: partidaData.chat._id, textoMensaje: mensaje }, { headers: { 'Authorization': token } })
+        .then(response => {
+            if (response.status === 200) {
+                partidaData.chat.mensajes.push({texto: mensaje, idUsuario: username , timestamp: new Date().toISOString()})
+                socket.emit('sendChatMessage', { chatId: partidaData.chat._id, message: mensaje, user: username, timestamp: new Date().toISOString()})
+            } else {
+                console.error('Error al enviar mensaje al chat:', response.data.message)
+                Alert.alert('Error', 'Ha ocurrido un error al enviar mensaje al chat. Por favor, inténtalo de nuevo más tarde.')
+            }
+        })
+        .catch(error => {
+            console.error(error)
+        })
+    }
 
-  //-------------------------------------------------------------------------------------------------------------------------
-  return (
-    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
-      <View style={styles.container}>
-        <ScrollView style={styles.leftSide}>
-          <View>
-            <Text style={[styles.title, styles.centeredTitle]}>Partidas Públicas</Text>
-            <View style={styles.gamesList}>
-              {partidas.map(game => (
-                <TouchableOpacity 
-                  key={game.nombre}
-                  onPress={() => handlePartidaPress(game._id)}
-                  style={[styles.gameRectangle, selectedGame && selectedGame._id === game._id && styles.selectedGameRectangle]}
-                >
-                  <Text style={styles.gameRectangleText}>{game.nombre} ({game.jugadores.length}/{game.maxJugadores})</Text>
-                </TouchableOpacity>
-              ))}
+    return (
+        <View>
+        {partidaData ? (
+            <View>
+                <Text style={styles.title}>{partidaData.nombre}</Text>
+                <Text style={styles.subTitle}>Max Jugadores: {partidaData.maxJugadores}</Text>
+                <View style={styles.jugadoresContainer}>
+                    {jugadores ? (jugadores.map(jugador => (
+                        <View key={jugador[0]}>
+                            <Text key={jugador[0]} style={styles.jugador}>{jugador[0]}</Text>
+                            {
+                                //<Image source={{ uri: jugador[1] }} style={{ width: 50, height: 50 }} /> TODO: implementar skins
+                            }
+                        </View>
+                    ))) : (<Text>Loading...</Text>)}
+                </View>
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={styles.empezarButton} onPress={empezarPartida}>
+                        <Text style={styles.buttonText}>Empezar</Text>
+                    </TouchableOpacity>
+                    <View style={{ margin: 10 }} />
+                    <TouchableOpacity style={styles.salirButton} onPress={confirmSalirPartida}>
+                        <Text style={styles.buttonText}>Abandonar</Text>
+                    </TouchableOpacity>
+                </View>
+                <View>
+                    <Text style={styles.title}>Invitar a un jugador</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nombre del jugador"
+                        value={invitado}
+                        onChangeText={setInvitado}
+                    />
+                    <View style={styles.buttonLeftContainer}>
+                        <TouchableOpacity style={styles.normalButton} onPress={invitar}>
+                            <Text style={styles.buttonText}>Invitar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+                <View>
+                    <Text style={styles.title}>Chat de la partida</Text>
+                    {partidaData.chat.mensajes.map((mensaje, index) => ( // TODO: pensar qué hacer con el chat
+                        <View key={index} style={styles.messageContainer}>
+                            <Text style={styles.messageText}>{mensaje.idUsuario}:</Text>
+                            <Text style={styles.messageText}>{mensaje.texto}</Text>
+                            <Text style={styles.messageText}>{mensaje.timestamp}:</Text>
+                        </View>
+                    ))}
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Escribe un mensaje..."
+                        value={mensaje}
+                        onChangeText={setMensaje}
+                    />
+                    <View style={styles.buttonLeftContainer}>
+                        <TouchableOpacity style={styles.normalButton} onPress={enviarMensaje}>
+                            <Text style={styles.buttonText}>Enviar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
-          </View>
-          <View>
-            <Text style={[styles.title, styles.centeredTitle]}>Invitaciones</Text>
-            <ScrollView>
-              {invitaciones.filter(game => game !== null).map(game => (
-                <TouchableOpacity 
-                  key={game.nombre} 
-                  style={styles.invitedGame}
-                  onPress={() => handlePartidaPress(game._id)}
-                >
-                  <Text style={styles.invitedGameText}>{game.nombre} ({game.jugadores.length}/{game.maxJugadores})</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </ScrollView>
-        <ScrollView style={styles.rightSide}>
-          <View style={styles.rightContent}>
-            <Text style={[styles.title, styles.centeredTitle]}>Unirse a Partida</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="ID de la partida"
-              value={joinGameId}
-              onChangeText={setJoinGameId}
-              placeholderTextColor="rgba(0, 0, 0, 0.7)"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Contraseña"
-              value={joinGamePassword}
-              onChangeText={setJoinGamePassword}
-              placeholderTextColor="rgba(0, 0, 0, 0.7)"
-            />
-            <TouchableOpacity style={styles.button} onPress={handleJoinGame}>
-              <Text style={styles.buttonText}>Unirse</Text>
-            </TouchableOpacity>
-            <Text style={[styles.title, styles.centeredTitle]}>Crear Partida</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nombre de la partida *"
-              value={createGameName}
-              onChangeText={setCreateGameName}
-              placeholderTextColor="rgba(0, 0, 0, 0.7)"
-            />
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={[styles.input, styles.numPlayersInput]}
-                placeholder="Jugadores *"
-                keyboardType="numeric"
-                onChangeText={handleChangeNumPlayers}
-                placeholderTextColor="rgba(0, 0, 0, 0.7)"
-              />
-              <Text style={styles.selectedNumPlayers}>{createGamePlayers}</Text>
-            </View>
-            <TextInput
-              style={styles.input}
-              placeholder="Contraseña (opcional)"
-              secureTextEntry={true}
-              value={createGamePassword}
-              onChangeText={setCreateGamePassword}
-              placeholderTextColor="rgba(0, 0, 0, 0.7)"
-            />
-            <TouchableOpacity style={styles.button} onPress={handleCreateGame}>
-              <Text style={styles.buttonText}>Crear Partida</Text>
-            </TouchableOpacity>
-            <Text style={[styles.title, styles.centeredTitle]}>Invitar a un amigo</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="Nombre de usuario"
-                value={inviteUsername}
-                onChangeText={setInviteUsername}
-                placeholderTextColor="rgba(0, 0, 0, 0.7)"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="ID de la partida"
-                value={inviteGameId}
-                onChangeText={setInviteGameId}
-                placeholderTextColor="rgba(0, 0, 0, 0.7)"
-            />
-            <TouchableOpacity style={styles.button} onPress={handleInvite}>
-                <Text style={styles.buttonText}>Invitar</Text>
-            </TouchableOpacity>
-          </View>
-          
-          
-        </ScrollView>
-      </View>
-    </ImageBackground>
+        ) : (
+            <Text>Loading...</Text>
+        )}
+        </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    top:20,
-    flexDirection: 'row',
-  },
-  leftSide: {
-    flex: 1,
-    paddingRight: 10,
-  },
-  rightSide: {
-    flex: 1,
-    paddingLeft: 10,
-  },
-  rightContent: {
-    paddingBottom: 20,
-  },
-  centeredTitle: {
-    textAlign: 'center',
-  },
-  title: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    textShadowColor: 'black',
-    textShadowOffset: { width: 2, height: 1 },
-    textShadowRadius: 2,
-    textAlign:'center',
-    marginTop:30,
-  },
-  gamesList: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  gameRectangle: {
-    width: 120,
-    height: 60,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginVertical: 5,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#DB4437',
-  },
-  selectedGameRectangle: {
-    backgroundColor: '#e0e0e0',
-  },
-  gameRectangleText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  input: {
-    width: '70%',
-    height: 40,
-    borderColor: '#DB4437',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    color: 'black',
-    backgroundColor: 'white',
-    fontWeight: '600', 
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  numPlayersInput: {
-    width: '70%',
-  },
-  selectedNumPlayers: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'black',
-    marginLeft: 10,
-  },
-  button: {
-    backgroundColor: '#DB4437',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    width:170,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 3,
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 5,
-    borderBottomColor: 'rgba(0,0,0,0.2)',
-    borderBottomWidth: 5,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    textShadowColor: 'black',
-    textShadowOffset: { width: 2, height: 1 },
-    textShadowRadius: 2,
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginBottom: 10,
+    },
+    subTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 5,
+    },
+    jugadoresContainer: {
+      marginTop: 5,
+    },
+    jugador: {
+      fontSize: 16,
+      marginBottom: 3,
+    },
+    button: {
+      marginTop: 20,
+      backgroundColor: '#4CAF50',
+      paddingVertical: 15,
+      paddingHorizontal: 30,
+      borderRadius: 8,
+    },
+    buttonText: {
+      color: 'white',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+    },
+    empezarButton: {
+      backgroundColor: 'green',
+      padding: 10,
+      borderRadius: 5,
+      marginLeft: 10,
+    },
+    salirButton: {
+      backgroundColor: 'red',
+      padding: 10,
+      borderRadius: 5,
+      marginRight: 10,
+    },
+    buttonLeftContainer: {
+      flexDirection: 'row',
+      justifyContent: 'left',
+    },
+    normalButton: {
+      backgroundColor: 'blue',
+      padding: 10,
+      borderRadius: 5,
+      marginRight: 10,
+    },
+    messageContainer: {
+        backgroundColor: '#f0f0f0', // light gray background
+        padding: 10,
+        marginBottom: 10,
+        borderRadius: 5,
+        alignSelf: 'flex-start', // align to the left
+    },
     
-  },
-  invitedGame: {
-    backgroundColor: '#007bff',
-    padding: 10,
-    width:150,
-    marginBottom: 5,
-    borderRadius: 10,
-  },
-  invitedGameText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  backgroundImage: {
-    flex: 1,
-    resizeMode: 'cover',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+    messageText: {
+        fontSize: 16,
+    },
 });
 
 export default Lobby;

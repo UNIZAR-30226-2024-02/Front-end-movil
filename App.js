@@ -2,30 +2,31 @@ import * as React from 'react';
 import { StyleSheet,View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import HomeScreen from './Pantallas/Home'; // Importing HomeScreen from the same directory
-import Login from './Pantallas/Login'; // Assuming Login is in the "Pantallas" directory
-import Register from './Pantallas/Register'; // Assuming Login is in the "Pantallas" directory
-import Inicial from './Pantallas/Inicial'; // Assuming Login is in the "Pantallas" directory
-import Tienda from './Pantallas/Tienda'; // Assuming Login is in the "Pantallas" directory
-import CrearPartida from './Pantallas/CrearPartida'; // Assuming Login is in the "Pantallas" directory
-import Ranking from './Pantallas/Ranking'; // Assuming Login is in the "Pantallas" directory
-import SkinDetailScreen from './Pantallas/SkinDetailScreen'; // Assuming Login is in the "Pantallas" directory
-import Perfil from './Pantallas/Perfil'; // Assuming Login is in the "Pantallas" directory
-import MyChats from './Pantallas/MyChats'; // Assuming Login is in the "Pantallas" directory
-import MySkins from './Pantallas/MySkins'; // Assuming Login is in the "Pantallas" directory
-import MyHistory from './Pantallas/MyHistory'; // Assuming Login is in the "Pantallas" directory
-import MySkinDetailScreen from './Pantallas/MySkinDetailScreen'; // Assuming Login is in the "Pantallas" directory
-import RiskMap from './Pantallas/RiskMap'; // Assuming Login is in the "Pantallas" directory
-import BuscarJugador from './Pantallas/BuscarJugador'; // Assuming Login is in the "Pantallas" directory
-import MisAmigos from './Pantallas/MisAmigos'; // Assuming Login is in the "Pantallas" directory
-import FriendDetails from './Pantallas/FriendDetails'; // Assuming Login is in the "Pantallas" directory
-import MisSolicitudes from './Pantallas/MisSolicitudes'; // Assuming Login is in the "Pantallas" directory
-import SolicitudDetails from './Pantallas/SolicitudDetails'; // Assuming Login is in the "Pantallas" directory
-import Chat from './Pantallas/Chat'; // Assuming Login is in the "Pantallas" directory
-import Lobby from './Pantallas/Lobby'; // Assuming Login is in the "Pantallas" directory
-import SocketsTest from './Pantallas/SocketsTest'; // Assuming Login is in the "Pantallas" directory
-import Partida from './Pantallas/Partida'; // Assuming Login is in the "Pantallas" directory
-import Amistad from './Pantallas/Amistad'; // Assuming Login is in the "Pantallas" directory
+import HomeScreen from './Pantallas/Home';
+import Login from './Pantallas/Login';
+import Register from './Pantallas/Register';
+import Inicial from './Pantallas/Inicial';
+import Tienda from './Pantallas/Tienda';
+import CrearPartida from './Pantallas/CrearPartida';
+import Ranking from './Pantallas/Ranking';
+import SkinDetailScreen from './Pantallas/SkinDetailScreen';
+import Perfil from './Pantallas/Perfil';
+import MyChats from './Pantallas/MyChats';
+import MySkins from './Pantallas/MySkins';
+import MyHistory from './Pantallas/MyHistory';
+import MySkinDetailScreen from './Pantallas/MySkinDetailScreen';
+import RiskMap from './Pantallas/RiskMap';
+import BuscarJugador from './Pantallas/BuscarJugador';
+import MisAmigos from './Pantallas/MisAmigos';
+import FriendDetails from './Pantallas/FriendDetails';
+import MisSolicitudes from './Pantallas/MisSolicitudes';
+import SolicitudDetails from './Pantallas/SolicitudDetails';
+import Chat from './Pantallas/Chat';
+import Partidas from './Pantallas/Partidas';
+import Lobby from './Pantallas/Lobby';
+import SocketsTest from './Pantallas/SocketsTest';
+import Partida from './Pantallas/Partida';
+import Amistad from './Pantallas/Amistad';
 
 const Stack = createNativeStackNavigator();
 
@@ -54,6 +55,7 @@ export default function App() {
         <Stack.Screen name="FriendDetails" component={FriendDetails} options={{ headerShown: false }}/>
         <Stack.Screen name="SolicitudDetails" component={SolicitudDetails} options={{ headerShown: false }}/>
         <Stack.Screen name="Chat" component={Chat} options={{ headerShown: false }}/>
+        <Stack.Screen name="Partidas" component={Partidas} options={{ headerShown: false }}/>
         <Stack.Screen name="Lobby" component={Lobby} options={{ headerShown: false }}/>
         <Stack.Screen name="SocketsTest" component={SocketsTest} options={{ headerShown: false }}/>
         <Stack.Screen name="Partida" component={Partida} options={{ headerShown: false }}/>
