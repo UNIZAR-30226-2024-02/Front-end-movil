@@ -1,5 +1,5 @@
 import React, { useState, useEffect,useRef } from 'react';
-import { View, TouchableOpacity, ScrollView,Text, StyleSheet, ImageBackground } from 'react-native';
+import { View, TouchableOpacity, ScrollView,Text, FlatList,StyleSheet, ImageBackground } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome from expo/vector-icons
 import { IP } from '../config';
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
@@ -10,64 +10,62 @@ import io from 'socket.io-client';
 export default function Inicial({ navigation, route }) {
   const { id, token } = route.params;
   const [showPopup, setShowPopup] = useState(false);
-  const [friendrequests, setFriendRequests] = useState([]);
-  const [invitaciones, setInvitacionesData] = useState([]);
   const [notificaciones,setNotificacion]=useState([]);
   const [socket ,setSocket]=useState('');
+  const [chats,setChats]=useState([]);
+  const [newNot,setNewNotification]=useState(null);
+  const [contador,setContador]=useState(0);
+
+  const CargarChats = async () =>{
+    const response= await axios.get(IP+'/chats/listar', { headers: {'Authorization':token } });
+    setChats(response.data.chats);
+  };
 
   useEffect(() => {
+    console.log('Initial notificaciones:', notificaciones);
     setSocket(io(IP))
-      OnNot();
+    //console.log(socket)
+    CargarChats();
+    return () => io(IP).close();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const response = await axios.get(IP+'/amistad/listarSolicitudes', {
-        headers: {
-          Authorization: token,
-        },
+  useEffect(() => {
+    if (socket) {
+      // Configuración de los listeners del socket
+      const handleFriendRequest = (notificacion) => {
+        notificaciones.push('Nueva solicitud de amistad: ' + notificacion);
+        setContador(contador+1)
+      };
+
+      const handleChatMessage = (mensaje, user, timestamp, chatId) => {
+        let shortMensaje = mensaje.length > 10 ? mensaje.substring(0, 10) + '...' : mensaje;
+        notificaciones.push('Nuevo mensaje de ' + user + ' ' + shortMensaje);
+        setContador(contador+1)
+      };
+
+      const handleGameInvitation = (gameId, user_from) => {
+        notificaciones.push('Nueva invitación a partida de ' + user_from);
+        setContador(contador+1)
+      };
+
+      socket.on('friendRequest', handleFriendRequest);
+      socket.on('chatMessage', handleChatMessage);
+      socket.on('gameInvitation', handleGameInvitation);
+
+      // Unirse a los chats
+      chats.forEach((chat) => {
+        socket.emit('joinChat', chat.oid);
       });
-      const responseData = response.data;
-      setFriendRequests(responseData.solicitudes);
-    } catch (error) {
-      console.error('Error fetching friendship:', error);
+
+      // Cleanup para quitar los listeners cuando el componente se desmonte
+      return () => {
+        socket.off('friendRequest', handleFriendRequest);
+        socket.off('chatMessage', handleChatMessage);
+        socket.off('gameInvitation', handleGameInvitation);
+      };
     }
-  };
+  }, [socket, chats]);
 
-  const fetchInvitations = async () => {
-    try {
-      const response = await axios.get(IP+'/partidas/invitaciones', { headers: {'Authorization': `${token}` } });
-      const invitacionesData = await Promise.all(response.data.Partidas.map(async partida => {
-        try {
-          if (partida != null) {
-            const partidaInvitedInfoResponse = await axios.get(`${IP}/partidas/partida/${partida._id}`, { headers: { 'Authorization': token } });
-            return partidaInvitedInfoResponse.data;
-          }
-          return null;
-        } catch (error) {
-          console.error('Error fetching partida info:', error);
-          return null; // Returning null for failed requests
-        }
-      }));
-  
-      // Filter out null values and flatten the array
-      const flattenedInvitacionesData = invitacionesData.filter(partida => partida !== null).flat();
-  
-      setInvitacionesData(flattenedInvitacionesData);
-    } catch (error) {
-      console.error('Error fetching invitations:', error);
-      Alert.alert('Error', 'Ha ocurrido un error al obtener las invitaciones. Por favor, inténtalo de nuevo más tarde.');
-    }
-  };
-
-  
-
-  // Use useFocusEffect to refetch data when the screen comes into focus
-  useFocusEffect(
-    React.useCallback(() => {
-      OnNot();
-    }, [])
-  );
 
   const handleSolicitudPress = (user) => {
     navigation.navigate('SolicitudDetails', { solicitante: user, token: token });
@@ -84,34 +82,6 @@ export default function Inicial({ navigation, route }) {
 
   const goToNotificaciones = () => {
     setShowPopup(true);
-  };
-
-  const OnNot = async () => {
-      socket.on('friendRequest',(notificacion) => {
-        setNotificacion(notificaciones => notificaciones.concat('Nueva solicitud de amistad:'+notificacion));
-      });
-
-      try{
-        const response= await axios.get(IP+'/chats/listar', { headers: {'Authorization':token } });
-        console.log('response',response.chats)
-        {response.data.chats.map((chat) =>( 
-          socket.emit('joinChat', chat.oid)
-      ))}
-      socket.on('chatMessage',(mensaje,user,timestamp) => {
-        let shortMensaje= mensaje.lenght > 10 ? mensaje.substring(0,10) + '...' : mensaje;
-        setNotificacion(notificaciones => notificaciones.concat('Nuevo mensaje '+'de '+ user+ ' '+shortMessage));
-      })
-
-      socket.on('gameInvitation', (gameId,user_from) =>{
-        setNotificacion(notificaciones => notificaciones.concat('Nueva invitacion a partida: '+'de '+user_from));
-      })
-      }catch (error){
-        console.error('Error fetching:', error);
-      }
-
-      
-
-
   };
 
   const goToRanking = () => {
@@ -144,6 +114,11 @@ export default function Inicial({ navigation, route }) {
     navigation.navigate('Amistad', { token: token });
   };
 
+  const renderNotification = ({ item }) => (
+    <View style={styles.row}>
+      <Text>{item}</Text>
+    </View>
+  );
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage} resizeMode="stretch">
@@ -183,27 +158,19 @@ export default function Inicial({ navigation, route }) {
         <TouchableOpacity style={styles.notificacionesButton} onPress={goToNotificaciones}>
           <FontAwesome name="bell" size={24} color="white" />
           <Text style={styles.notificacionesButtonText}>Notificaciones</Text>
-          {(friendrequests.length > 0 || invitaciones.length > 0) && (
+          {contador > 0 ? (
             <View style={styles.notificationIndicator} />
-          )}
+          ): ''}
         </TouchableOpacity>
 
         {showPopup && (
           <TouchableOpacity style={styles.popupBackdrop} onPress={() => setShowPopup(false)}>
             <View style={styles.popupContainer}>
-            <ScrollView contentContainerStyle={styles.scrollViewContent}>
-              {notificaciones.map((userId) => (
-                <TouchableOpacity
-                  key={userId}
-                  style={styles.notificationButton}
-                  onPress={() => handleSolicitudPress(userId)}>
-                  <View style={styles.notificationContent}>
-                    <Text style={styles.notificationButtonText}>Solicitud de amistad de {userId}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
+              <FlatList
+                data={notificaciones}
+                renderItem={renderNotification}
+                keyExtractor={(item, index) => index.toString()}
+              />
             </View>
           </TouchableOpacity>
         )}
@@ -256,10 +223,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize:20,
   },
-  
   row: {
     flexDirection: 'row',
-    marginBottom: 20,
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
   backgroundImage: {
     flex: 1,
@@ -602,6 +571,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     height:300,
     width:400,
+    flex: 1,
   },
   popupText: {
     fontSize: 18,
