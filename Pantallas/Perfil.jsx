@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   skinsbutton: {
-    backgroundColor: 'green',
+    backgroundColor: 'darkgreen',
     paddingVertical: 11,
     paddingHorizontal: 40,
     borderRadius: 12,
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   amigosbutton: {
-    backgroundColor: 'purple',
+    backgroundColor: 'darkgreen',
     paddingVertical: 11,
     paddingHorizontal: 40,
     borderRadius: 12,
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 5,
   },
   historialbutton: {
-    backgroundColor: 'darkorange',
+    backgroundColor: 'darkgreen',
     paddingVertical: 11,
     paddingHorizontal: 40,
     borderRadius: 12,

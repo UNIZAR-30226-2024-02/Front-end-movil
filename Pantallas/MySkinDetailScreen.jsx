@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     position: 'absolute', // Position the button absolutely
     bottom: 20, // Adjust the bottom margin
     right: 150,
-    backgroundColor: '#4CAF50',
+    backgroundColor: 'darkgreen',
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 30,

@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   button: {
-    backgroundColor: 'olive',
+    backgroundColor: 'darkgreen',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,

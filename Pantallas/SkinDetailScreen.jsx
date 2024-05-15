@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   buyButton: {
     bottom: 120, // Adjust the bottom margin
     right: -120,
-    backgroundColor: 'olive',
+    backgroundColor: 'darkgreen',
     borderRadius: 8,
     paddingVertical: 20,
     paddingHorizontal: 80,

@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
-    backgroundColor: 'rgba(255, 165, 0, 0.6)',
+    backgroundColor: 'rgba(0, 128, 0, 0.5)', // Green with 50% opacity
     borderRadius: 8,
     width: '90%',
     elevation: 3,

@@ -142,11 +142,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   addButton: {
-    backgroundColor: '#DB4437',
+    backgroundColor: 'darkgreen',
     paddingVertical: 11,
     paddingHorizontal: 40,
     borderRadius: 12,
-    marginBottom: 0,
+    marginBottom: 10,
     marginRight: 10,
     alignItems: 'center',
     justifyContent: 'center',

@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
-    backgroundColor: 'rgba(173, 216, 230, 0.8)',
+    backgroundColor: 'rgba(0, 128, 0, 0.5)', // Green with 50% opacity
     borderRadius: 8,
     width: '70%',
     elevation: 3,
