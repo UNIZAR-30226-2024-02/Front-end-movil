@@ -1667,7 +1667,6 @@ useEffect(() => {
   //Funcion para usar cartas que se llama desde el modal de las cartas
   const usarCarta = async (cartaUsada) => {
     //e.preventDefault();
-    ToastAndroid.show('Carta usada '+cartaUsada, ToastAndroid.SHORT)
     console.log(cartaUsada)
 
     let aumento = cartaUsada.estrellas;
@@ -1683,15 +1682,16 @@ useEffect(() => {
           if(me){ me.cartas = me.cartas.filter(elem => elem !== cartaUsada);
           setThisPartida(thisPartida);
           console.log("Carta jugada" + cartaUsada.estrellas +". Tropas:" + numTropas)
+          ToastAndroid.show('Carta usada', ToastAndroid.SHORT)
           return numTropas+cartaUsada.estrellas;
           }
         } else {
-          Alert.alert('¡ERROR FATAL!');
+          Alert.alert('No has podido usar la carta');
         }
       }
       catch(error){
         console.log(error)
-        Alert.alert('¡ERROR FATAL!');
+        Alert.alert('No has podido usar la carta');
       }
       
     }
