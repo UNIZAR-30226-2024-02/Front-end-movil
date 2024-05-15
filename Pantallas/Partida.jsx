@@ -35,7 +35,7 @@ const Partida = ({ navigation, route }) => {
       });
 
       if (response.status === 200) {
-        Alert.alert('Success', 'Unido correctamente');
+        Alert.alert('Te has unido correctamente');
         navigation.navigate('Lobby', { id, token }); // Navigate to Lobby component with partidaData and token
       } else {
         Alert.alert('Error', 'Error uniendo');
@@ -89,6 +89,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    width:500,
+    marginBottom:20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // semi-transparent gray
   },
   title: {
     fontSize: 24,
@@ -127,7 +130,7 @@ const styles = StyleSheet.create({
     textAlign:'center',
   },
   button: {
-    backgroundColor: '#DB4437',
+    backgroundColor: 'darkgreen',
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 8,
