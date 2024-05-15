@@ -59,7 +59,7 @@ export default function App({ navigation }) {
               console.error('Error:', error);
             }
           }else{
-            Alert.alert('Éxito', 'Usuario logeado exitosamente');
+            Alert.alert('Usuario logeado exitosamente');
             navigation.navigate('Inicial', { id: username, token: token });
           }
         }catch(error){
