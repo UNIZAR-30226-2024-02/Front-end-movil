@@ -108,6 +108,31 @@ export default function RiskMap({ naviagation, route }) {
             
       });
 
+      socket.on('ataqueRecibidoGrupal', async (userOrigen, userDestino, dadosAtacante, dadosDefensor, 
+        tropasPerdidasAtacante, tropasPerdidasDefensor, conquistado,
+        territorioOrigen, territorioDestino, eloAtacante, 
+        eloDefensor, dineroAtacante, dineroDefensor) => {
+
+          if(userDestino === whoami){
+            console.log("Me atacan")
+            this.ataqueRecibido = { userOrigen, userDestino, dadosAtacante, dadosDefensor, 
+            tropasPerdidasAtacante, tropasPerdidasDefensor, conquistado,
+            territorioOrigen, territorioDestino, eloAtacante, eloDefensor,
+            dineroAtacante, dineroDefensor};      
+            if(conquistado){
+              Alert.alert('¡Has perdido el territorio ' + territorioDestino + '!');
+            }
+            else{
+              Alert.alert('Has resistido el ataque en ' + territorioDestino);
+            }
+            Alert.alert("tropas perdidas atacante: " + tropasPerdidasAtacante);
+            Alert.alert("tropas perdidas defensor: " + tropasPerdidasDefensor);
+            Alert.alert("dados atacante: " + dadosAtacante);
+            Alert.alert("dados defensor: " + dadosDefensor);
+            Alert.alert("Te atacan!")
+          }                        
+        });
+
 
     } 
   }, [socket])
@@ -1080,7 +1105,7 @@ useEffect(() => {
                   Alert.alert('Tus dados: ' + response.dadosAtacante + ' Dados defensor: ' + response.dadosDefensor);
                   Alert.alert('Tus bajas: ' + response.resultadoBatalla.tropasPerdidasAtacante + ' Bajas defensor: ' + response.resultadoBatalla.tropasPerdidasDefensor);
                   if(response.conquistado){
-                    Alert.alert('¡Territorio conquistado!');
+                    Alert.alert('¡Territorio conquistado! ' + territorioName);
     
                   } else {
                     Alert.alert('¡No has conquistado el territorio!');
@@ -1095,6 +1120,14 @@ useEffect(() => {
                                    tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
                                    conquistado: response.conquistado, territorioOrigen: ataqueOrigen, 
                                    territorioDestino: territorioName});
+                  socket.emit('atacoGrupal', {gameId: partida._id, userOrigen: whoami, userDestino: usuarioObjetivo?.usuario ?? '', 
+                                   dadosAtacante: response.dadosAtacante, dadosDefensor: response.dadosDefensor, 
+                                   tropasPerdidasAtacante: response.resultadoBatalla.tropasPerdidasAtacante,
+                                   tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
+                                   conquistado: response.conquistado, territorioOrigen: ataqueOrigen, 
+                                   territorioDestino: territorioName, eloAtacante: response.eloAtacante, territorioOrigen: this.ataqueOrigen, 
+                                   territorioDestino: enemyTerritoryId, eloDefensor: response.eloDefensor, dineroAtacante: response.dineroAtacante,
+                                   dineroDefensor: response.dineroDefensor});
                   console.log("Se perpetra el ataque ")
                   setAtaqueDestino('');
                   setAtaqueOrigen('');
@@ -1224,7 +1257,7 @@ useEffect(() => {
     }*/
     setGanador(_ganador);
     setFase(partida.fase);
-    setTurnoJugador(partida.jugadores[turno % numJugadores].usuario)
+    setTurnoJugador(partida.jugadores[turno % partida.jugadores.length].usuario)
 
     //TODO fetch cartas del back
     setCartas(partida.cartas);
@@ -1239,6 +1272,23 @@ useEffect(() => {
       //partida.auxColocar = 3;
       setNumTropas(partida.auxColocar);
       
+    }
+    for(let jugador of partida.jugadores){
+      if(jugador.usuario === whoami){
+        if(jugador.abandonado){
+          Alert.alert(
+            'Has sido eliminado de la partida',
+            '',
+            [
+              {
+                text: 'OK',
+                onPress: () => navigation.navigate('Partidas', { token: token })
+              }
+            ]
+          );
+
+        }
+      }
     }
     //console.log("MAPA:", thisPartida);
   }
