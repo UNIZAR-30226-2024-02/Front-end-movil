@@ -7,8 +7,10 @@ import Risk from '../assets/Risk_game_board.svg'
 import { useEffect } from 'react';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
 import io from 'socket.io-client';
+import  FontAwesome  from '@fortawesome/react-native-fontawesome';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useNavigation } from '@react-navigation/native';
+import ModalChat from './ModalChat';
 
 import Dialog from "react-native-dialog";
 
@@ -16,7 +18,7 @@ export default function RiskMap({ naviagation, route }) {
   //const [socket, setSocket] = useState('')
   const navigation = useNavigation();
   const [whoami, setWhoami] = useState(null);
-
+  const [chatVisible, setChatVisible] = useState(false);
   const { token, partida, socket } = route.params;
   
   const [thisPartida, setThisPartida] = useState(null);
@@ -1515,8 +1517,8 @@ useEffect(() => {
       return;
     }
 
-    if (stateTropas.attack && numTroops > 3) {
-      console.log(stateTropas.attack)
+    if ( numTroops > 3) {
+      //console.log(stateTropas.attack)
       Alert.alert('Sólo puedes seleccionar hasta 3 tropas para atacar.')
 
       return;
@@ -1744,6 +1746,8 @@ useEffect(() => {
 
   return (
     <View style={styles.container} >
+      {thisPartida ? <ModalChat socket={socket} whoami={whoami ? whoami : null} chat={thisPartida ? thisPartida.chat : null} onClose={()=>setChatVisible(false)} token={token} isVisible={chatVisible} /> : null}
+
       <Modal
         animationType="slide"
         transparent={true}
@@ -1789,6 +1793,7 @@ useEffect(() => {
         </View>
         <Text1 style={styles.zoneText}>Tropas: {numTropas}</Text1>
         <Text1 style={styles.zoneText}>Turno del jugador: {turnoJugador}</Text1>
+        <Text1 style={styles.zoneText}>{textoFase}</Text1>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.botonControl} onPress={updateFase}>
             <Text1 style={styles.zoneText}>Siguiente Fase</Text1>
@@ -1796,16 +1801,25 @@ useEffect(() => {
           <TouchableOpacity style={styles.botonControl} onPress={()=> handleOpenCartasModal()}>
             <Text1 style={styles.zoneText}>Usar Cartas</Text1>
           </TouchableOpacity>
-          <TouchableOpacity 
-              style={[styles.botonControl, { width: 50, height: 50, justifyContent: 'center', alignItems: 'center' }]} 
-              onPress={handlePauseResume}
-          >
-              <Text1 style={styles.zoneText}>{isPaused ? '▶' : '❚❚'}</Text1>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <TouchableOpacity 
+                style={[styles.botonControl, { width: 50, height: 50, justifyContent: 'center', alignItems: 'center' }]} 
+                onPress={handlePauseResume}
+            >
+                <Text1 style={styles.zoneText}>{isPaused ? '▶' : '❚❚'}</Text1>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.botonControl, {width: 110, backgroundColor: "red"}]} onPress={()=> ToastAndroid.show("FALTA IMPLEMENTAR ESTO", ToastAndroid.SHORT)}>
+              <Text1 style={styles.zoneText}>Abandonar</Text1>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity style={styles.botonControl} onPress={()=> setChatVisible(true)}>
+            <Text1 style={styles.zoneText}>Chat</Text1>
           </TouchableOpacity>
-          <Text1 style={styles.zoneText}>{textoFase}</Text1>
+
+          
         </View>
       </View>
-
+      {/*thisPartida ? <ModalChat socket={socket} whoami={whoami ? whoami : null} chat={thisPartida ? thisPartida.chat : null} onClose={()=>setChatVisible(false)} token={token} isVisible={chatVisible} /> : null*/}
       {/*DIALOGO PARA LAS TROPAS */}
         <Dialog.Container visible={dialogState.visible} > 
         <Dialog.Title>{dialogState.title}</Dialog.Title>
@@ -1929,5 +1943,25 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     margin: 10,
+  },
+      // Chat button styles
+  chatButton: {
+    backgroundColor: '#FF6347',
+    color: 'white',
+    padding: 10,
+    textAlign: 'center',
+    margin: 10,
+    borderRadius: 5,    
+  },
+  chatButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    marginLeft: 0,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1,
   },
 });
