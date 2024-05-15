@@ -4,6 +4,7 @@ import axios from 'axios';
 import { IP } from '../config';
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
 import { io } from 'socket.io-client';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function FriendshipRequests({ navigation, route }) {
   const { id, token } = route.params;
@@ -11,6 +12,10 @@ export default function FriendshipRequests({ navigation, route }) {
   const [filtred, setFiltred] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [socket, setSocket] = useState();
+
+  const goToInicial=()=>{
+    navigation.navigate('Inicial', { id: id, token: token });
+  };
 
   const fetchChats = async () => {
     try {
@@ -63,50 +68,86 @@ export default function FriendshipRequests({ navigation, route }) {
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background} resizeMode="stretch">
-      <View style={styles.translucentBox}>
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>CHATS</Text>
+      <View style={styles.container}>
+        <View style={styles.touchableColumn}>
+          <TouchableOpacity
+            style={styles.touchable}
+            onPress={goToInicial}
+          >
+            <MaterialIcons name="arrow-back" size={30} color="black" />
+          </TouchableOpacity>
         </View>
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Introduce el nombre del chat a buscar"
-            onChangeText={handleSearch}
-            value={searchQuery}
-            mode="outlined"
-          />
+  
+        <View style={styles.translucentColumn}>
+          <View style={styles.translucentBox}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>CHATS</Text>
+            </View>
+            <View style={styles.searchContainer}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Introduce el nombre del chat a buscar"
+                onChangeText={handleSearch}
+                value={searchQuery}
+                mode="outlined"
+              />
+            </View>
+            <ScrollView contentContainerStyle={styles.scrollViewContent}>
+              {filtred.map((chat) => (
+                <TouchableOpacity
+                  key={chat.nombre}
+                  style={styles.ChatItem}
+                  onPress={() => handleChatPress(chat)}>
+                  <View style={styles.ChatDetails}>
+                    <Text style={styles.ChatName}>{chat.nombre}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
         </View>
-        <ScrollView contentContainerStyle={styles.container}>
-            {filtred.map((chat) => (
-              <TouchableOpacity
-                key={chat.nombre}
-                style={styles.ChatItem}
-                onPress={() => handleChatPress(chat)}>
-                <View style={styles.ChatDetails}>
-                  <Text style={styles.ChatName}>{chat.nombre}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-        </ScrollView>
       </View>
     </ImageBackground>
   );
+  
 }
-
 const styles = StyleSheet.create({
   background: {
     flex: 1,
     resizeMode: 'cover',
     justifyContent: 'center',
   },
+  container: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  touchableColumn: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
+  touchable: {
+    marginTop: -250,
+    marginLeft: 40,
+    width: 50,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 25,
+    backgroundColor: 'silver',
+  },
+  translucentColumn: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   translucentBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Translucent white background
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     padding: 20,
     borderRadius: 10,
-    margin: 20,
-    width:560,
-    height:300,
-    marginHorizontal: 70, // Adjusted margin on both sides
+    marginLeft: -300,
+    width: 500,
+    height: 300,
   },
   titleContainer: {
     marginBottom: 20,
@@ -115,10 +156,12 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 20,
     fontWeight: 'bold',
-    left:200,
+    textAlign: 'center',
   },
   searchContainer: {
     marginBottom: 20,
+    marginLeft:70,
+    width:500,
   },
   searchInput: {
     backgroundColor: '#ffffff',
@@ -127,9 +170,8 @@ const styles = StyleSheet.create({
     borderColor: '#DB4437',
     borderRadius: 8,
     maxWidth: '60%',
-    left:100,
   },
-  container: {
+  scrollViewContent: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',

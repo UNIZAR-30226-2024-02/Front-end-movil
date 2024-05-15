@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity, ImageBackground } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const Partida = ({ navigation, route }) => {
   const { id, token } = route.params;
@@ -10,6 +11,10 @@ const Partida = ({ navigation, route }) => {
   useEffect(() => {
     fetchPartidaData();
   }, []);
+
+  const goToInicial = () => {
+    navigation.navigate('Partidas', {id:id, token: token });
+  };
 
   const fetchPartidaData = async () => {
     try {
@@ -42,7 +47,18 @@ const Partida = ({ navigation, route }) => {
   };
 
   return (
-    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
+    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage} resizeMode="stretch">
+       <TouchableOpacity
+        style={{ marginTop:30, marginRight:600,width: 50,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToInicial}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
       <View style={styles.container}>
         {partidaData ? (
           <View>

@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Button, StyleSheet, ImageBackground, ToastAndroid, Alert } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const Partidas = ({ navigation, route }) => {
 
-  const { token } = route.params;
+  const {id, token } = route.params;
   const [partidas, setPartidasData] = useState([]);
   const [invitaciones, setInvitacionesData] = useState([]);
 
@@ -21,6 +22,9 @@ const Partidas = ({ navigation, route }) => {
   const [inviteGameId, setInviteGameId] = useState('');
   const [inviteResult, setInviteResult] = useState('');
 
+  const goToInicial = () => {
+    navigation.navigate('Inicial', {id:id, token: token });
+  };
 
   useEffect(() => {
     fetchPartidasData()
@@ -169,7 +173,18 @@ const Partidas = ({ navigation, route }) => {
 
   //-------------------------------------------------------------------------------------------------------------------------
   return (
-    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}>
+    <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage} resizeMode="stretch">
+       <TouchableOpacity
+        style={{ marginTop:30, marginRight:600,width: 50,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToInicial}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
       <View style={styles.container}>
         <ScrollView style={styles.leftSide}>
           <View>
@@ -188,18 +203,19 @@ const Partidas = ({ navigation, route }) => {
           </View>
           <View>
             <Text style={[styles.title, styles.centeredTitle]}>Invitaciones</Text>
-            <ScrollView>
-              {invitaciones.filter(game => game !== null).map(game => (
+            <View style={styles.gamesList}>
+              {invitaciones.map(game => (
                 <TouchableOpacity 
-                  key={game.nombre} 
-                  style={styles.invitedGame}
+                  key={game.nombre}
                   onPress={() => handlePartidaPress(game._id)}
+                  style={[styles.gameRectangle, selectedGame && selectedGame._id === game._id && styles.selectedGameRectangle]}
                 >
-                  <Text style={styles.invitedGameText}>{game.nombre} ({game.jugadores.length}/{game.maxJugadores})</Text>
+                  <Text style={styles.gameRectangleText}>{game.nombre} ({game.jugadores.length}/{game.maxJugadores})</Text>
                 </TouchableOpacity>
               ))}
-            </ScrollView>
+            </View>
           </View>
+          
         </ScrollView>
         <ScrollView style={styles.rightSide}>
           <View style={styles.rightContent}>
@@ -301,7 +317,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
+    marginLeft:5,
     color: 'black',
+    backgroundColor:'gray',
+    width: 300, // Adjust this value to your desired width
+    
   },
   gamesList: {
     justifyContent: 'center',
@@ -357,6 +377,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 8,
+    marginBottom:30,
   },
   buttonText: {
     color: 'black',

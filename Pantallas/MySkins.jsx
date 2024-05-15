@@ -4,9 +4,10 @@ import axios from 'axios';
 import { IP } from '../config';
 import { images } from '../assets/Skins_image'
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function MisSkins({ navigation, route }) {
-  const { token } = route.params;
+  const {id, token } = route.params;
   const [skins, setSkins] = useState([]);
   const [equipada,setEquipada]=useState([]);
   
@@ -21,7 +22,9 @@ export default function MisSkins({ navigation, route }) {
         console.error('Error fetching skins:', error);
       }
     };
-
+    const goToPerfil = () => {
+      navigation.navigate('Perfil', {id:id, token: token });
+    };
     const equipadas = async () => {
       try {
         const response = await axios.get(
@@ -56,6 +59,18 @@ export default function MisSkins({ navigation, route }) {
 
   return (
     <ImageBackground source={require('../assets/img-2d3IDaHACsstyAx6hCGZP.jpeg')} style={styles.background}>
+      <TouchableOpacity
+        style={{ marginTop:30, marginLeft:30,width: 50,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToPerfil}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
+
       <ScrollView contentContainerStyle={styles.container}>
         {(skins.filter(item => item !== null)).map((skin) => (
           <TouchableOpacity

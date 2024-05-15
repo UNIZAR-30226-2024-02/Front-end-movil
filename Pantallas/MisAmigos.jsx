@@ -3,9 +3,10 @@ import { View, ScrollView, ImageBackground, TextInput, TouchableOpacity, Text, S
 import axios from 'axios';
 import { IP } from '../config';
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function FriendshipRequests({ navigation, route }) {
-  const { token } = route.params;
+  const {id, token,volver } = route.params;
   const [requests, setRequests] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filtred, setFiltred] = useState([]);
@@ -25,6 +26,7 @@ export default function FriendshipRequests({ navigation, route }) {
     }
   };
 
+  
   useEffect(() => {
     fetchData();
   }, [token]);
@@ -48,14 +50,37 @@ export default function FriendshipRequests({ navigation, route }) {
     }
   };
 
+  const goToInicial=()=>{
+    if(volver=='i'){
+      navigation.navigate('Inicial', { id: id, token: token });
+    }
+    else{
+      navigation.navigate('Perfil', {id:id, token: token });
+    }
+    
+  };
+
   const handleFriendPress = (user) => {
     const selectedFriend = requests.find((friend) => friend === user);
-    navigation.navigate('FriendDetails', { friend: selectedFriend, token: token });
+    navigation.navigate('FriendDetails', { friend: selectedFriend, token: token,id:id,volver:volver});
   };
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background} resizeMode="stretch">
+      <View style={{top:20}}>
+      <TouchableOpacity
+        style={{ marginTop:-10, marginLeft:20,width: 50,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToInicial}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
       <View style={styles.translucentBox}>
+        
         <View style={styles.titleContainer}>
           <Text style={styles.title}>MIS AMIGOS</Text>
         </View>
@@ -82,6 +107,8 @@ export default function FriendshipRequests({ navigation, route }) {
           ))}
         </ScrollView>
       </View>
+      
+      </View>
     </ImageBackground>
   );
 }
@@ -96,13 +123,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.5)', // Translucent white background
     padding: 20,
     borderRadius: 10,
-    margin: 20,
+    marginLeft:90,
+    marginBottom:20,
     width:560,
-    height:300,
-    marginHorizontal: 70, // Adjusted margin on both sides
+    height:280,
   },
   titleContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   title: {
     color: '#000',
@@ -114,10 +141,9 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 10,
   },
   searchContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   searchInput: {
     backgroundColor: '#ffffff',

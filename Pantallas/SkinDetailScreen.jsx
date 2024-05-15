@@ -3,12 +3,15 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, ImageBackground,Alert 
 import axios from 'axios';
 import { IP } from '../config';
 import { images } from '../assets/Skins_image'
-import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome from expo/vector-icons
+import { MaterialIcons } from '@expo/vector-icons';
 
-export default function SkinDetailScreen({ route }) {
-  const { skin, token } = route.params;
+export default function SkinDetailScreen({ navigation,route }) {
+  const { skin,id, token } = route.params;
   const [misSkin, setSkinsMySkins] = useState([]);
 
+  const goToTienda=()=>{
+    navigation.navigate('Tienda', { id: id, token: token });
+  };
   const fetchData = async () => {
     try {
       const responseMy = await axios.get(
@@ -46,6 +49,17 @@ export default function SkinDetailScreen({ route }) {
   return (
     <ImageBackground source={require('../assets/tienda.jpg')} style={styles.background} resizeMode="cover">
       <View style={styles.container}>
+      <TouchableOpacity
+        style={{ marginTop:-20, marginLeft:-610,width: 50, marginBottom:10,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToTienda}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
         <View style={styles.content}>
           <Image source={images.find(item => item.index === skin.idSkin).img} style={styles.skinImage} />
           <View style={styles.detailsContainer}>
@@ -89,7 +103,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   skinImage: {
-    width: '40%',
+    width: '35%',
     aspectRatio: 1,
     borderRadius: 8,
   },
@@ -103,7 +117,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     color:'white',
-    marginBottom: 10,
+    marginBottom: 0,
     
   },
   skinDescription: {
@@ -116,9 +130,8 @@ const styles = StyleSheet.create({
     
   },
   buyButton: {
-    position: 'absolute', // Position the button absolutely
-    bottom: 60, // Adjust the bottom margin
-    right: 80,
+    bottom: 120, // Adjust the bottom margin
+    right: -120,
     backgroundColor: 'olive',
     borderRadius: 8,
     paddingVertical: 20,

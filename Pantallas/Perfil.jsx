@@ -5,10 +5,11 @@ import axios from 'axios';
 import { images } from '../assets/Skins_image'
 import { IP } from '../config';
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Perfil({ navigation,route }) {
 
-  const { token } = route.params;
+  const {id, token } = route.params;
   const [perfil, setPerfil] = useState(null);
   const [equipada,setEquipada]=useState([]);
   const [money, setMoney]=useState({});
@@ -23,6 +24,10 @@ export default function Perfil({ navigation,route }) {
     } catch (error) {
       console.error('Error fetching skins:', error);
     }
+  };
+
+  const goToInicial=()=>{
+    navigation.navigate('Inicial', { id: id, token: token });
   };
 
   const equipadas = async () => {
@@ -67,19 +72,31 @@ export default function Perfil({ navigation,route }) {
 
   
   const goToMySkins = () => {
-    navigation.navigate('MySkins', { token: token });
+    navigation.navigate('MySkins', {id:id, token: token });
   };
 
   const goToMyHistory = () => {
-    navigation.navigate('MyHistory', { token: token });
+    navigation.navigate('MyHistory', { id:id,token: token });
   };
 
   const goToMyFriends = () => {
-    navigation.navigate('MisAmigos', { token: token });
+    navigation.navigate('MisAmigos', { id:id,token: token,volver:'p' });
   };
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage}  resizeMode="stretch">
+      <TouchableOpacity
+        style={{ marginTop:30, marginLeft:30,width: 50,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToInicial}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
+      
       <View style={styles.detailsContainer}>
       {images.find(item => item.index === equipada.idSkin) && (
         <Image
@@ -119,12 +136,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10, 
   },
   detailsContainer:{
-    top:20,
+    top:-50,
     flexDirection: 'row',
     borderWidth: 1,
     borderColor: '#DB4437',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: -50,
     backgroundColor: '#ffffff',
     borderRadius: 8,
     width: '50%',
@@ -153,7 +170,7 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     paddingHorizontal: 40,
     borderRadius: 12,
-    marginBottom: 0,
+    marginBottom: 10,
     marginRight: 10,
     position: 'absolute',
     left:50,

@@ -1,11 +1,12 @@
 import React, { useState, useEffect,useRef } from 'react';
-import { View, TouchableOpacity, ScrollView,Text, FlatList,StyleSheet, ImageBackground } from 'react-native';
+import { View, TouchableOpacity, ScrollView,Text, FlatList,StyleSheet, ImageBackground, Button } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome from expo/vector-icons
 import { IP } from '../config';
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import io from 'socket.io-client';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Inicial({ navigation, route }) {
   const { id, token } = route.params;
@@ -15,13 +16,16 @@ export default function Inicial({ navigation, route }) {
   const [chats,setChats]=useState([]);
   const [newNot,setNewNotification]=useState(null);
   const [contador,setContador]=useState(0);
-
+  console.log('Token', token)
+  console.log('inicial')
   const CargarChats = async () =>{
     const response= await axios.get(IP+'/chats/listar', { headers: {'Authorization':token } });
     setChats(response.data.chats);
   };
 
   useEffect(() => {
+    console.log('Token', token)
+
     console.log('Initial notificaciones:', notificaciones);
     setSocket(io(IP))
     //console.log(socket)
@@ -68,11 +72,11 @@ export default function Inicial({ navigation, route }) {
 
 
   const handleSolicitudPress = (user) => {
-    navigation.navigate('SolicitudDetails', { solicitante: user, token: token });
+    navigation.navigate('SolicitudDetails', { solicitante: user, token: token, id:id });
   };
 
   const handlePartidaPress = (id) => {
-    navigation.navigate('Partida', { id,token }); // Navigate to Partida component with id as a parameter
+    navigation.navigate('Partida', { id:id,token:token }); // Navigate to Partida component with id as a parameter
   };
 
   const goToCrearPartida = () => {
@@ -86,12 +90,12 @@ export default function Inicial({ navigation, route }) {
 
   const goToRanking = () => {
     // Navigate to "Ranking" screen
-    navigation.navigate('Ranking', { token: token });
+    navigation.navigate('Ranking', { id:id,token: token });
   };
 
   const goToTienda = () => {
     // Navigate to "Tienda" screen
-    navigation.navigate('Tienda', { token: token });
+    navigation.navigate('Tienda', { id:id,token: token });
   };
 
   const goToPerfil = () => {
@@ -106,12 +110,12 @@ export default function Inicial({ navigation, route }) {
 
   const goToAmigos = () => {
     // Navigate to "Chats" screen
-    navigation.navigate('MisAmigos', { token: token });
+    navigation.navigate('MisAmigos', { id:id,token: token,volver:'i'});
   };
 
   const goToAmistad = () => {
     // Navigate to "Chats" screen
-    navigation.navigate('Amistad', { token: token });
+    navigation.navigate('Amistad', {id:id, token: token });
   };
 
   const renderNotification = ({ item }) => (
@@ -123,6 +127,17 @@ export default function Inicial({ navigation, route }) {
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage} resizeMode="stretch">
       <View style={styles.container}>
+      <TouchableOpacity
+        style={{ flexDirection: 'row', alignItems: 'center', marginBottom:250, marginRight:600,width: 50,
+        height: 50,
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver',
+        justifyContent: 'center',
+        alignItems: 'center'}}
+        onPress={() => navigation.goBack()}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
           <TouchableOpacity style={styles.Partidasbutton} onPress={goToCrearPartida}>
           <FontAwesome name="gamepad" size={24} color="white" />
             <Text style={styles.PartidasbuttonText}>Partidas</Text>
@@ -235,6 +250,30 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     justifyContent: 'center',
   },
+  Atrasbutton: {
+    position: 'absolute',
+    top:30,
+    left:30,
+    backgroundColor: '#007bff',
+    borderRadius: 80,
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    
+  },
+  AtrasbuttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    marginLeft: 0,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    // Adding text shadow to create black outline
+    textShadowColor: 'black',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1,
+  },
+
   Partidasbutton: {
     backgroundColor: '#DB4437',
     paddingVertical: 11,

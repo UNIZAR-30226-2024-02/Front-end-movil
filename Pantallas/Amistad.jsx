@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, ImageBackground } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome from expo/vector-icons
 import { IP } from '../config';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Inicial({ navigation, route }) {
   const { id, token } = route.params;
@@ -9,6 +10,10 @@ export default function Inicial({ navigation, route }) {
   const goToFindPlayer = () => {
     // Navigate to "BuscarJugador" screen
     navigation.navigate('BuscarJugador', { token: token });
+  };
+
+  const goToInicial=()=>{
+    navigation.navigate('Inicial', { id: id, token: token });
   };
 
   const goToFindSol = () => {
@@ -19,6 +24,17 @@ export default function Inicial({ navigation, route }) {
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage} resizeMode="stretch">
       <View style={styles.container}>
+      <TouchableOpacity
+        style={{ marginTop:-70, marginRight:600,width: 50,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToInicial}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
         <View style={styles.row}>
           <TouchableOpacity style={styles.button} onPress={goToFindPlayer}>
             <FontAwesome name="user" size={30} color="white" style={styles.icon} />
@@ -56,7 +72,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     borderRadius: 12,
-    marginBottom: 0,
+    marginTop: 80,
     marginRight: 10,
     marginLeft: 50,
     marginRight: 50,

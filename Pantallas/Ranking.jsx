@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Text, StyleSheet, ImageBackground, View } from 'react-native';
+import { ScrollView,TouchableOpacity, Text, StyleSheet, ImageBackground, View } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
+import { MaterialIcons } from '@expo/vector-icons';
 
-export default function Ranking({ route }) {
+export default function Ranking({ route,navigation }) {
 
-  const { token } = route.params;
+  const { id,token } = route.params;
   const [rankingData, setRankingData] = useState([]);
   const [perfil, setPerfil] = useState(null);
   useEffect(() => {
@@ -25,6 +26,10 @@ export default function Ranking({ route }) {
     }
   };
 
+  const goToInicial=()=>{
+    navigation.navigate('Inicial', { id: id, token: token });
+  };
+  
   const fetchRankingData = async () => {
     try {
         const response = await axios.get(IP+'/ranking',{headers: {
@@ -40,10 +45,24 @@ export default function Ranking({ route }) {
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background} resizeMode="stretch">
+      <View style={styles.container}>
+      <TouchableOpacity
+        style={{ marginTop:20, marginRight:600,width: 50,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToInicial}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
+      
       <View style={styles.eloContainer}>
+      
         <Text style={styles.title}>ELO :  {perfil ? perfil.elo : ''}</Text>
       </View>
-      <ScrollView vertical={true} contentContainerStyle={styles.container}>
+      <ScrollView vertical={true} contentContainerStyle={styles.scontainer}>
         <View style={[styles.table, { minWidth: '60%' }]}>
           <View style={styles.tableHeader}>
             <Text style={[styles.headerText, { flex: 1 }]}>Ranking</Text>
@@ -59,7 +78,9 @@ export default function Ranking({ route }) {
           ))}
         </View>
       </ScrollView>
+      </View>
     </ImageBackground>
+    
   );
 }
 
@@ -71,7 +92,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   eloContainer: {
-    marginTop: 30, 
+    marginTop: -50, 
     marginLeft: 15, 
     backgroundColor: 'gray',
     borderRadius: 10,
@@ -79,12 +100,20 @@ const styles = StyleSheet.create({
     borderColor: '#DB4437',
     borderWidth: 2,
   },
-  container: {
+  scontainer: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 20,
     marginTop:10,
+  },
+  container:{
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+    marginTop:10,
+
   },
   title: {
     fontWeight: 'bold',

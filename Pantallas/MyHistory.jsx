@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Text, StyleSheet, ImageBackground, View } from 'react-native';
+import { ScrollView,TouchableOpacity, Text, StyleSheet, ImageBackground, View } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
+import { MaterialIcons } from '@expo/vector-icons';
 
-export default function Ranking({ route }) {
-  const { token } = route.params;
+export default function Ranking({navigation, route }) {
+  const { id,token } = route.params;
   const [historialData, setHistorialData] = useState([]);
   useEffect(() => {
     fetchRankingData();
@@ -21,8 +22,23 @@ export default function Ranking({ route }) {
     }
   };
 
+  const goToPerfil = () => {
+    navigation.navigate('Perfil', {id:id, token: token });
+  };
+
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background} resizeMode="stretch">
+      <TouchableOpacity
+        style={{ marginTop:30, marginLeft:-630,width: 50,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToPerfil}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.table}>
           <View style={styles.tableHeader}>

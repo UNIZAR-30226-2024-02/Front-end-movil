@@ -44,8 +44,8 @@ export default function SolicitudDetails({ navigation,route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 50,
+    paddingHorizontal: 50,
+    paddingVertical: 30,
     
     
   },
@@ -53,13 +53,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Translucent white background
+    backgroundColor: 'rgba(128, 128, 128, 0.6)', // Translucent white background
   },
   detailsContainer: {
     flex: 1,
     marginLeft: 20,
   },
   playerName: {
+    top:30,
     color: 'white',
     fontSize: 30,
     fontWeight: 'bold',
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
     
   },
   playerDescription: {
-    top:30,
+    top:75,
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 20,
@@ -89,14 +90,13 @@ const styles = StyleSheet.create({
   },
   addButton: {
     backgroundColor: '#DB4437',
-    paddingVertical: 11,
+    paddingVertical: 15,
     paddingHorizontal: 40,
     borderRadius: 12,
     marginBottom: 0,
     marginRight: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
     overflow: 'hidden',
     width:250,
     height:80,

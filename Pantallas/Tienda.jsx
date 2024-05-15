@@ -5,9 +5,10 @@ import { IP } from '../config';
 import { images } from '../assets/Skins_image'
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
 import { Picker } from '@react-native-picker/picker'; // Import Picker from the new package
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Tienda({ navigation, route }) {
-  const { token } = route.params;
+  const { id,token } = route.params;
   const [skins, setSkins] = useState([]);
   const [filtred,setFiltred]=useState([]);
   const [misSkin,setSkinsMySkins]=useState([]);
@@ -23,6 +24,11 @@ export default function Tienda({ navigation, route }) {
     { label: 'SetFichas', value: 'SetFichas' },
     { label: 'Terreno', value: 'Terreno' },
   ];
+  console.log('token tienda', token)
+  console.log('id tienda', id)
+  const goToInicial=()=>{
+    navigation.navigate('Inicial', { id: id, token: token });
+  };
 
   const fetchData = async () => {
     try {
@@ -137,11 +143,22 @@ export default function Tienda({ navigation, route }) {
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {
     const selectedSkin = skins.find((skin) => skin._id === skinId);
-    navigation.navigate('SkinDetailScreen', { skin: selectedSkin, token: token });
+    navigation.navigate('SkinDetailScreen', { skin: selectedSkin,id:id, token: token });
   };
 
   return (
     <ImageBackground source={require('../assets/tienda.jpg')} style={styles.background} resizeMode="stretch">
+      <TouchableOpacity
+        style={{ marginTop:30, marginLeft:10,width: 50,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToInicial}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
       <View style={styles.moneyContainer}>
         <Text style={styles.moneyText}>Mi dinero: {money.dinero} $</Text>
       </View>
@@ -207,8 +224,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingHorizontal: 10,
     paddingVertical: 8,
-    marginRight: 10,
-    width: 155, 
+    marginLeft: 30,
+    marginRight:20,
+    width: 140, 
     height:50,
   },
   inputPrice: {
@@ -230,12 +248,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
     marginRight: 10,
-    width: 275, 
+    width: 250, 
     height:50,
   },
   moneyContainer: {
-    marginTop: 40, 
-    marginLeft: 50, 
+    marginTop: -50, 
+    marginLeft: 80, 
   },
   moneyText: {
     color: 'white',

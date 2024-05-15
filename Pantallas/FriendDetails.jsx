@@ -4,9 +4,10 @@ import axios from 'axios';
 import { IP } from '../config';
 import { FontAwesome } from '@expo/vector-icons';
 import TextInputModal from './TextInputModal';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function PlayerDetails({navigation, route }) {
-  const {friend,token} = route.params;
+  const {friend,token,id,volver} = route.params;
   const [modalVisible, setModalVisible] = useState(false);
   console.log('Token:', token); // Access token
   console.log('amigo:', friend)
@@ -25,6 +26,10 @@ export default function PlayerDetails({navigation, route }) {
       console.error('Error friend:', error);
     }
     
+  };
+
+  const goToAmigos = () => {
+    navigation.navigate('MisAmigos', {id:id, token: token,volver:volver });
   };
 
   const handleChat = async (chatName) => {
@@ -47,7 +52,19 @@ export default function PlayerDetails({navigation, route }) {
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
+      <TouchableOpacity
+        style={{ marginTop:80, marginLeft:30,width: 50,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToAmigos}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
       <View style={styles.container}>
+        
         <View style={styles.content}>
           <View style={styles.detailsContainer}>
             <View style={styles.titleContainer}>
@@ -81,18 +98,19 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     margin: 20,
-    width:560,
+    width:400,
     height:300,
-    marginHorizontal: 70,
+    marginLeft: 170,
+    top:-40,
     
   },
   titleContainer: {
-    top: 20,
+    top: 0,
     backgroundColor: 'rgba(173, 216, 230, 0.8)',
     padding: 10,
     borderRadius: 8,
     zIndex: 1,
-    width:100,
+    width:80,
     width: '70%',
     elevation: 3,
     height: 60,
@@ -121,7 +139,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,           // Espacio adicional entre el contenido y el botón
     flexDirection: 'column',    // Alinea los elementos en columna
     justifyContent: 'space-between',
-    marginTop: 40,
+    marginTop: 20,
   },
   addButton: {
     backgroundColor: '#DB4437',
