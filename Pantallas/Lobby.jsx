@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TextInput, StyleSheet, ToastAndroid, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TextInput, StyleSheet, ToastAndroid, Alert, TouchableOpacity, ImageBackground} from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { IP } from '../config';
@@ -221,176 +221,195 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
             console.error(error)
         })
     }
-
     return (
-        <View>
-        {partidaData ? (
-            <View>
-                <Text style={styles.title}>{partidaData.nombre}</Text>
-                <Text style={styles.subTitle}>Max Jugadores: {partidaData.maxJugadores}</Text>
-                <View style={styles.jugadoresContainer}>
-                    {jugadores ? (jugadores.map(jugador => (
-                        <View key={jugador[0]}>
-                            <Text key={jugador[0]} style={styles.jugador}>{jugador[0]}</Text>
-                            {
-                                //<Image source={{ uri: jugador[1] }} style={{ width: 50, height: 50 }} /> TODO: implementar skins
-                            }
-                        </View>
-                    ))) : (<Text>Loading...</Text>)}
-                </View>
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={styles.empezarButton} onPress={empezarPartida}>
-                        <Text style={styles.buttonText}>Empezar</Text>
-                    </TouchableOpacity>
-                    <View style={{ margin: 10 }} />
-                    <TouchableOpacity style={styles.salirButton} onPress={confirmSalirPartida}>
-                        <Text style={styles.buttonText}>Abandonar</Text>
-                    </TouchableOpacity>
-                </View>
-                <View>
-                    <Text style={styles.title}>Invitar a un jugador</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Nombre del jugador"
-                        value={invitado}
-                        onChangeText={setInvitado}
-                    />
-                    <View style={styles.buttonLeftContainer}>
-                        <TouchableOpacity style={styles.normalButton} onPress={invitar}>
-                            <Text style={styles.buttonText}>Invitar</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <TouchableOpacity style={styles.chatButton} onPress={()=>setChatVisible(true)}>
-                    <FontAwesome name="comments" size={24} color="white" />
-                    <Text style={styles.chatButtonText}>Chat</Text>
-                    </TouchableOpacity>
-                </View>
-                <View>
-                    <Text style={styles.title}>Chat de la partida</Text>
-                    {partidaData.chat.mensajes.map((mensaje, index) => ( // TODO: pensar qué hacer con el chat
-                        <View key={index} style={styles.messageContainer}>
-                            <Text style={styles.messageText}>{mensaje.idUsuario}:</Text>
-                            <Text style={styles.messageText}>{mensaje.texto}</Text>
-                            <Text style={styles.messageText}>{mensaje.timestamp}:</Text>
-                        </View>
-                    ))}
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Escribe un mensaje..."
-                        value={mensaje}
-                        onChangeText={setMensaje}
-                    />
-                    <View style={styles.buttonLeftContainer}>
-                        <TouchableOpacity style={styles.normalButton} onPress={enviarMensaje}>
-                            <Text style={styles.buttonText}>Enviar</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-                <ModalChat socket={socket} whoami={username} chat={partidaData ? partidaData.chat : null} onClose={()=>setChatVisible(false)} token={token} isVisible={chatVisible} />
+        <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage} resizeMode="stretch">
+          <View style={styles.container}>
+            <View style={styles.leftColumn}>
+              <Text style={styles.titleInvitar}>Invitar a un jugador</Text>
+              <TextInput
+                style={styles.inputInvitar}
+                placeholder="Nombre del jugador"
+                value={invitado}
+                onChangeText={setInvitado}
+              />
+              <TouchableOpacity style={styles.normalButton} onPress={invitar}>
+                <Text style={styles.buttonText}>Invitar</Text>
+              </TouchableOpacity>
             </View>
-        ) : (
-            <Text>Loading...</Text>
-        )}
-        
-        </View>
-  );
-}
-
-const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    title: {
-      fontSize: 24,
-      fontWeight: 'bold',
-      marginBottom: 10,
-    },
-    subTitle: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 5,
-    },
-    jugadoresContainer: {
-      marginTop: 5,
-    },
-    jugador: {
-      fontSize: 16,
-      marginBottom: 3,
-    },
-    button: {
-      marginTop: 20,
-      backgroundColor: '#4CAF50',
-      paddingVertical: 15,
-      paddingHorizontal: 30,
-      borderRadius: 8,
-    },
-    buttonText: {
-      color: 'white',
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-    buttonContainer: {
-      flexDirection: 'row',
-      justifyContent: 'center',
-    },
-    empezarButton: {
-      backgroundColor: 'green',
-      padding: 10,
-      borderRadius: 5,
-      marginLeft: 10,
-    },
-    salirButton: {
-      backgroundColor: 'red',
-      padding: 10,
-      borderRadius: 5,
-      marginRight: 10,
-    },
-    buttonLeftContainer: {
-      flexDirection: 'row',
-      justifyContent: 'left',
-    },
-    normalButton: {
-      backgroundColor: 'blue',
-      padding: 10,
-      borderRadius: 5,
-      marginRight: 10,
-    },
-    messageContainer: {
-        backgroundColor: '#f0f0f0', // light gray background
-        padding: 10,
-        marginBottom: 10,
-        borderRadius: 5,
-        alignSelf: 'flex-start', // align to the left
-    },
-    // Chat button styles
-  chatButton: {
-    position: 'absolute',
-    bottom: 10,
-    right: 500,
-    backgroundColor: '#007bff',
-    borderRadius: 80,
-    width: 80,
-    height: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
+            <View style={styles.middleColumn}>
+              <View style={styles.titleContainer}>
+                <Text style={styles.title}>{partidaData && partidaData.nombre}</Text>
+                <Text style={styles.subTitle}>Max Jugadores: {partidaData && partidaData.maxJugadores}</Text>
+              </View>
+              <View style={styles.jugadoresContainer}>
+                {jugadores ? (jugadores.map(jugador => (
+                  <View key={jugador[0]}>
+                    <Text key={jugador[0]} style={styles.jugador}>{jugador[0]}</Text>
+                  </View>
+                ))) : (<Text>Loading...</Text>)}
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.empezarButton} onPress={empezarPartida}>
+                  <Text style={styles.buttonText}>Empezar</Text>
+                </TouchableOpacity>
+                <View style={{ margin: 10 }} />
+                <TouchableOpacity style={styles.salirButton} onPress={confirmSalirPartida}>
+                  <Text style={styles.buttonText}>Abandonar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View style={styles.rightColumn}>
+              <TouchableOpacity style={styles.chatButton} onPress={()=>setChatVisible(true)}>
+                <FontAwesome name="comments" size={24} color="white" />
+                <Text style={styles.chatButtonText}>Chat</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <ModalChat socket={socket} whoami={username} chat={partidaData ? partidaData.chat : null} onClose={()=>setChatVisible(false)} token={token} isVisible={chatVisible} />
+        </ImageBackground>
+      );
+      
+      
+    }
     
-  },
-  chatButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    marginLeft: 0,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    // Adding text shadow to create black outline
-    textShadowColor: 'black',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 1,
-  },
-    messageText: {
-        fontSize: 16,
-    },
-});
+    const styles = StyleSheet.create({
+        container: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'rgba(128, 128, 128, 0.5)', // Semi-transparent gray
+        },
+        middleColumn:{
+            bottom:150,
+        },
+        leftColumn:{
+            top:100,
+            right:230,
+        },
+        rightColumn:{
+            top:100,
+            left:0,
+        },
+        backgroundImage: {
+          flex: 1,
+          width: '100%',
+          height: '100%',
+        },
+        titleContainer: {
+          alignItems: 'center',
+          marginBottom: 20,
+        },
+        title: {
+          fontSize: 30,
+          fontWeight: 'bold',
+        },
+        titleInvitar: {
+          fontSize: 22,
+          fontWeight: 'bold',
 
-export default Lobby;
+        },
+        invitarContainer: {
+          position: 'absolute',
+          bottom: 20,
+          right: 20,
+          backgroundColor: 'rgba(255, 255, 255, 0.8)', // Adjust opacity if needed
+          padding: 20,
+          borderRadius: 10,
+          alignItems: 'center',
+        },
+        subTitle: {
+          fontSize: 18,
+          fontWeight: 'bold',
+          marginBottom: 5,
+        },
+        jugadoresContainer: {
+          marginTop: 5,
+        },
+        jugador: {
+          fontSize: 16,
+          marginBottom: 3,
+        },
+        buttonContainer: {
+          flexDirection: 'row',
+          justifyContent: 'center',
+          marginTop:10,
+        },
+        empezarButton: {
+          backgroundColor: 'green',
+          padding: 10,
+          borderRadius: 5,
+          marginLeft: 10,
+        },
+        salirButton: {
+          backgroundColor: 'red',
+          padding: 10,
+          borderRadius: 5,
+          marginRight: 10,
+        },
+        buttonLeftContainer: {
+          flexDirection: 'row',
+          justifyContent: 'left',
+        },
+        normalButton: {
+          backgroundColor: 'blue',
+          padding: 10,
+          borderRadius: 5,
+          marginRight: 10,
+          width:100,
+        },
+        chatButton: {
+          position: 'absolute',
+          bottom: 200,
+          right: -300,
+          backgroundColor: '#007bff',
+          borderRadius: 80,
+          width: 80,
+          height: 80,
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        chatButtonText: {
+          color: 'white',
+          fontWeight: 'bold',
+          marginLeft: 0,
+          fontWeight: 'bold',
+          textTransform: 'uppercase',
+          // Adding text shadow to create black outline
+          textShadowColor: 'black',
+          textShadowOffset: { width: 1, height: 1 },
+          textShadowRadius: 1,
+        },
+        messageContainer: {
+          backgroundColor: '#f0f0f0', // light gray background
+          padding: 10,
+          marginBottom: 10,
+          borderRadius: 5,
+          alignSelf: 'flex-start', // align to the left
+        },
+        messageText: {
+          fontSize: 16,
+        },
+        input: {
+          width: '80%',
+          borderWidth: 1,
+          borderColor: '#ccc',
+          padding: 10,
+          marginBottom: 10,
+          borderRadius: 5,
+        },
+        inputInvitar: {
+          width: '80%',
+          borderWidth: 1,
+          borderColor: '#ccc',
+          padding: 10,
+          backgroundColor:'white',
+          marginBottom: 30,
+          marginRight:50,
+          borderRadius: 5,
+          marginTop:10,
+        },
+      });
+      
+
+
+    export default Lobby;
