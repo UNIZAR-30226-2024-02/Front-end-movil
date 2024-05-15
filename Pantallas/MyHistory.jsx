@@ -5,7 +5,7 @@ import { IP } from '../config';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Ranking({navigation, route }) {
-  const { id,token } = route.params;
+  const { userid,token } = route.params;
   const [historialData, setHistorialData] = useState([]);
   useEffect(() => {
     fetchRankingData();
@@ -23,7 +23,7 @@ export default function Ranking({navigation, route }) {
   };
 
   const goToPerfil = () => {
-    navigation.navigate('Perfil', {id:id, token: token });
+    navigation.navigate('Perfil', {userid: userid, token: token });
   };
 
   return (

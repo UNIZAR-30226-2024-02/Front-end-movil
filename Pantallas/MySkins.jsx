@@ -7,7 +7,7 @@ import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEff
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function MisSkins({ navigation, route }) {
-  const {id, token } = route.params;
+  const {userid, token } = route.params;
   const [skins, setSkins] = useState([]);
   const [equipada,setEquipada]=useState([]);
   
@@ -23,7 +23,7 @@ export default function MisSkins({ navigation, route }) {
       }
     };
     const goToPerfil = () => {
-      navigation.navigate('Perfil', {id:id, token: token });
+      navigation.navigate('Perfil', {userid:userid, token: token });
     };
     const equipadas = async () => {
       try {
@@ -54,7 +54,7 @@ export default function MisSkins({ navigation, route }) {
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {
     const selectedSkin = (skins.filter(item => item !== null)).find((skin) => skin._id === skinId);
-    navigation.navigate('MySkinDetailScreen', { skin: selectedSkin,id:id, token: token });
+    navigation.navigate('MySkinDetailScreen', { skin: selectedSkin,userid:userid, token: token });
   };
 
   return (
