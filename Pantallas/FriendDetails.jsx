@@ -19,7 +19,7 @@ export default function PlayerDetails({navigation, route }) {
         { headers: { Authorization: token } }
         
       );
-      Alert.alert("Sucess.Eliminado de la lista de amigos");
+      Alert.alert("Eliminado de la lista de amigos");
       navigation.navigate('MisAmigos', { token: token });
       
     } catch (error) {
@@ -40,7 +40,7 @@ export default function PlayerDetails({navigation, route }) {
           { nombreChat: chatName, usuarios: [friend] },
           { headers: { Authorization: token } }
         );
-        Alert.alert("Éxito. Chat creado correctamente.");
+        Alert.alert("Chat creado correctamente.");
       } catch (error) {
         console.error('Error al crear el chat:', error);
       }
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     top: 0,
-    backgroundColor: 'rgba(173, 216, 230, 0.8)',
+    backgroundColor: 'rgba(0, 128, 0, 0.5)', // Green with 50% opacity
     padding: 10,
     borderRadius: 8,
     zIndex: 1,
@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',    // Alinea los elementos en columna
     justifyContent: 'space-between',
     marginTop: 20,
+    
   },
   addButton: {
     backgroundColor: 'darkgreen',
@@ -179,6 +180,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: '#000000',
     textAlign: 'center',
+    
     fontSize: 16,
     fontWeight: 'bold',
   },
