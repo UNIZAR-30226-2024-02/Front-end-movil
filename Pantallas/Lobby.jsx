@@ -325,6 +325,7 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
         },
         jugadoresContainer: {
           marginTop: 5,
+          marginLeft:100,
         },
         jugador: {
           fontSize: 16,
