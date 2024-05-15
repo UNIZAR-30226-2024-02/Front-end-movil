@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/vector-icons": "^14.0.2",
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
     "@fortawesome/react-native-fontawesome": "^0.3.0",
@@ -20,7 +21,7 @@
     "@react-navigation/stack": "^6.3.25",
     "axios": "^1.6.7",
     "crypto-js": "^4.2.0",
-    "expo": "^51.0.2",
+    "expo": "51.0.6",
     "expo-status-bar": "~1.12.1",
     "fast-xml-parser": "^4.3.6",
     "react": "18.2.0",
