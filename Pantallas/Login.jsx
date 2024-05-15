@@ -102,7 +102,7 @@ export default function App({ navigation }) {
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="Nombre de usuario"
+            placeholder="Nombre de usuario o correo electronico"
             value={username}
             onChangeText={setUsername}
           />
