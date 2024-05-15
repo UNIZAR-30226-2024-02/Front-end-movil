@@ -5,7 +5,7 @@ import { IP } from '../config';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function SolicitudDetails({ navigation,route }) {
-  const {solicitante,token,id,vo} = route.params;
+  const {solicitante,token,userid,vo} = route.params;
 
   const handleConfirmaFriend = async () => {
     // Implementación para confirmar amistad
@@ -17,17 +17,17 @@ export default function SolicitudDetails({ navigation,route }) {
       );
       Alert.alert('La petición se ha aceptado, ahora sois amigos.');
       console.log('Response:', response.data);
-      navigation.navigate('Inicial', {id:id, token: token });
+      navigation.navigate('Inicial', {userid : userid, token: token });
     } catch (error) {
       console.error('Error friend:', error);
     }
   };
   const goToInicial=()=>{
     if(vo=='a'){
-      navigation.navigate('MisSolicitudes', { id: id, token: token,vo:vo });
+      navigation.navigate('MisSolicitudes', { userid : userid, token: token,vo:vo });
     }
     else{
-      navigation.navigate('Inicial',{id:id,token:token});
+      navigation.navigate('Inicial',{userid : userid,token:token});
     }
     
   };

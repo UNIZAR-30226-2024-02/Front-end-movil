@@ -7,7 +7,7 @@ import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome from exp
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function FriendshipRequests({ navigation, route }){
-  const {id, token,vo } = route.params;
+  const {userid, token,vo } = route.params;
   const [requests, setRequests] = useState([]);
   console.log('Token:', token); // Access token
 
@@ -27,7 +27,7 @@ export default function FriendshipRequests({ navigation, route }){
   };
 
   const goToInicial=()=>{
-    navigation.navigate('Amistad', { id: id, token: token,vo:vo });
+    navigation.navigate('Amistad', { userid : userid, token: token,vo:vo });
   };
   useEffect(() => {
     fetchData();
@@ -41,7 +41,7 @@ export default function FriendshipRequests({ navigation, route }){
   );
 
   const handleSolicitudPress = (user) => {
-    navigation.navigate('SolicitudDetails', { solicitante: user, token: token,id:id,vo:vo});
+    navigation.navigate('SolicitudDetails', { solicitante: user, token: token,userid : userid,vo:vo});
   };
 
   return (

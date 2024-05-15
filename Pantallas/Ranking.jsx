@@ -6,7 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Ranking({ route,navigation }) {
 
-  const { id,token } = route.params;
+  const { userid,token } = route.params;
   const [rankingData, setRankingData] = useState([]);
   const [perfil, setPerfil] = useState(null);
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function Ranking({ route,navigation }) {
   };
 
   const goToInicial=()=>{
-    navigation.navigate('Inicial', { id: id, token: token });
+    navigation.navigate('Inicial', { userid : userid, token: token });
   };
   
   const fetchRankingData = async () => {

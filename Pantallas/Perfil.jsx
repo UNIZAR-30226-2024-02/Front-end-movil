@@ -9,7 +9,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Perfil({ navigation,route }) {
 
-  const {id, token } = route.params;
+  const {userid, token } = route.params;
   const [perfil, setPerfil] = useState(null);
   const [equipada,setEquipada]=useState([]);
   const [money, setMoney]=useState({});
@@ -27,7 +27,7 @@ export default function Perfil({ navigation,route }) {
   };
 
   const goToInicial=()=>{
-    navigation.navigate('Inicial', { id: id, token: token });
+    navigation.navigate('Inicial', { userid : userid, token: token });
   };
 
   const equipadas = async () => {
@@ -72,15 +72,15 @@ export default function Perfil({ navigation,route }) {
 
   
   const goToMySkins = () => {
-    navigation.navigate('MySkins', {id:id, token: token });
+    navigation.navigate('MySkins', {userid : userid, token: token });
   };
 
   const goToMyHistory = () => {
-    navigation.navigate('MyHistory', { id:id,token: token });
+    navigation.navigate('MyHistory', { userid : userid, token: token });
   };
 
   const goToMyFriends = () => {
-    navigation.navigate('MisAmigos', { id:id,token: token,volver:'p' });
+    navigation.navigate('MisAmigos', { userid : userid, token: token,volver:'p' });
   };
 
   return (

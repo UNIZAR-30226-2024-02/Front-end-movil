@@ -6,7 +6,7 @@ import { io } from 'socket.io-client';
 
 export default function Chat({ navigation, route }) {
   const [isOptionsMenuVisible, setOptionsMenuVisible] = useState(false);
-  const { chat, id ,token } = route.params;
+  const { chat, userid ,token } = route.params;
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -15,7 +15,7 @@ export default function Chat({ navigation, route }) {
   const [count, setCount] = useState(0);
   const [socket, setSocket] = useState(null);
   const scrollViewRef = useRef();
-  console.log('Chat',id)
+  console.log('Chat',userid)
 
   const fetchMessages = async () => {
     try {
@@ -62,7 +62,7 @@ export default function Chat({ navigation, route }) {
           { headers: { Authorization: token } }
         );
         console.log('ChatId:',chat.oid)
-        socket.emit('sendChatMessage', { chatId: chat.oid, message: message, user: id, timestamp: new Date().toISOString()});
+        socket.emit('sendChatMessage', { chatId: chat.oid, message: message, user: userid, timestamp: new Date().toISOString()});
         
         setMessage('');
         
@@ -116,7 +116,7 @@ export default function Chat({ navigation, route }) {
       );
       console.log('Salir',response.data.mensaje);
       setShowModal(false); // Close the modal after successful exit
-      navigation.navigate('MyChats', {id: id, token: token });
+      navigation.navigate('MyChats', {userid : userid, token: token });
     } catch (error) {
       console.error('Error al salir del chatt:', error.response.data.error);
       // Handle error or display error message to the user
@@ -211,7 +211,8 @@ export default function Chat({ navigation, route }) {
           contentContainerStyle={styles.messageContent}
           onContentSizeChange={scrollToBottom}>
           {messages.map((msg, index) => (
-            <View key={index} style={msg.idUsuario === id ? styles.userMessage : styles.otherMessage}>
+            <View key={index} style={msg.idUsuario === userid ? styles.userMessage : styles.otherMessage}>
+              <Text style={styles.textNombre}>{msg.idUsuario}: </Text>
               <Text>{msg.texto}</Text>
             </View>
           ))}
@@ -413,6 +414,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textShadowColor: 'black',
     textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
+  },
+  textNombre: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: 'bold',
     textShadowRadius: 2,
   },
 });

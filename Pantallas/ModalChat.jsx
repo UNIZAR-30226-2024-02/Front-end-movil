@@ -126,6 +126,7 @@ export default function ModalChat({ isVisible, whoami, socket, onClose, chat, id
           onContentSizeChange={scrollToBottom}>
           {messages.map((msg, index) => (
             <View key={index} style={msg.idUsuario === whoami ? styles.userMessage : styles.otherMessage}>
+                <Text style={styles.textNombre} >{msg.idUsuario}:</Text>
               <Text>{msg.texto}</Text>
             </View>
           ))}
@@ -156,7 +157,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: 'white',
+    backgroundColor: 'lightgray',
     marginTop: 30,
     marginBottom: 40,
     marginHorizontal: 20,
@@ -167,7 +168,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
-    backgroundColor: '#DB4437',
+    backgroundColor: 'darkgreen',
     borderRadius:5,
   },
   title: {
@@ -306,7 +307,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top:25,
     right:20,
-    backgroundColor: '#fff',
+    backgroundColor: 'gray',
     borderRadius: 8,
     borderWidth:2,
     borderColor: '#DB4437',
@@ -333,6 +334,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textShadowColor: 'black',
     textShadowOffset: { width: 2, height: 1 },
+    textShadowRadius: 2,
+  },
+  textNombre: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: 'bold',
     textShadowRadius: 2,
   },
 });

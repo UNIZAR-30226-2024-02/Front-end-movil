@@ -9,7 +9,7 @@ import io from 'socket.io-client';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Inicial({ navigation, route }) {
-  const { id, token } = route.params;
+  const { userid, token } = route.params;
   const [showPopup, setShowPopup] = useState(false);
   const [notificaciones,setNotificacion]=useState([]);
   const [socket ,setSocket]=useState('');
@@ -17,7 +17,7 @@ export default function Inicial({ navigation, route }) {
   const [newNot,setNewNotification]=useState(null);
   const [contador,setContador]=useState(0);
   console.log('Token', token)
-  console.log('inicial')
+  console.log('inicial', userid)
   const CargarChats = async () =>{
     const response= await axios.get(IP+'/chats/listar', { headers: {'Authorization':token } });
     setChats(response.data.chats);
@@ -72,16 +72,16 @@ export default function Inicial({ navigation, route }) {
 
 
   const handleSolicitudPress = (user) => {
-    navigation.navigate('SolicitudDetails', { solicitante: user, token: token, id:id });
+    navigation.navigate('SolicitudDetails', { solicitante: user, token: token, userid:userid });
   };
 
   const handlePartidaPress = (id) => {
-    navigation.navigate('Partida', { id:id,token:token }); // Navigate to Partida component with id as a parameter
+    navigation.navigate('Partida', { userid:userid,token:token }); // Navigate to Partida component with id as a parameter
   };
 
   const goToCrearPartida = () => {
     // Navigate to "Crear Partida" screen
-    navigation.navigate('Partidas', { id: id, token: token });
+    navigation.navigate('Partidas', { userid: userid, token: token });
   };
 
   const goToNotificaciones = () => {
@@ -90,32 +90,32 @@ export default function Inicial({ navigation, route }) {
 
   const goToRanking = () => {
     // Navigate to "Ranking" screen
-    navigation.navigate('Ranking', { id:id,token: token });
+    navigation.navigate('Ranking', {userid : userid,token: token });
   };
 
   const goToTienda = () => {
     // Navigate to "Tienda" screen
-    navigation.navigate('Tienda', { id:id,token: token });
+    navigation.navigate('Tienda', {userid : userid,token: token });
   };
 
   const goToPerfil = () => {
     // Navigate to "Perfil" screen
-    navigation.navigate('Perfil', { id: id, token: token });
+    navigation.navigate('Perfil', {userid : userid, token: token });
   };
 
   const goToChats = () => {
     // Navigate to "Chats" screen
-    navigation.navigate('MyChats', {id: id, token: token });
+    navigation.navigate('MyChats', {userid : userid, token: token });
   };
 
   const goToAmigos = () => {
     // Navigate to "Chats" screen
-    navigation.navigate('MisAmigos', { id:id,token: token,volver:'i'});
+    navigation.navigate('MisAmigos', {userid : userid,token: token,volver:'i'});
   };
 
   const goToAmistad = () => {
     // Navigate to "Chats" screen
-    navigation.navigate('Amistad', {id:id, token: token });
+    navigation.navigate('Amistad', {userid : userid, token: token });
   };
 
   const renderNotification = ({ item }) => (

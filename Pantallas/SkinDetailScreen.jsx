@@ -6,11 +6,11 @@ import { images } from '../assets/Skins_image'
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function SkinDetailScreen({ navigation,route }) {
-  const { skin,id, token } = route.params;
+  const { skin,userid, token } = route.params;
   const [misSkin, setSkinsMySkins] = useState([]);
 
   const goToTienda=()=>{
-    navigation.navigate('Tienda', { id: id, token: token });
+    navigation.navigate('Tienda', { userid : userid, token: token });
   };
   const fetchData = async () => {
     try {

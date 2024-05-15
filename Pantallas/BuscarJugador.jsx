@@ -7,12 +7,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 export default function App({ navigation ,route }) {
 
-  const {id, token } = route.params;
+  const {userid, token } = route.params;
   const { width, height } = useWindowDimensions();
   const [username, setUsername] = useState('');
 
   const goToInicial=()=>{
-    navigation.navigate('Amistad', { id: id, token: token });
+    navigation.navigate('Amistad', { userid : userid, token: token });
   };
 
   const handleFriendShip = async() => {

@@ -6,7 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 const Partidas = ({ navigation, route }) => {
 
-  const {id, token } = route.params;
+  const {userid, token } = route.params;
   const [partidas, setPartidasData] = useState([]);
   const [invitaciones, setInvitacionesData] = useState([]);
 
@@ -23,7 +23,7 @@ const Partidas = ({ navigation, route }) => {
   const [inviteResult, setInviteResult] = useState('');
 
   const goToInicial = () => {
-    navigation.navigate('Inicial', {id:id, token: token });
+    navigation.navigate('Inicial', {userid : userid, token: token });
   };
 
   useEffect(() => {
@@ -106,7 +106,8 @@ const Partidas = ({ navigation, route }) => {
           console.log('Partida creada exitosamente');
           ToastAndroid.show('Partida creada exitosamente', ToastAndroid.SHORT)
           const id = response.data.idPartida
-          navigation.navigate('Lobby', { id, token }); // Navigate to Lobby component with partidaData and token
+
+          navigation.navigate('Lobby', { userid, token }); // Navigate to Lobby component with partidaData and token
         } else {
           console.error('Error al crear la partida:', response.data.message);
           Alert.alert('Error', 'Ha ocurrido un error al crear la partida. Por favor, inténtalo de nuevo más tarde.');
@@ -168,7 +169,7 @@ const Partidas = ({ navigation, route }) => {
   };
 
   const handlePartidaPress = (id) => {
-    navigation.navigate('Partida', { id, token }); // Navigate to Partida component with id as a parameter
+    navigation.navigate('Partida', {userid: userid, id, token }); // Navigate to Partida component with id as a parameter
   };
 
   //-------------------------------------------------------------------------------------------------------------------------

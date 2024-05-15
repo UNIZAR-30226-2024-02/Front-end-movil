@@ -61,7 +61,7 @@ export default function App({ navigation }) {
             }
           }else{
             Alert.alert('Usuario logeado exitosamente');
-            navigation.navigate('Inicial', { id: id, token: token });
+            navigation.navigate('Inicial', { userid: id, token: token });
           }
         }catch(error){
           console.error('Error:', error);

@@ -5,7 +5,7 @@ import { IP } from '../config';
 import { MaterialIcons } from '@expo/vector-icons';
 
 const Partida = ({ navigation, route }) => {
-  const { id, token } = route.params;
+  const {userid, id, token } = route.params;
   const [partidaData, setPartidaData] = useState(null);
 
   useEffect(() => {
@@ -13,7 +13,7 @@ const Partida = ({ navigation, route }) => {
   }, []);
 
   const goToInicial = () => {
-    navigation.navigate('Partidas', {id:id, token: token });
+    navigation.navigate('Partidas', {userid:userid, token: token });
   };
 
   const fetchPartidaData = async () => {
@@ -36,7 +36,7 @@ const Partida = ({ navigation, route }) => {
 
       if (response.status === 200) {
         Alert.alert('Te has unido correctamente');
-        navigation.navigate('Lobby', { id, token }); // Navigate to Lobby component with partidaData and token
+        navigation.navigate('Lobby', { userid, id, token }); // Navigate to Lobby component with partidaData and token
       } else {
         Alert.alert('Error', 'Error uniendo');
       }

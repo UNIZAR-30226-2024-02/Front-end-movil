@@ -7,7 +7,7 @@ import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEff
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function MisSkins({ navigation, route }) {
-  const {id, token } = route.params;
+  const {userid, token } = route.params;
   const [skins, setSkins] = useState([]);
   const [equipada,setEquipada]=useState([]);
   
@@ -19,11 +19,11 @@ export default function MisSkins({ navigation, route }) {
         );
         setSkins(response.data);
       } catch (error) {
-        console.error('Error fetching skins:', error);
+        console.error('Error fetching skins: 2', error);
       }
     };
     const goToPerfil = () => {
-      navigation.navigate('Perfil', {id:id, token: token });
+      navigation.navigate('Perfil', {userid : userid, token: token });
     };
     const equipadas = async () => {
       try {
@@ -33,7 +33,7 @@ export default function MisSkins({ navigation, route }) {
         );
         setEquipada(response.data);
       } catch (error) {
-        console.error('Error fetching skins:', error);
+        console.error('Error fetching skins: 1', error);
       }
     };
 
@@ -54,10 +54,11 @@ export default function MisSkins({ navigation, route }) {
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {
     const selectedSkin = (skins.filter(item => item !== null)).find((skin) => skin._id === skinId);
-    navigation.navigate('MySkinDetailScreen', { skin: selectedSkin,id:id, token: token });
+    navigation.navigate('MySkinDetailScreen', { skin: selectedSkin, userid : userid, token: token });
   };
 
   return (
+    skins.length >= 0  && equipada ? (
     <ImageBackground source={require('../assets/img-2d3IDaHACsstyAx6hCGZP.jpeg')} style={styles.background}>
       <TouchableOpacity
         style={{ marginTop:30, marginLeft:30,width: 50,
@@ -90,7 +91,7 @@ export default function MisSkins({ navigation, route }) {
           </TouchableOpacity>
         ))}
       </ScrollView>
-    </ImageBackground>
+    </ImageBackground>) : null
   );
 }
 

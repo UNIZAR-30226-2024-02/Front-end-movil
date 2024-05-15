@@ -7,7 +7,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 
 export default function MySkinDetailScreen({navigation, route }) {
-  const { skin,id,token} = route.params;
+  const { skin, userid ,token} = route.params;
   const [skins,setSkins]=useState([]);
   const fetchData = async () => {
     try {
@@ -22,7 +22,7 @@ export default function MySkinDetailScreen({navigation, route }) {
   };
 
   const goToMySkins = () => {
-    navigation.navigate('MySkins', {id:id, token: token });
+    navigation.navigate('MySkins', {userid : userid, token: token });
   };
   useEffect(() => {
     

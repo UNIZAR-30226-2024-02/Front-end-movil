@@ -9,7 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ModalChat from './ModalChat';
 
 const Lobby = ({ navigation, route }) => { // Partida and session token are passed as props
-    const { id, token } = route.params
+    const { userid, id, token } = route.params
     const [socket, setSocket] = useState('')
     const [partidaData, setPartidaData] = useState(null)
     const [username, setUsername] = useState('')
@@ -179,7 +179,7 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
         .then(response => {
             if (response.status === 200) {
                 socket.emit('disconnectGame', { gameId: id, user: username })
-                navigation.navigate('Partidas', { token: token });
+                navigation.navigate('Partidas', {userid: userid, token: token });
             } else {
                 console.error('Error al salir de la partida:', response.data.message);
                 Alert.alert('Error', 'Ha ocurrido un error al salir de la partida. Por favor, inténtalo de nuevo más tarde.');

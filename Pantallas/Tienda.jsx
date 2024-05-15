@@ -8,7 +8,7 @@ import { Picker } from '@react-native-picker/picker'; // Import Picker from the 
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Tienda({ navigation, route }) {
-  const { id,token } = route.params;
+  const { userid,token } = route.params;
   const [skins, setSkins] = useState([]);
   const [filtred,setFiltred]=useState([]);
   const [misSkin,setSkinsMySkins]=useState([]);
@@ -25,9 +25,9 @@ export default function Tienda({ navigation, route }) {
     { label: 'Terreno', value: 'Terreno' },
   ];
   console.log('token tienda', token)
-  console.log('id tienda', id)
+  console.log('id tienda', userid)
   const goToInicial=()=>{
-    navigation.navigate('Inicial', { id: id, token: token });
+    navigation.navigate('Inicial', { userid : userid, token: token });
   };
 
   const fetchData = async () => {
@@ -143,7 +143,7 @@ export default function Tienda({ navigation, route }) {
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {
     const selectedSkin = skins.find((skin) => skin._id === skinId);
-    navigation.navigate('SkinDetailScreen', { skin: selectedSkin,id:id, token: token });
+    navigation.navigate('SkinDetailScreen', { skin: selectedSkin,userid : userid, token: token });
   };
 
   return (

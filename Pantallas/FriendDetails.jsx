@@ -7,7 +7,7 @@ import TextInputModal from './TextInputModal';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function PlayerDetails({navigation, route }) {
-  const {friend,token,id,volver} = route.params;
+  const {friend,token, userid, volver} = route.params;
   const [modalVisible, setModalVisible] = useState(false);
   console.log('Token:', token); // Access token
   console.log('amigo:', friend)
@@ -20,7 +20,7 @@ export default function PlayerDetails({navigation, route }) {
         
       );
       Alert.alert("Eliminado de la lista de amigos");
-      navigation.navigate('MisAmigos', { token: token });
+      navigation.navigate('MisAmigos', {userid:userid, token: token });
       
     } catch (error) {
       console.error('Error friend:', error);
@@ -29,7 +29,7 @@ export default function PlayerDetails({navigation, route }) {
   };
 
   const goToAmigos = () => {
-    navigation.navigate('MisAmigos', {id:id, token: token,volver:volver });
+    navigation.navigate('MisAmigos', {userid : userid, token: token,volver:volver });
   };
 
   const handleChat = async (chatName) => {

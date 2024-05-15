@@ -6,7 +6,7 @@ import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEff
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function FriendshipRequests({ navigation, route }) {
-  const {id, token,volver } = route.params;
+  const {userid, token,volver } = route.params;
   const [requests, setRequests] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filtred, setFiltred] = useState([]);
@@ -52,17 +52,17 @@ export default function FriendshipRequests({ navigation, route }) {
 
   const goToInicial=()=>{
     if(volver=='i'){
-      navigation.navigate('Inicial', { id: id, token: token });
+      navigation.navigate('Inicial', { userid : userid, token: token });
     }
     else{
-      navigation.navigate('Perfil', {id:id, token: token });
+      navigation.navigate('Perfil', {userid : userid, token: token });
     }
     
   };
 
   const handleFriendPress = (user) => {
     const selectedFriend = requests.find((friend) => friend === user);
-    navigation.navigate('FriendDetails', { friend: selectedFriend, token: token,id:id,volver:volver});
+    navigation.navigate('FriendDetails', { friend: selectedFriend, token: token, userid : userid, volver:volver});
   };
 
   return (

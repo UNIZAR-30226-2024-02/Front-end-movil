@@ -7,14 +7,14 @@ import { io } from 'socket.io-client';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function FriendshipRequests({ navigation, route }) {
-  const { id, token } = route.params;
+  const { userid, token } = route.params;
   const [chats, setChats] = useState([]);
   const [filtred, setFiltred] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [socket, setSocket] = useState();
 
   const goToInicial=()=>{
-    navigation.navigate('Inicial', { id: id, token: token });
+    navigation.navigate('Inicial', { userid : userid, token: token });
   };
 
   const fetchChats = async () => {
@@ -57,8 +57,8 @@ export default function FriendshipRequests({ navigation, route }) {
   };
 
   const handleChatPress = (c) => {
-    console.log('ID:', id);
-      navigation.navigate('Chat',{ chat:c, id: id, token: token});
+    console.log('ID:', userid);
+      navigation.navigate('Chat',{ chat:c,userid : userid, token: token});
     // Navigate to chat details screen or implement your logic here
     
   };

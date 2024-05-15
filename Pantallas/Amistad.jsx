@@ -5,20 +5,20 @@ import { IP } from '../config';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Inicial({ navigation, route }) {
-  const { id, token } = route.params;
+  const { userid, token } = route.params;
 
   const goToFindPlayer = () => {
     // Navigate to "BuscarJugador" screen
-    navigation.navigate('BuscarJugador', {id:id, token: token });
+    navigation.navigate('BuscarJugador', {userid : userid, token: token });
   };
 
   const goToInicial=()=>{
-    navigation.navigate('Inicial', { id: id, token: token });
+    navigation.navigate('Inicial', { userid : userid, token: token });
   };
 
   const goToFindSol = () => {
     // Navigate to "MisSolicitudes" screen
-    navigation.navigate('MisSolicitudes', {id:id, token: token,vo:'a'});
+    navigation.navigate('MisSolicitudes', {userid : userid, token: token,vo:'a'});
   };
 
   return (
