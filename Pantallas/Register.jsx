@@ -31,7 +31,17 @@ export default function Register({ navigation }) {
       return;
     } else{
               // Check if passwords match
-            if (password !== confirmPassword) {
+              if (password.length < 8 || !(/[a-z]/.test(password)) || !(/[A-Z]/.test(password)) || !(/\d/.test(password)) || !(/[!@#$%^&*]/.test(password))) {
+                Alert.alert('Error', 'La contraseña debe tener al menos 8 caracteres, una minúscula, una mayúscula, un número y un carácter especial');
+                return;}
+
+              // Check if correo has the correo structure 
+                else if (!/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(correo)) {
+                  Alert.alert('Error', 'El correo electrónico no tiene un formato válido');
+                  return;
+                }
+
+            else if (password !== confirmPassword) {
               Alert.alert('Error', 'Las contraseñas no coinciden');
               return;
             } else{
@@ -46,7 +56,7 @@ export default function Register({ navigation }) {
                 await AsyncStorage.setItem('token', token);
                 await AsyncStorage.setItem('username', response.data.idUsuario);
                 console.log('TokenRegister:', token);
-                Alert.alert('Success', 'Usuario registrado exitosamente');
+                Alert.alert('Éxito', 'Usuario registrado exitosamente');
                 navigation.navigate('Inicial', { token: token });
               } catch (error) {
                 console.error('Error:', error);
