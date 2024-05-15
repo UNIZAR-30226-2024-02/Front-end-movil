@@ -28,6 +28,7 @@ export default function RiskMap({ naviagation, route }) {
   const [usoCartas, setUsoCartas] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [abandonarVisible, setAbandonarVisible] = useState(false);
 
   const [state, setState] = useState({
     message: '',
@@ -1752,11 +1753,55 @@ useEffect(() => {
       }
   };
 
+  const handleAbandonar = async () => {
+    try{
+      socket.off('chatMessage');
+      socket.off('userDisconnected');
+      socket.off('gameOver');
+      socket.off('cambioEstado');
+      socket.off('ataqueRecibido');
+      socket.off('partidaPausada');
+      const response = await axios.put(IP+"/partida/salirPartida", {idPartida: thisPartida._id}, {headers: {'Authorization': token}});
+      if(response.status === 200){
+        socket.emit('disconnectGame', { gameId: this.partida._id, user: whoami });
+        console.log(response.data);
+        navigation.navigate('Inicial', {userid : whoami, token: token });
+      }
+      else{
+        console.log('Error al abandonar la partida');
+        Alert.alert('Error al abandonar la partida');
+      }
+    }
+    catch(error){
+      console.log(error)
+      Alert.alert('¡ERROR FATAL!');
+    }
+  }
 
   return (
     <View style={styles.container} >
       {thisPartida ? <ModalChat socket={socket} whoami={whoami ? whoami : null} chat={thisPartida ? thisPartida.chat : null} onClose={()=>setChatVisible(false)} token={token} isVisible={chatVisible} /> : null}
 
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={abandonarVisible}>
+        <View style={styles.modal}>
+          <View style={styles.modalView}>
+            <Text1 style={styles.textStyle}>¿Estás seguro de que quieres abandonar la partida?</Text1>
+            <Pressable
+                style={[styles.botonUse, {backgroundColor: "green"}]} 
+                onPress={handleAbandonar}>
+                <Text1 style={styles.textUse}>SI</Text1>
+              </Pressable>
+              <Pressable
+                style={[styles.botonUse, {backgroundColor: "red"}]} 
+                onPress={()=> setAbandonarVisible(false)}>
+                <Text1 style={styles.textUse}>NO</Text1>
+              </Pressable>
+          </View>
+        </View>
+      </Modal>
       <Modal
         animationType="slide"
         transparent={true}
@@ -1817,7 +1862,7 @@ useEffect(() => {
             >
                 <Text1 style={styles.zoneText}>{isPaused ? '▶' : '❚❚'}</Text1>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.botonControl, {width: 110, backgroundColor: "red"}]} onPress={()=> ToastAndroid.show("FALTA IMPLEMENTAR ESTO", ToastAndroid.SHORT)}>
+            <TouchableOpacity style={[styles.botonControl, {width: 110, backgroundColor: "red"}]} onPress={()=> setAbandonarVisible(true)}>
               <Text1 style={styles.zoneText}>Abandonar</Text1>
             </TouchableOpacity>
           </View>
