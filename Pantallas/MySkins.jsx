@@ -19,11 +19,11 @@ export default function MisSkins({ navigation, route }) {
         );
         setSkins(response.data);
       } catch (error) {
-        console.error('Error fetching skins: 2', error);
+        console.error('Error fetching skins:', error);
       }
     };
     const goToPerfil = () => {
-      navigation.navigate('Perfil', {userid : userid, token: token });
+      navigation.navigate('Perfil', {userid:userid, token: token });
     };
     const equipadas = async () => {
       try {
@@ -33,7 +33,7 @@ export default function MisSkins({ navigation, route }) {
         );
         setEquipada(response.data);
       } catch (error) {
-        console.error('Error fetching skins: 1', error);
+        console.error('Error fetching skins:', error);
       }
     };
 
@@ -54,11 +54,10 @@ export default function MisSkins({ navigation, route }) {
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {
     const selectedSkin = (skins.filter(item => item !== null)).find((skin) => skin._id === skinId);
-    navigation.navigate('MySkinDetailScreen', { skin: selectedSkin, userid : userid, token: token });
+    navigation.navigate('MySkinDetailScreen', { skin: selectedSkin,userid:userid, token: token });
   };
 
   return (
-    skins.length >= 0  && equipada ? (
     <ImageBackground source={require('../assets/img-2d3IDaHACsstyAx6hCGZP.jpeg')} style={styles.background}>
       <TouchableOpacity
         style={{ marginTop:30, marginLeft:30,width: 50,
@@ -84,14 +83,14 @@ export default function MisSkins({ navigation, route }) {
               <Text style={styles.skinName}>{skin.idSkin}</Text>
               <Text style={styles.skinDescription}>{skin.tipo}</Text>
               {
-                equipada[skin.tipo.charAt(0).toLowerCase() + skin.tipo.slice(1)]._id === skin._id && 
+                equipada[skin.tipo.charAt(0).toLowerCase() + skin.tipo.slice(1)] && equipada[skin.tipo.charAt(0).toLowerCase() + skin.tipo.slice(1)]._id === skin._id && 
                 (<Text style={styles.skinEquiped}>Equipada</Text>)
               }
             </View>
           </TouchableOpacity>
         ))}
       </ScrollView>
-    </ImageBackground>) : null
+    </ImageBackground>
   );
 }
 

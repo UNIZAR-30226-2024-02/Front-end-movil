@@ -107,7 +107,7 @@ const Partidas = ({ navigation, route }) => {
           ToastAndroid.show('Partida creada exitosamente', ToastAndroid.SHORT)
           const id = response.data.idPartida
 
-          navigation.navigate('Lobby', { userid, token }); // Navigate to Lobby component with partidaData and token
+          navigation.navigate('Lobby',  {userid, id, token }); // Navigate to Lobby component with partidaData and token
         } else {
           console.error('Error al crear la partida:', response.data.message);
           Alert.alert('Error', 'Ha ocurrido un error al crear la partida. Por favor, inténtalo de nuevo más tarde.');
