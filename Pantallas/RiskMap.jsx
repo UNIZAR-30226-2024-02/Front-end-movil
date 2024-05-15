@@ -1577,7 +1577,7 @@ useEffect(() => {
       return;
     }
 
-    if (stateTropas.attack && numTroops > 3) {
+    if (numTroops > 3) {
       console.log(stateTropas.attack)
       Alert.alert('Sólo puedes seleccionar hasta 3 tropas para atacar.')
 
