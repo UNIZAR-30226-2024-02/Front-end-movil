@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
-    backgroundColor: '#DB4437',
+    backgroundColor: 'darkgreen',
     borderRadius:5,
   },
   title: {
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top:25,
     right:20,
-    backgroundColor: '#fff',
+    backgroundColor: 'gray',
     borderRadius: 8,
     borderWidth:2,
     borderColor: '#DB4437',
