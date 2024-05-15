@@ -5,7 +5,7 @@ import { IP } from '../config';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Ranking({navigation, route }) {
-  const { userid,token } = route.params;
+  const { id,token } = route.params;
   const [historialData, setHistorialData] = useState([]);
   useEffect(() => {
     fetchRankingData();
@@ -23,11 +23,10 @@ export default function Ranking({navigation, route }) {
   };
 
   const goToPerfil = () => {
-    navigation.navigate('Perfil', {userid : userid, token: token });
+    navigation.navigate('Perfil', {id:id, token: token });
   };
 
   return (
-    
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background} resizeMode="stretch">
       <TouchableOpacity
         style={{ marginTop:30, marginLeft:-630,width: 50,
@@ -48,7 +47,7 @@ export default function Ranking({navigation, route }) {
             <Text style={[styles.headerText, { flex: 1 }]}>Turno</Text>
             <Text style={[styles.headerText, { flex: 2 }]}>Jugadores</Text>
           </View>
-          {historialData.length === 0 ? <Text style={{ color: 'white' }}>No hay partidas</Text> : historialData.map((part) => (
+          {historialData && historialData.map((part) => (
             <View key={part._id} style={styles.tableRow}>
               <Text style={[styles.fecha, { flex: 3 }]}>{part.fechaInicio}</Text>
               <Text style={[styles.fecha, { flex: 3 }]}>{part.fechaFin}</Text>
