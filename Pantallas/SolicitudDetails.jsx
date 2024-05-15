@@ -15,7 +15,7 @@ export default function SolicitudDetails({ navigation,route }) {
         { idDestino: solicitante },
         { headers: { Authorization: token } }
       );
-      Alert.alert('La petición se ha aceptado,ahora sois amigos.');
+      Alert.alert('La petición se ha aceptado, ahora sois amigos.');
       console.log('Response:', response.data);
       navigation.navigate('Inicial', {id:id, token: token });
     } catch (error) {

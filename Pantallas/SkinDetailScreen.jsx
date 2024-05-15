@@ -38,10 +38,10 @@ export default function SkinDetailScreen({ navigation,route }) {
           { idSkin: skin.idSkin },
           { headers: { Authorization: token } }
         );
-        Alert.alert('Éxito', 'La skin se ha comprado correctamente.');
+        Alert.alert('La skin se ha comprado correctamente.');
         fetchData();
       } catch (error) {
-        Alert.alert('Error', 'La compra de la skin no se ha podido realizar.');
+        Alert.alert('La compra de la skin no se ha podido realizar.');
       }
     }
   };
