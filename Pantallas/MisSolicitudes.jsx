@@ -4,9 +4,10 @@ import axios from 'axios';
 import { IP } from '../config';
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect hook
 import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome from expo/vector-icons
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function FriendshipRequests({ navigation, route }){
-  const { token } = route.params;
+  const {id, token,vo } = route.params;
   const [requests, setRequests] = useState([]);
   console.log('Token:', token); // Access token
 
@@ -25,6 +26,9 @@ export default function FriendshipRequests({ navigation, route }){
     }
   };
 
+  const goToInicial=()=>{
+    navigation.navigate('Amistad', { id: id, token: token,vo:vo });
+  };
   useEffect(() => {
     fetchData();
   }, [token]);
@@ -37,12 +41,25 @@ export default function FriendshipRequests({ navigation, route }){
   );
 
   const handleSolicitudPress = (user) => {
-    navigation.navigate('SolicitudDetails', { solicitante: user, token: token });
+    navigation.navigate('SolicitudDetails', { solicitante: user, token: token,id:id,vo:vo});
   };
 
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background} resizeMode="stretch">
-      <Text style={styles.headerText}>Solicitudes</Text>
+    
+      
+     <Text style={styles.headerText}>Solicitudes</Text>
+     <TouchableOpacity
+        style={{ marginTop:-50, marginLeft:30,width: 50,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToInicial}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
       <ScrollView contentContainerStyle={styles.container}>
         {requests.map((userId) => (
           <TouchableOpacity
@@ -91,7 +108,7 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 2, height: 1 },
     textShadowRadius: 2,
     textAlign:'center',
-    marginTop:20,
+    marginTop:40,
   },
   tableRow: {
     flex: 1,

@@ -3,12 +3,17 @@ import { View, Image, useWindowDimensions, TextInput, TouchableOpacity, StyleShe
 import axios from 'axios';
 import { IP } from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function App({ navigation ,route }) {
 
-  const { token } = route.params;
+  const {id, token } = route.params;
   const { width, height } = useWindowDimensions();
   const [username, setUsername] = useState('');
+
+  const goToInicial=()=>{
+    navigation.navigate('Amistad', { id: id, token: token });
+  };
 
   const handleFriendShip = async() => {
     // Validate that both username and password are filled
@@ -46,6 +51,18 @@ export default function App({ navigation ,route }) {
           resizeMode:"stretch"
         }}
       />
+      <TouchableOpacity
+        style={{ marginTop:-250,  marginLeft:-100,width: 50,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToInicial}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
+
       <View style={styles.overlayContainer}>
         <Text style={styles.title}>Enviar solicitud de amistad</Text>
         <View style={styles.inputContainer}>

@@ -9,7 +9,7 @@ export default function Inicial({ navigation, route }) {
 
   const goToFindPlayer = () => {
     // Navigate to "BuscarJugador" screen
-    navigation.navigate('BuscarJugador', { token: token });
+    navigation.navigate('BuscarJugador', {id:id, token: token });
   };
 
   const goToInicial=()=>{
@@ -18,7 +18,7 @@ export default function Inicial({ navigation, route }) {
 
   const goToFindSol = () => {
     // Navigate to "MisSolicitudes" screen
-    navigation.navigate('MisSolicitudes', { token: token });
+    navigation.navigate('MisSolicitudes', {id:id, token: token,vo:'a'});
   };
 
   return (

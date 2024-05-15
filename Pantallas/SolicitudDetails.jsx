@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity,ImageBackground, Alert } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function SolicitudDetails({ navigation,route }) {
-  const {solicitante,token} = route.params;
+  const {solicitante,token,id,vo} = route.params;
 
   const handleConfirmaFriend = async () => {
     // Implementación para confirmar amistad
@@ -16,14 +17,33 @@ export default function SolicitudDetails({ navigation,route }) {
       );
       Alert.alert('Sucess.La petición se ha aceptado,ahora sois amigos.');
       console.log('Response:', response.data);
-      navigation.navigate('MisSolicitudes', { token: token });
+      navigation.navigate('Inicial', {id:id, token: token });
     } catch (error) {
       console.error('Error friend:', error);
     }
   };
-
+  const goToInicial=()=>{
+    if(vo=='a'){
+      navigation.navigate('MisSolicitudes', { id: id, token: token,vo:vo });
+    }
+    else{
+      navigation.navigate('Inicial',{id:id,token:token});
+    }
+    
+  };
   return (
     <ImageBackground source={require('../assets/guerra.jpg')} style={styles.background}>
+       <TouchableOpacity
+        style={{ marginTop:30, marginLeft:30,width: 50,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToInicial}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
       <View style={styles.container}>
         <View style={styles.content}>
           <View style={styles.detailsContainer}>
@@ -45,14 +65,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 50,
-    paddingVertical: 30,
-    
+    paddingVertical: 0,
     
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 0,
     backgroundColor: 'rgba(128, 128, 128, 0.6)', // Translucent white background
   },
   detailsContainer: {
@@ -60,9 +79,9 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   playerName: {
-    top:30,
+    top:20,
     color: 'white',
-    fontSize: 30,
+    fontSize: 25,
     fontWeight: 'bold',
     textShadowColor: 'black',
     textShadowOffset: { width: 2, height: 1 },
@@ -71,11 +90,11 @@ const styles = StyleSheet.create({
     
   },
   playerDescription: {
-    top:75,
+    top:45,
     fontSize: 18,
     textAlign: 'center',
-    marginBottom: 20,
-    paddingBottom: 130, 
+    marginBottom: 10,
+    paddingBottom: 50, 
     color: 'white',
     fontWeight: 'bold',
     textShadowColor: 'black',
@@ -84,7 +103,7 @@ const styles = StyleSheet.create({
   },
   containerButton: {
     alignItems: 'center',
-    marginBottom: 20, // Espacio adicional entre el contenido y el botón
+    marginBottom: 0, // Espacio adicional entre el contenido y el botón
     flexDirection: 'row',  // Alinea los elementos en fila
     justifyContent: 'center',
   },
@@ -93,7 +112,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 40,
     borderRadius: 12,
-    marginBottom: 0,
+    marginBottom: 30,
     marginRight: 10,
     alignItems: 'center',
     justifyContent: 'center',
