@@ -59,7 +59,7 @@ export default function RiskMap({ naviagation, route }) {
 
   useEffect(() => {
     if (socket) {
-        socket.on('cambioEstado', async () => {
+      socket.on('cambioEstado', async () => {
           onLoad()
             //await new Promise(resolve => setTimeout(resolve, 1000)) // espero un rato
 
@@ -81,6 +81,30 @@ export default function RiskMap({ naviagation, route }) {
           eloGanado+=200; puntosGanados+=200;
         }*/
         setGanador(posibleGanador);
+      });
+
+      socket.on('ataqueRecibido', (userOrigen, userDestino, dadosAtacante, dadosDefensor, 
+        tropasPerdidasAtacante, tropasPerdidasDefensor, conquistado,
+        territorioOrigen, territorioDestino, eloAtacante, 
+        eloDefensor, dineroAtacante, dineroDefensor) => {
+          console.log("Ataque recibido")
+          Alert.alert(
+            "Ataque recibido",
+            `Origen: ${userOrigen}\n` +
+            `Destino: ${userDestino}\n` +
+            `Dados Atacante: ${dadosAtacante}\n` +
+            `Dados Defensor: ${dadosDefensor}\n` +
+            `Tropas Perdidas Atacante: ${tropasPerdidasAtacante}\n` +
+            `Tropas Perdidas Defensor: ${tropasPerdidasDefensor}\n` +
+            `Conquistado: ${conquistado ? 'Sí' : 'No'}\n` +
+            `Territorio Origen: ${territorioOrigen}\n` +
+            `Territorio Destino: ${territorioDestino}\n` +
+            `Elo Atacante: ${eloAtacante}\n` +
+            `Elo Defensor: ${eloDefensor}\n` +
+            `Dinero Atacante: ${dineroAtacante}\n` +
+            `Dinero Defensor: ${dineroDefensor}`
+        );
+            
       });
 
 
@@ -1050,45 +1074,30 @@ useEffect(() => {
               ResolverAtaque(thisPartida._id, ataqueOrigen, territorioDestinoAtacar, tropasAUtilizar).then(  
                 async response => {
                   console.log('respuesta resolver ataque',response);
-                  onLoad()
-                  Toast.success('¡Ataque realizado con éxito!');
-                  await new Promise(resolve => setTimeout(resolve, 1000));
-                  Toast.info('Tus dados: ' + response.dadosAtacante + ' Dados defensor: ' + response.dadosDefensor);
-                  await new Promise(resolve => setTimeout(resolve, 1000));
-                  Toast.info('Tus bajas: ' + response.resultadoBatalla.tropasPerdidasAtacante + ' Bajas defensor: ' + response.resultadoBatalla.tropasPerdidasDefensor);
-                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  onLoad();
+                  Alert.alert('¡Ataque realizado con éxito!');
+                  Alert.alert('Tus dados: ' + response.dadosAtacante + ' Dados defensor: ' + response.dadosDefensor);
+                  Alert.alert('Tus bajas: ' + response.resultadoBatalla.tropasPerdidasAtacante + ' Bajas defensor: ' + response.resultadoBatalla.tropasPerdidasDefensor);
                   if(response.conquistado){
-                    Toast.success('¡Territorio conquistado!');
+                    Alert.alert('¡Territorio conquistado!');
     
                   } else {
                     Alert.alert('¡No has conquistado el territorio!');
-                    
                   }
-                  inicializacionPartida(partida); // actualizo el estado de la partida
-                  await new Promise(resolve => setTimeout(resolve, 1000)); // espero un rato
-                  //limpiarTropas();  en movil no cambiamos skins
-                  
-                  //Pinto el mapa
-                  //distribuirPiezas(); en movil no cambiamos skins
-                  setAtaqueDestino('');
-                  setAtaqueOrigen('');
-                  setAtaqueTropas(0);
+                  console.log("Hola")
                   // update the state of every client
                   socket.emit('actualizarEstado', partida._id);
                   // and notify the defense player 
-                  
                   socket.emit('ataco', {userOrigen: whoami, userDestino: usuarioObjetivo?.usuario ?? '', 
                                    dadosAtacante: response.dadosAtacante, dadosDefensor: response.dadosDefensor, 
                                    tropasPerdidasAtacante: response.resultadoBatalla.tropasPerdidasAtacante,
                                    tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
                                    conquistado: response.conquistado, territorioOrigen: ataqueOrigen, 
-                                   territorioDestino: enemyTerritoryId});
-                  setAtaquePerpetrado({userOrigen: whoami, userDestino: usuarioObjetivo?.usuario ?? '', 
-                                          dadosAtacante: response.dadosAtacante, dadosDefensor: response.dadosDefensor, 
-                                          tropasPerdidasAtacante: response.resultadoBatalla.tropasPerdidasAtacante,
-                                          tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
-                                          conquistado: response.conquistado, territorioOrigen: ataqueOrigen, 
-                                          territorioDestino: enemyTerritoryId});
+                                   territorioDestino: territorioName});
+                  console.log("Se perpetra el ataque ")
+                  setAtaqueDestino('');
+                  setAtaqueOrigen('');
+                  setAtaqueTropas(0);
                 },
                 error => {
                   Alert.alert('¡ERROR FATAL!');
