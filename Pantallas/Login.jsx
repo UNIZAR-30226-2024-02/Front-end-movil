@@ -38,7 +38,8 @@ export default function App({ navigation }) {
   
         const token = response.data.token;
         await AsyncStorage.setItem('token', token);
-        await AsyncStorage.setItem('username', response.data.idUsuario);
+        let id = response.data.idUsuario;
+        await AsyncStorage.setItem('username', id);
 
         try{
           const partida =await axios.get(IP+'/partida/estoyEnPartida', {
@@ -53,14 +54,14 @@ export default function App({ navigation }) {
               console.log(partidaInfo.data);
               Alert.alert('Partida en curso.');
               socket.emit('joinChat', partidaInfo.data.chat._id);
-              socket.emit('joinGame', { gameId: partidaInfo.data._id, user: response.data.idUsuario });
+              socket.emit('joinGame', { gameId: partidaInfo.data._id, user: id });
               navigation.navigate('RiskMap', { token: token, partida: partidaInfo.data, socket: socket });
             }catch(error){
               console.error('Error:', error);
             }
           }else{
             Alert.alert('Usuario logeado exitosamente');
-            navigation.navigate('Inicial', { id: username, token: token });
+            navigation.navigate('Inicial', { id: id, token: token });
           }
         }catch(error){
           console.error('Error:', error);
