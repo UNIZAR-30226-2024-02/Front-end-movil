@@ -54,7 +54,7 @@ export default function MisSkins({ navigation, route }) {
   // Function to handle when a skin is pressed
   const handleSkinPress = (skinId) => {
     const selectedSkin = (skins.filter(item => item !== null)).find((skin) => skin._id === skinId);
-    navigation.navigate('MySkinDetailScreen', { skin: selectedSkin, token: token });
+    navigation.navigate('MySkinDetailScreen', { skin: selectedSkin,id:id, token: token });
   };
 
   return (

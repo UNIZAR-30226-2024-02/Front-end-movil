@@ -3,10 +3,11 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, ImageBackground
 import axios from 'axios';
 import { IP } from '../config';
 import { images } from '../assets/Skins_image'
+import { MaterialIcons } from '@expo/vector-icons';
 
 
-export default function MySkinDetailScreen({ route }) {
-  const { skin,token} = route.params;
+export default function MySkinDetailScreen({navigation, route }) {
+  const { skin,id,token} = route.params;
   const [skins,setSkins]=useState([]);
   const fetchData = async () => {
     try {
@@ -20,6 +21,9 @@ export default function MySkinDetailScreen({ route }) {
     }
   };
 
+  const goToMySkins = () => {
+    navigation.navigate('MySkins', {id:id, token: token });
+  };
   useEffect(() => {
     
     fetchData();
@@ -45,6 +49,17 @@ export default function MySkinDetailScreen({ route }) {
   return (
     <ImageBackground source={require('../assets/img-2d3IDaHACsstyAx6hCGZP.jpeg')} style={styles.background}>
       <View style={styles.container}>
+      <TouchableOpacity
+        style={{ marginTop:-20, marginLeft:-600,width: 50,
+        height: 50,
+        alignItems:'center',
+        justifyContent: 'center',
+        borderRadius: 25, // Half of the width and height to make it a circle
+        backgroundColor: 'silver'}}
+        onPress={goToMySkins}
+      >
+        <MaterialIcons name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
         <View style={styles.content}>
           <Image source={images.find(item => item.index === skin.idSkin).img} style={styles.skinImage} />
           <View style={styles.detailsContainer}>
@@ -90,7 +105,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   skinImage: {
-    width: '40%',
+    width: '35%',
     aspectRatio: 1,
     borderRadius: 8,
   },
@@ -100,7 +115,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start', // Align items at the top
   },
   skinName: {
-    fontSize: 50,
+    fontSize: 40,
     color:'white',
     fontWeight: 'bold',
     textAlign: 'center',
