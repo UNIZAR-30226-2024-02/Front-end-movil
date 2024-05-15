@@ -14,9 +14,10 @@ export default function ModalChat({ isVisible, whoami, socket, onClose, chat, id
   const [showParticipantListModal, setShowParticipantListModal] = useState(false);
   const [count, setCount] = useState(0);
   const scrollViewRef = useRef();
-  //console.log('Chat',_chat)
+  console.log('Chat',_chat)
   const fetchMessages = async () => {
     try {
+        if(_chat===null) return;
       const response = await axios.post(
         IP+'/chats/obtenerMensajes',
         { OIDChat: _chat._id },
@@ -25,7 +26,8 @@ export default function ModalChat({ isVisible, whoami, socket, onClose, chat, id
       setMessages(response.data.msgs);
       //console.log(response.data.msgs)
     } catch (error) {
-      console.error('Error fetching messages:', error.response.data.error);
+        console.log('Error sending message:', error);
+      //console.error('Error fetching messages:', error.response.data.error);
     }
   };
 
@@ -60,6 +62,7 @@ export default function ModalChat({ isVisible, whoami, socket, onClose, chat, id
         setMessage('');
         fetchMessages();
       } catch (error) {
+        console.log('Error sending message:');
         console.error('Error sending message:', error.response.data.error);
       }
     }

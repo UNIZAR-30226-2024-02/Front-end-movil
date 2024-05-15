@@ -222,6 +222,7 @@ const Lobby = ({ navigation, route }) => { // Partida and session token are pass
         })
     }
     return (
+        partidaData === null ? <Text>Loading...</Text> :
         <ImageBackground source={require('../assets/guerra.jpg')} style={styles.backgroundImage} resizeMode="stretch">
           <View style={styles.container}>
             <View style={styles.leftColumn}>

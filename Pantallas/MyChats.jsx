@@ -57,11 +57,8 @@ export default function FriendshipRequests({ navigation, route }) {
   };
 
   const handleChatPress = (c) => {
-    if (socket) {
-      console.log('Joining chat:', c);
-      socket.emit('joinChat', c.oid);
-      navigation.navigate('Chat',{ chat:c, id:id, token: token, socket: socket});
-    }
+    console.log('ID:', id);
+      navigation.navigate('Chat',{ chat:c, id: id, token: token});
     // Navigate to chat details screen or implement your logic here
     
   };

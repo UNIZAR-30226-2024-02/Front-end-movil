@@ -2,18 +2,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal,ImageBackground } from 'react-native';
 import axios from 'axios';
 import { IP } from '../config';
+import { io } from 'socket.io-client';
 
 export default function Chat({ navigation, route }) {
   const [isOptionsMenuVisible, setOptionsMenuVisible] = useState(false);
-  const { chat, id ,token, socket } = route.params;
+  const { chat, id ,token } = route.params;
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [participantList, setParticipantList] = useState([]);
   const [showParticipantListModal, setShowParticipantListModal] = useState(false);
   const [count, setCount] = useState(0);
+  const [socket, setSocket] = useState(null);
   const scrollViewRef = useRef();
-  console.log('Chat',chat.oid)
+  console.log('Chat',id)
+
   const fetchMessages = async () => {
     try {
       console.log('ChatId:',chat.oid)
@@ -30,6 +33,10 @@ export default function Chat({ navigation, route }) {
   };
 
   useEffect(() => {
+    let auxSocket = io(IP); // Create a new socket connection
+    auxSocket.emit('joinChat', chat.oid); // Join the chat room
+    setSocket(auxSocket);
+
     fetchMessages();
   }, []);
 
@@ -109,7 +116,7 @@ export default function Chat({ navigation, route }) {
       );
       console.log('Salir',response.data.mensaje);
       setShowModal(false); // Close the modal after successful exit
-      navigation.navigate('MyChats', { token: token });
+      navigation.navigate('MyChats', {id: id, token: token });
     } catch (error) {
       console.error('Error al salir del chatt:', error.response.data.error);
       // Handle error or display error message to the user
