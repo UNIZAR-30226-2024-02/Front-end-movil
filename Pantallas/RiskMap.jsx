@@ -115,10 +115,6 @@ export default function RiskMap({ naviagation, route }) {
 
           if(userDestino === whoami){
             console.log("Me atacan")
-            this.ataqueRecibido = { userOrigen, userDestino, dadosAtacante, dadosDefensor, 
-            tropasPerdidasAtacante, tropasPerdidasDefensor, conquistado,
-            territorioOrigen, territorioDestino, eloAtacante, eloDefensor,
-            dineroAtacante, dineroDefensor};      
             if(conquistado){
               Alert.alert('¡Has perdido el territorio ' + territorioDestino + '!');
             }
@@ -1017,7 +1013,7 @@ useEffect(() => {
           colocarTropas(territoriname, whoami, false, false);
           //La emision al socket se hace en la funcion anterior
         } else {
-          if(!this.ocupado) Alert.alert('No es tu turno');
+          if(!ocupado) Alert.alert('No es tu turno');
         }
         break;
       case 1: // ataque
@@ -1052,10 +1048,6 @@ useEffect(() => {
             socket.emit('actualizarEstado', thisPartida._id)
           })
           .catch(error => {
-            this.toastr.error('¡ERROR FATAL!');
-            this.fase = 0;
-            this.fase = 1;
-            setAtaqueDestino('')
             setAtaqueOrigen('')
             setAtaqueTropas(0)
           })
@@ -1125,7 +1117,7 @@ useEffect(() => {
                                    tropasPerdidasAtacante: response.resultadoBatalla.tropasPerdidasAtacante,
                                    tropasPerdidasDefensor: response.resultadoBatalla.tropasPerdidasDefensor, 
                                    conquistado: response.conquistado, territorioOrigen: ataqueOrigen, 
-                                   territorioDestino: territorioName, eloAtacante: response.eloAtacante, territorioOrigen: this.ataqueOrigen, 
+                                   territorioDestino: territorioName, eloAtacante: response.eloAtacante, territorioOrigen: ataqueOrigen, 
                                    territorioDestino: enemyTerritoryId, eloDefensor: response.eloDefensor, dineroAtacante: response.dineroAtacante,
                                    dineroDefensor: response.dineroDefensor});
                   console.log("Se perpetra el ataque ")
@@ -1795,7 +1787,7 @@ useEffect(() => {
         if(response.status === 200){
         let paused = isPaused; let txt = ''; if(isPaused) txt = 'resumida'; else txt = 'pausada';
         setIsPaused(!isPaused);
-        socket.emit('pausoPartida', this.partida._id);
+        socket.emit('pausoPartida', thisPartida._id);
         Alert.alert('Partida ' + txt);
       } else{ 
         console.log('Error al pausar la partida');
@@ -1813,7 +1805,7 @@ useEffect(() => {
       socket.off('partidaPausada');
       const response = await axios.put(IP+"/partida/salirPartida", {idPartida: thisPartida._id}, {headers: {'Authorization': token}});
       if(response.status === 200){
-        socket.emit('disconnectGame', { gameId: this.partida._id, user: whoami });
+        socket.emit('disconnectGame', { gameId: thisPartida._id, user: whoami });
         console.log(response.data);
         navigation.navigate('Inicial', {userid : whoami, token: token });
       }
